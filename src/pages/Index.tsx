@@ -25,7 +25,7 @@ const Index = () => {
   const [returnStep, setReturnStep] = useState(1); // 1-3 этапы возврата
   const [returnReason, setReturnReason] = useState('');
 
-  const { playAudio, updateAudioFiles } = useAudio();
+  const { playAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
 
   // Симуляция товаров
   const mockProducts = [
@@ -418,6 +418,9 @@ const Index = () => {
         <AudioUploader
           onAudioFilesUpdate={updateAudioFiles}
           onClose={() => setShowAudioUploader(false)}
+          removeAudioFile={removeAudioFile}
+          clearAllAudio={clearAllAudio}
+          existingFiles={customAudioFiles}
         />
       )}
     </div>
