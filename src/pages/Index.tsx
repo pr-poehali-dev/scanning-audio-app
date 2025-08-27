@@ -249,10 +249,73 @@ const Index = () => {
             )}
 
             {currentStep === 'manager-scan' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
-                <div className="text-lg text-blue-600">Менеджер приносит товар со склада...</div>
-                <div className="animate-pulse">⏳ Ожидание сканирования товара</div>
+              <div className="flex h-screen">
+                {/* Левая часть - информация о ячейке */}
+                <div className="w-1/2 flex flex-col items-center justify-center bg-gray-50 p-8">
+                  <div className="text-center mb-8">
+                    <div className="text-sm text-gray-600 mb-2">
+                      Отсканируйте товары перед примеркой: 0 из {itemsCount}
+                    </div>
+                    
+                    <div className="bg-gray-200 rounded-lg p-8 mb-6">
+                      <div className="text-sm text-gray-600 mb-2">Ячейка:</div>
+                      <div className="text-6xl font-bold text-gray-800">{cellNumber}</div>
+                    </div>
+                    
+                    {/* QR Scanner */}
+                    <div className="relative border-4 border-dashed border-purple-300 rounded-lg p-6">
+                      <img 
+                        src="https://cdn.poehali.dev/files/e5b9f145-0416-4038-a4f2-54bf7de46618.png"
+                        alt="QR Scanner"
+                        className="w-32 h-32 mx-auto object-contain cursor-pointer"
+                        onClick={handleManagerScan}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Правая часть - список товаров */}
+                <div className="w-1/2 p-6 bg-white">
+                  <div className="mb-4">
+                    <div className="text-gray-600 text-sm mb-4">Список товаров для сканирования:</div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {mockProducts.map((product, index) => (
+                      <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                        <img 
+                          src={`https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`}
+                          alt="Product"
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-800">{product.id} {product.article}</div>
+                          <div className="text-sm text-gray-600">{product.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Размер: {product.size} Цвет: {product.color}
+                          </div>
+                          <div className="text-xs text-gray-400">Баркод: {product.barcode}</div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button size="sm" variant="outline" className="text-xs">
+                            Не сканировать
+                          </Button>
+                          {index === 0 && (
+                            <Button size="sm" variant="outline" className="text-xs text-purple-600">
+                              Смотреть все
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-6">
+                    <Button className="w-full bg-purple-500 hover:bg-purple-600">
+                      Пропустить все
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -265,38 +328,99 @@ const Index = () => {
             )}
 
             {currentStep === 'actions' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
-                <div className="grid gap-4">
-                  {mockProducts.map((product) => (
-                    <Card key={product.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="text-left">
-                            <div className="font-medium">{product.id} {product.article}</div>
-                            <div className="text-sm text-gray-600">{product.name}</div>
-                            <div className="text-sm text-gray-500">
-                              Размер: {product.size} Цвет: {product.color}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={handleTryOn}
-                              className="bg-purple-500 hover:bg-purple-600"
-                            >
-                              На примерке
-                            </Button>
-                            <Button 
-                              onClick={handleIssue}
-                              variant="outline"
-                            >
-                              Выдать
-                            </Button>
+              <div className="flex h-screen">
+                {/* Левая панель - информация о ячейке */}
+                <div className="w-80 bg-gray-50 p-6 flex flex-col">
+                  <div className="text-center mb-8">
+                    <div className="text-sm text-gray-600 mb-1">Ячейка</div>
+                    <div className="text-6xl font-bold text-gray-800 mb-6">{cellNumber}</div>
+                    
+                    <div className="text-sm text-gray-600 mb-2">Товаров</div>
+                    <div className="text-2xl font-bold text-gray-800 mb-4">{itemsCount} из {itemsCount}</div>
+                    
+                    <div className="text-sm text-gray-600 mb-2">Пакетов</div>
+                    <div className="text-2xl font-bold text-gray-800 mb-6">3</div>
+                    
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-6">
+                      <Icon name="Plus" className="mx-auto w-8 h-8 text-gray-400" />
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 mb-2">К оплате</div>
+                    <div className="text-xl font-bold text-purple-600 mb-6">17 876 ₽</div>
+                  </div>
+                  
+                  <div className="mt-auto space-y-3">
+                    <Button 
+                      onClick={handleIssue}
+                      className="w-full bg-purple-500 hover:bg-purple-600 py-3"
+                    >
+                      Выдать
+                    </Button>
+                    <Button 
+                      onClick={handleTryOn}
+                      variant="outline"
+                      className="w-full py-3"
+                    >
+                      Снять с примерки
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Правая часть - товары */}
+                <div className="flex-1 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" className="w-5 h-5" defaultChecked />
+                        <span className="text-sm">Снять все</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Клиент +7 (...) ... 75 89
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-6">
+                    {mockProducts.map((product) => (
+                      <div key={product.id} className="relative">
+                        <div className="absolute top-2 left-2 z-10">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <Icon name="Check" className="w-4 h-4 text-white" />
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        <div className="absolute top-2 right-2 z-10">
+                          <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                            Оплачен
+                          </div>
+                        </div>
+                        <div className="absolute top-8 right-2 z-10">
+                          <Icon name="RotateCcw" className="w-5 h-5 text-green-600" />
+                        </div>
+                        
+                        <div className="bg-white rounded-lg border p-4">
+                          <img 
+                            src={`https://via.placeholder.com/200x200/f0f0f0/999?text=Товар`}
+                            alt="Product"
+                            className="w-full h-48 object-cover rounded-lg mb-4"
+                          />
+                          
+                          <div className="space-y-1">
+                            <div className="font-medium text-sm">{product.id} {product.article}</div>
+                            <div className="text-xs text-gray-600">{product.name}</div>
+                            <div className="text-purple-600 text-sm font-bold">1 935 ₽ 5 670 ₽</div>
+                            <div className="text-xs text-gray-500">
+                              Цвет: {product.color} Размер: {product.size}
+                            </div>
+                            <div className="text-xs text-gray-400">Баркод: {product.barcode}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="absolute bottom-4 right-4">
+                          <Icon name="MoreHorizontal" className="w-5 h-5 text-gray-400" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
