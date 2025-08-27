@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AudioUploader } from '@/components/AudioUploader';
@@ -24,6 +24,18 @@ const Index = () => {
   const [showAudioUploader, setShowAudioUploader] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
+  
+  // Принудительный сброс isProcessing через 30 секунд на случай зависания
+  useEffect(() => {
+    if (isProcessing) {
+      const timeoutId = setTimeout(() => {
+        console.warn('⚠️ Принудительный сброс isProcessing через 30 секунд');
+        setIsProcessing(false);
+      }, 30000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isProcessing]);
   
   // Состояния для выдачи
   const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
@@ -149,8 +161,13 @@ const Index = () => {
       await new Promise(resolve => setTimeout(resolve, 6000));
       
       // После примерки запускаем процесс оплаты и оценки
-      await playAudio('rate-pickup-point');
+      try {
+        await playAudio('rate-pickup-point');
+      } catch (audioError) {
+        console.warn('Ошибка озвучки (продолжаем):', audioError);
+      }
       
+      // В любом случае завершаем через 3 секунды
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber('');
@@ -176,9 +193,13 @@ const Index = () => {
       await new Promise(resolve => setTimeout(resolve, 4000));
       
       // Озвучка просьбы оценить пункт выдачи
-      await playAudio('rate-pickup-point');
+      try {
+        await playAudio('rate-pickup-point');
+      } catch (audioError) {
+        console.warn('Ошибка озвучки (продолжаем):', audioError);
+      }
       
-      // Через 3 секунды возвращаемся к началу
+      // В любом случае завершаем через 3 секунды
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber(''); // Очищаем номер телефона
@@ -266,6 +287,21 @@ const Index = () => {
               >
                 <Icon name="Volume2" className="w-4 h-4 mr-2" />
                 Озвучка
+              </Button>
+              <Button 
+                onClick={() => {
+                  enableAudio();
+                  playAudio('cell-number').catch(e => {
+                    console.error('Тест озвучки не удался:', e);
+                    alert('Озвучка не работает. Проверьте:\n1. Загружены ли аудиофайлы\n2. Разрешено ли воспроизведение в браузере');
+                  });
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-blue-50"
+              >
+                <Icon name="Play" className="w-4 h-4 mr-2" />
+                Тест
               </Button>
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <Icon name="Download" className="w-4 h-4 mr-2" />
