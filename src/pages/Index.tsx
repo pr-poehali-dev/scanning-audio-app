@@ -6,7 +6,7 @@ import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
 import { AudioSettings } from '@/components/AudioSettings';
-import { VoiceControl } from '@/components/VoiceControl';
+
 import { useAudio, audioSystem } from '@/components/AudioSystem';
 import Icon from '@/components/ui/icon';
 
@@ -22,7 +22,7 @@ const Index = () => {
   const [totalProducts, setTotalProducts] = useState(150);
   const [barcode, setBarcode] = useState('');
   const [showAudioSettings, setShowAudioSettings] = useState(false);
-  const [showVoiceControl, setShowVoiceControl] = useState(true);
+
   const [customAudioFiles, setCustomAudioFiles] = useState<{[key: string]: string}>({});
 
   // Новая система озвучки из облака
@@ -94,45 +94,7 @@ const Index = () => {
     }
   };
 
-  // Обработчик голосовых команд
-  const handleVoiceCommand = (command: string) => {
-    console.log('Voice command received:', command);
-    
-    switch (command) {
-      case 'delivery':
-        setActiveTab('delivery');
-        break;
-      case 'receiving':
-        setActiveTab('receiving');
-        break;
-      case 'return':
-        setActiveTab('return');
-        break;
-      case 'settings':
-        setShowAudioSettings(!showAudioSettings);
-        break;
-      case 'scan':
-        handleQRScan();
-        break;
-      case 'try-on':
-        handleTryOn();
-        break;
-      case 'issue':
-        handleIssue();
-        break;
-      case 'start-receiving':
-        handleReceivingStart();
-        break;
-      case 'next':
-        handleReceivingNext();
-        break;
-      case 'return-item':
-        handleReturnStart();
-        break;
-      default:
-        console.log('Unknown command:', command);
-    }
-  };
+
 
   const handleAudioFilesUpdate = (files: {[key: string]: string}) => {
     setCustomAudioFiles(files);
@@ -176,15 +138,7 @@ const Index = () => {
           
           {/* Кнопки управления */}
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowVoiceControl(!showVoiceControl)}
-              className={showVoiceControl ? 'bg-green-50 border-green-200' : ''}
-            >
-              <Icon name="Mic" className="w-4 h-4 mr-1" />
-              Голос
-            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -256,11 +210,7 @@ const Index = () => {
         )}
       </div>
 
-      {/* Голосовое управление */}
-      <VoiceControl 
-        onCommand={handleVoiceCommand}
-        isVisible={showVoiceControl}
-      />
+
     </div>
   );
 };
