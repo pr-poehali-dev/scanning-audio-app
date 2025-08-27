@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,20 @@ export const AudioManager = ({ onClose, onAudioFilesUpdate }: AudioManagerProps)
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
+
+  // Загружаем сохраненные файлы при открытии менеджера
+  useEffect(() => {
+    try {
+      const savedFiles = localStorage.getItem('wb-audio-files');
+      if (savedFiles) {
+        const parsedFiles = JSON.parse(savedFiles);
+        setUploadedFiles(parsedFiles);
+        console.log('📂 Загружены сохраненные аудиофайлы:', Object.keys(parsedFiles));
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки сохраненных файлов:', error);
+    }
+  }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Предустановленные звуки для системы
@@ -124,6 +138,7 @@ export const AudioManager = ({ onClose, onAudioFilesUpdate }: AudioManagerProps)
 
   // Сохранение
   const handleSave = () => {
+    console.log('💾 Сохраняю аудиофайлы:', Object.keys(uploadedFiles));
     onAudioFilesUpdate(uploadedFiles);
     onClose();
   };

@@ -325,10 +325,15 @@ const Index = () => {
                 variant="ghost" 
                 size="sm"
                 onClick={() => setShowAudioManager(true)}
-                className="text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg"
+                className="text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg relative"
               >
                 <Icon name="Volume2" className="w-5 h-5 mr-2" />
                 Загрузить озвучку
+                {Object.keys(customAudioFiles).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                    {Object.keys(customAudioFiles).length}
+                  </span>
+                )}
               </Button>
               <Button
                 variant="ghost" 
@@ -339,6 +344,21 @@ const Index = () => {
                 <Icon name="Settings" className="w-5 h-5 mr-2" />
                 Настройки
               </Button>
+              {Object.keys(customAudioFiles).length > 0 && (
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    if (confirm('Удалить все загруженные аудиофайлы?')) {
+                      clearAllAudio();
+                    }
+                  }}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Icon name="Trash2" className="w-5 h-5 mr-2" />
+                  Очистить
+                </Button>
+              )}
               <Icon name="Menu" className="w-6 h-6 text-gray-600" />
               <Icon name="Package" className="w-6 h-6 text-gray-600" />
               <Icon name="Search" className="w-6 h-6 text-gray-600" />
