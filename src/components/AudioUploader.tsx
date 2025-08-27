@@ -40,7 +40,10 @@ export const AudioUploader = ({
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [cellUploadProgress, setCellUploadProgress] = useState(0);
+  const [isCellUploading, setIsCellUploading] = useState(false);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const cellFolderInputRef = useRef<HTMLInputElement>(null);
 
   // Обновляем состояние при загрузке существующих файлов
   useEffect(() => {
@@ -130,6 +133,57 @@ export const AudioUploader = ({
     }, 500);
   };
 
+  const handleCellFolderUpload = () => {
+    cellFolderInputRef.current?.click();
+  };
+
+  const handleCellFolderFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    setIsCellUploading(true);
+    setCellUploadProgress(0);
+
+    const audioFilesList = Array.from(files).filter(file => file.type.startsWith('audio/'));
+    const totalFiles = audioFilesList.length;
+    let processedFiles = 0;
+    const updatedFiles: { [key: string]: string } = {};
+
+    if (totalFiles === 0) {
+      alert('В папке с ячейками не найдено аудиофайлов');
+      setIsCellUploading(false);
+      return;
+    }
+
+    // Создаем объект для хранения озвучки ячеек по номерам
+    const cellAudios: { [key: string]: string } = {};
+
+    audioFilesList.forEach((file) => {
+      // Извлекаем номер ячейки из названия файла
+      const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
+      const cellNumber = fileName.match(/\d+/)?.[0]; // Ищем первое число в названии
+      
+      if (cellNumber) {
+        const url = URL.createObjectURL(file);
+        cellAudios[cellNumber] = url;
+      }
+
+      processedFiles++;
+      setCellUploadProgress((processedFiles / totalFiles) * 100);
+    });
+
+    setTimeout(() => {
+      setIsCellUploading(false);
+      setCellUploadProgress(0);
+      
+      // Сохраняем озвучку ячеек в localStorage
+      localStorage.setItem('cellAudios', JSON.stringify(cellAudios));
+      
+      const cellCount = Object.keys(cellAudios).length;
+      alert(`Успешно загружено озвучки для ${cellCount} ячеек`);
+    }, 500);
+  };
+
   const handleRemoveFile = (key: string) => {
     setAudioFiles(prev => prev.map(item => 
       item.key === key 
@@ -151,6 +205,10 @@ export const AudioUploader = ({
   };
 
   const uploadedCount = audioFiles.filter(item => item.uploaded).length;
+  
+  // Получаем информацию о загруженных ячейках
+  const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
+  const cellCount = Object.keys(cellAudios).length;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -167,26 +225,76 @@ export const AudioUploader = ({
         
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Загружено файлов: {uploadedCount} из {audioFiles.length}
+            <div className="space-y-1">
+              <div className="text-sm text-gray-600">
+                Загружено файлов: {uploadedCount} из {audioFiles.length}
+              </div>
+              {cellCount > 0 && (
+                <div className="text-sm text-blue-600">
+                  📱 Ячейки: {cellCount} шт.
+                </div>
+              )}
             </div>
-            {uploadedCount > 0 && (
-              <Button 
-                onClick={handleClearAll}
-                variant="outline"
-                size="sm"
-                className="text-red-600 hover:text-red-700"
-              >
-                <Icon name="Trash" className="w-4 h-4 mr-1" />
-                Очистить все
-              </Button>
+            {(uploadedCount > 0 || cellCount > 0) && (
+              <div className="flex gap-2">
+                {cellCount > 0 && (
+                  <Button 
+                    onClick={() => {
+                      if (confirm('Удалить все озвучки ячеек?')) {
+                        localStorage.removeItem('cellAudios');
+                        window.location.reload();
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <Icon name="Hash" className="w-4 h-4 mr-1" />
+                    Очистить ячейки
+                  </Button>
+                )}
+                {uploadedCount > 0 && (
+                  <Button 
+                    onClick={handleClearAll}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Icon name="Trash" className="w-4 h-4 mr-1" />
+                    Очистить все
+                  </Button>
+                )}
+              </div>
             )}
           </div>
 
           {/* Загрузка папки с drag&drop */}
           <DropZone onFolderDrop={handleFolderFiles} isUploading={isUploading} uploadProgress={uploadProgress} />
 
-          {/* Скрытый input для выбора папки */}
+          {/* Загрузка папки с ячейками */}
+          <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center bg-blue-50">
+            <Icon name="Hash" className="mx-auto h-12 w-12 text-blue-400 mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-blue-800">Папка с озвучкой ячеек</h3>
+            <p className="text-blue-600 mb-4">
+              Загрузите отдельную папку с озвучкой номеров ячеек.
+              Файлы должны содержать номера ячеек в названии (например: "1.mp3", "ячейка-15.wav", "cell_42.mp3")
+            </p>
+            <Button 
+              onClick={handleCellFolderUpload} 
+              disabled={isCellUploading}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              {isCellUploading ? 'Загружаю ячейки...' : 'Выбрать папку с ячейками'}
+            </Button>
+            {isCellUploading && (
+              <div className="mt-4">
+                <Progress value={cellUploadProgress} className="bg-blue-100" />
+                <div className="text-sm text-blue-600 mt-2">Обрабатываю ячейки...</div>
+              </div>
+            )}
+          </div>
+
+          {/* Скрытые inputs для выбора папок */}
           <input
             ref={folderInputRef}
             type="file"
@@ -194,6 +302,15 @@ export const AudioUploader = ({
             multiple
             accept="audio/*"
             onChange={handleFolderFiles}
+            className="hidden"
+          />
+          <input
+            ref={cellFolderInputRef}
+            type="file"
+            webkitdirectory=""
+            multiple
+            accept="audio/*"
+            onChange={handleCellFolderFiles}
             className="hidden"
           />
 

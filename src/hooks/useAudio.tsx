@@ -42,6 +42,30 @@ export const useAudio = () => {
     }
   }, [customAudioFiles]);
 
+  const playCellAudio = useCallback(async (cellNumber: string) => {
+    try {
+      // Получаем озвучку ячеек из localStorage
+      const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
+      const audioUrl = cellAudios[cellNumber];
+      
+      if (!audioUrl) {
+        console.log(`Озвучка для ячейки ${cellNumber} не найдена`);
+        return;
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      await audio.play();
+    } catch (error) {
+      console.error(`Ошибка воспроизведения озвучки ячейки ${cellNumber}:`, error);
+    }
+  }, []);
+
   const updateAudioFiles = useCallback((files: {[key: string]: string}) => {
     const updatedFiles = { ...customAudioFiles, ...files };
     setCustomAudioFiles(updatedFiles);
@@ -82,6 +106,7 @@ export const useAudio = () => {
 
   return { 
     playAudio, 
+    playCellAudio,
     updateAudioFiles, 
     removeAudioFile, 
     clearAllAudio, 

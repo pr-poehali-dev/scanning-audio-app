@@ -25,7 +25,7 @@ const Index = () => {
   const [returnStep, setReturnStep] = useState(1); // 1-3 этапы возврата
   const [returnReason, setReturnReason] = useState('');
 
-  const { playAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
+  const { playAudio, playCellAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
 
   // Симуляция товаров
   const mockProducts = [
@@ -53,7 +53,8 @@ const Index = () => {
       
       // Озвучка ячейки и скидки
       await playAudio('cell-number');
-      setTimeout(() => playAudio('check-discount-wallet'), 1500);
+      setTimeout(() => playCellAudio(String(cellNumber)), 500);
+      setTimeout(() => playAudio('check-discount-wallet'), 2000);
       
       setTimeout(() => {
         setIsScanning(false);
