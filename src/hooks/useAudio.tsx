@@ -21,14 +21,33 @@ export const useAudio = () => {
 
   const playAudio = useCallback(async (audioKey: string) => {
     try {
+      console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
+      console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
+      
       // Проверяем есть ли пользовательский файл
       const audioUrl = customAudioFiles[audioKey];
       
       if (!audioUrl) {
-        console.log(`Аудиофайл для ключа "${audioKey}" не найден`);
+        console.warn(`❌ Аудиофайл для ключа "${audioKey}" не найден в customAudioFiles`);
+        console.log(`💾 Проверяем localStorage...`);
+        
+        // Пробуем загрузить из localStorage напрямую
+        const stored = localStorage.getItem('wb-audio-files');
+        if (stored) {
+          const storedFiles = JSON.parse(stored);
+          const storedUrl = storedFiles[audioKey];
+          if (storedUrl) {
+            console.log(`✅ Найден в localStorage: ${audioKey}`);
+            const audio = new Audio(storedUrl);
+            await audio.play();
+            return;
+          }
+        }
         return;
       }
 
+      console.log(`✅ Воспроизводим файл: ${audioKey}`);
+      
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -37,8 +56,9 @@ export const useAudio = () => {
       audioRef.current = audio;
       
       await audio.play();
+      console.log(`🎵 Успешно воспроизведен: ${audioKey}`);
     } catch (error) {
-      console.error(`Ошибка воспроизведения аудио "${audioKey}":`, error);
+      console.error(`❌ Ошибка воспроизведения аудио "${audioKey}":`, error);
     }
   }, [customAudioFiles]);
 

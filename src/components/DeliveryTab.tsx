@@ -19,6 +19,7 @@ interface DeliveryTabProps {
   itemsCount: number;
   mockProducts: Product[];
   isScanning: boolean;
+  isProcessing: boolean;
   phoneNumber: string;
   onPhoneNumberChange: (value: string) => void;
   onQRScan: () => void;
@@ -34,6 +35,7 @@ export const DeliveryTab = ({
   itemsCount,
   mockProducts,
   isScanning,
+  isProcessing,
   phoneNumber,
   onPhoneNumberChange,
   onQRScan,
@@ -80,9 +82,9 @@ export const DeliveryTab = ({
                 <Button 
                   onClick={onConfirmCode}
                   className="w-full bg-purple-500 hover:bg-purple-600 py-3"
-                  disabled={!phoneNumber || phoneNumber.length !== 4}
+                  disabled={!phoneNumber || phoneNumber.length !== 4 || isProcessing}
                 >
-                  Найти заказы
+                  {isProcessing ? 'Обработка...' : 'Найти заказы'}
                 </Button>
               </div>
             </CardContent>
@@ -195,15 +197,17 @@ export const DeliveryTab = ({
               <Button 
                 onClick={onIssue}
                 className="w-full bg-purple-500 hover:bg-purple-600 py-3"
+                disabled={isProcessing}
               >
-                Выдать
+                {isProcessing ? 'Обработка...' : 'Выдать'}
               </Button>
               <Button 
                 onClick={onTryOn}
                 variant="outline"
                 className="w-full py-3"
+                disabled={isProcessing}
               >
-                Снять с примерки
+                {isProcessing ? 'Обработка...' : 'Снять с примерки'}
               </Button>
             </div>
           </div>

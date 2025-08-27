@@ -22,6 +22,7 @@ const Index = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showAudioUploader, setShowAudioUploader] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   
   // Состояния для выдачи
   const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
@@ -50,53 +51,104 @@ const Index = () => {
 
   // Обработчики для выдачи
   const handleQRScan = async () => {
-    if (activeTab === 'delivery') {
+    if (activeTab === 'delivery' && !isProcessing) {
+      setIsProcessing(true);
       setIsScanning(true);
       
-      // 1. Озвучка ячейки и скидки (клиент сканирует QR)
-      await playAudio('cell-number');
-      setTimeout(() => playCellAudio(String(cellNumber)), 500);
-      setTimeout(() => playAudio('check-discount-wallet'), 2000);
-      
-      setTimeout(() => {
-        setIsScanning(false);
-        setCurrentStep('manager-scan'); // Ждем когда менеджер принесет товар
+      try {
+        // 1. Озвучка ячейки и скидки (клиент сканирует QR)
+        console.log('🔊 Начинаем озвучку для QR сканирования');
+        await playAudio('cell-number');
         
-        // Автоматический вызов сканирования менеджером (имитация)
+        // Ждем полсекунды перед озвучкой номера ячейки
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await playCellAudio(String(cellNumber));
+        
+        // Ждем 2 секунды перед озвучкой о скидке
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await playAudio('check-discount-wallet');
+        
+        // Завершаем сканирование и переходим к следующему этапу
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setIsScanning(false);
+        setCurrentStep('manager-scan');
+        
+        // Автоматически имитируем действие менеджера через 3 секунды
         setTimeout(() => {
           handleManagerScan();
-        }, 3000); // Менеджер принесет товар через 3 секунды
-      }, 3500);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('Ошибка в процессе QR сканирования:', error);
+        setIsScanning(false);
+        setIsProcessing(false);
+      }
     }
   };
 
   const handleManagerScan = async () => {
-    // 2. Менеджер приносит товар со склада и сканирует (автоматически)
-    setCurrentStep('check');
-    await playAudio('check-product-camera');
-    
-    // Переход к кнопкам действий
-    setTimeout(() => {
-      setCurrentStep('actions'); // Исправлено: должно быть 'actions' чтобы совпадало с JSX
-    }, 2000);
-  };
-
-  const handleTryOn = () => {
-    console.log('Товар отправлен на примерку');
-    setCurrentStep('payment'); // Ждем пока клиент примерит
-  };
-
-  const handleIssue = () => {
-    console.log('Товар выдан клиенту');
-    setCurrentStep('payment');
-    // Симуляция: когда оплата пройдет, играем озвучку оценки
-    setTimeout(() => {
-      playAudio('rate-pickup-point');
+    try {
+      console.log('🔊 Менеджер сканирует товар');
+      setCurrentStep('check');
+      
+      // Озвучка проверки товара под камерой
+      await playAudio('check-product-camera');
+      
+      // Через 2 секунды переходим к действиям
       setTimeout(() => {
-        // Сброс к начальному состоянию для следующего клиента
+        setCurrentStep('actions');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Ошибка при сканировании менеджером:', error);
+    }
+  };
+
+  const handleTryOn = async () => {
+    console.log('✅ Товар отправлен на примерку');
+    setCurrentStep('payment');
+    
+    try {
+      // Имитируем время на примерку (6 секунд)
+      await new Promise(resolve => setTimeout(resolve, 6000));
+      
+      // После примерки запускаем процесс оплаты и оценки
+      await playAudio('rate-pickup-point');
+      
+      setTimeout(() => {
         setCurrentStep('scan');
+        setPhoneNumber('');
+        setIsProcessing(false);
       }, 3000);
-    }, 4000); // Ждем 4 секунды до "оплаты"
+      
+    } catch (error) {
+      console.error('Ошибка в процессе примерки:', error);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleIssue = async () => {
+    console.log('✅ Товар выдан клиенту');
+    setCurrentStep('payment');
+    
+    try {
+      // Симуляция ожидания оплаты (4 секунды)
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      
+      // Озвучка просьбы оценить пункт выдачи
+      await playAudio('rate-pickup-point');
+      
+      // Через 3 секунды возвращаемся к началу
+      setTimeout(() => {
+        setCurrentStep('scan');
+        setPhoneNumber(''); // Очищаем номер телефона
+        setIsProcessing(false); // Разрешаем новый цикл
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Ошибка в процессе выдачи:', error);
+      setIsProcessing(false);
+    }
   };
 
   const handleConfirmCode = () => {
@@ -230,6 +282,7 @@ const Index = () => {
             itemsCount={itemsCount}
             mockProducts={mockProducts}
             isScanning={isScanning}
+            isProcessing={isProcessing}
             phoneNumber={phoneNumber}
             onPhoneNumberChange={setPhoneNumber}
             onQRScan={handleQRScan}
