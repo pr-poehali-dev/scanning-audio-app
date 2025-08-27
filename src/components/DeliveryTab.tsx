@@ -121,15 +121,10 @@ export const DeliveryTab = ({
       <Card className="p-6">
         <CardContent>
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold">
-              Отсканируйте товары перед примеркой: {scannedProducts} из {totalProducts}
-            </h3>
             <Button variant="ghost" size="sm">
               <Icon name="ArrowLeft" className="text-gray-400" />
             </Button>
           </div>
-          
-          <Progress value={(scannedProducts / totalProducts) * 100} className="mb-4" />
           
           <div className="bg-gray-100 rounded-lg p-8 text-center mb-6">
             <div className="text-6xl font-bold text-gray-700 mb-2">
