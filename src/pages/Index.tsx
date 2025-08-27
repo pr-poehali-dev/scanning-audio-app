@@ -101,15 +101,16 @@ const Index = () => {
       try {
         // 1. Озвучка ячейки и скидки (клиент сканирует QR)
         console.log('🔊 Начинаем озвучку для QR сканирования');
-        await playAudio('cell-number');
         
-        // Ждем полсекунды перед озвучкой номера ячейки
-        await new Promise(resolve => setTimeout(resolve, 500));
-        await playCellAudio(String(cellNumber));
-        
-        // Ждем 2 секунды перед озвучкой о скидке
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        await playAudio('check-discount-wallet');
+        try {
+          await playAudio('cell-number');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await playCellAudio(String(cellNumber));
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          await playAudio('check-discount-wallet');
+        } catch (audioError) {
+          console.warn('Ошибка озвучки (продолжаем):', audioError);
+        }
         
         // Завершаем сканирование и переходим к следующему этапу
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -136,7 +137,11 @@ const Index = () => {
       setCurrentStep('check');
       
       // Озвучка проверки товара под камерой
-      await playAudio('check-product-camera');
+      try {
+        await playAudio('check-product-camera');
+      } catch (audioError) {
+        console.warn('Ошибка озвучки (продолжаем):', audioError);
+      }
       
       // Через 2 секунды переходим к действиям
       setTimeout(() => {
@@ -145,6 +150,10 @@ const Index = () => {
       
     } catch (error) {
       console.error('Ошибка при сканировании менеджером:', error);
+      // В любом случае переходим к actions
+      setTimeout(() => {
+        setCurrentStep('actions');
+      }, 1000);
     }
   };
 

@@ -250,9 +250,18 @@ export const DeliveryTab = ({
                       className="w-full h-48 object-cover rounded-lg mb-4"
                     />
                     
-                    <div className="space-y-1 min-h-[100px]">
+                    <div className="space-y-1 h-[120px] flex flex-col">
                       <div className="font-medium text-sm truncate">{product.id} {product.article}</div>
-                      <div className="text-xs text-gray-600 line-clamp-2 h-8 overflow-hidden">{product.name}</div>
+                      <div 
+                        className="text-xs text-gray-600 h-8 overflow-hidden"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as any
+                        }}
+                      >
+                        {product.name}
+                      </div>
                       <div className="text-purple-600 text-sm font-bold">1 935 ₽ 5 670 ₽</div>
                       <div className="text-xs text-gray-500 truncate">
                         Цвет: {product.color}
