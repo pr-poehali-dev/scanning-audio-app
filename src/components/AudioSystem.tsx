@@ -2,6 +2,7 @@
 export class AudioSystem {
   private audioCache: Map<string, HTMLAudioElement> = new Map();
   private baseUrl = 'https://cloud.mail.ru/public/vmnn/73ri9QfHz';
+  private customAudioFiles: { [key: string]: string } = {};
   
   // Маппинг событий на названия аудиофайлов
   private audioFiles: Record<string, string> = {
@@ -34,6 +35,15 @@ export class AudioSystem {
     'input-focus': 'input-focus.mp3',
     'button-click': 'button-click.mp3'
   };
+
+  // Обновление пользовательских аудиофайлов
+  updateAudioFiles(files: { [key: string]: string }): void {
+    this.customAudioFiles = { ...this.customAudioFiles, ...files };
+    // Предзагружаем новые файлы
+    Object.keys(files).forEach(key => {
+      this.preloadAudio(key);
+    });
+  }
 
   // Предзагрузка аудиофайлов
   async preloadAudio(audioKey: string): Promise<void> {
@@ -70,6 +80,12 @@ export class AudioSystem {
 
   // Преобразование облачной ссылки в прямую ссылку на файл
   private getDirectDownloadUrl(fileName: string): string {
+    // Проверяем есть ли пользовательский файл
+    const audioKey = Object.keys(this.audioFiles).find(key => this.audioFiles[key] === fileName);
+    if (audioKey && this.customAudioFiles[audioKey]) {
+      return this.customAudioFiles[audioKey];
+    }
+    
     // Временное решение - создаем локальные аудиофайлы или используем заглушки
     // В реальном приложении здесь должна быть логика получения прямых ссылок из Mail.ru API
     return `/audio/${fileName}`;

@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
+import { AudioSettings } from '@/components/AudioSettings';
+import { VoiceControl } from '@/components/VoiceControl';
 import { useAudio, audioSystem } from '@/components/AudioSystem';
+import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('delivery');
@@ -17,6 +21,9 @@ const Index = () => {
   const [scannedProducts, setScannedProducts] = useState(0);
   const [totalProducts, setTotalProducts] = useState(150);
   const [barcode, setBarcode] = useState('');
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [showVoiceControl, setShowVoiceControl] = useState(true);
+  const [customAudioFiles, setCustomAudioFiles] = useState<{[key: string]: string}>({});
 
   // Новая система озвучки из облака
   const { playAudio } = useAudio();
@@ -24,7 +31,11 @@ const Index = () => {
   // Предзагрузка критически важных аудиофайлов
   useEffect(() => {
     audioSystem.preloadCriticalAudio();
-  }, []);
+    // Обновляем систему озвучки при загрузке новых файлов
+    if (Object.keys(customAudioFiles).length > 0) {
+      audioSystem.updateAudioFiles(customAudioFiles);
+    }
+  }, [customAudioFiles]);
 
   // Озвучка при смене вкладок
   useEffect(() => {
@@ -83,6 +94,50 @@ const Index = () => {
     }
   };
 
+  // Обработчик голосовых команд
+  const handleVoiceCommand = (command: string) => {
+    console.log('Voice command received:', command);
+    
+    switch (command) {
+      case 'delivery':
+        setActiveTab('delivery');
+        break;
+      case 'receiving':
+        setActiveTab('receiving');
+        break;
+      case 'return':
+        setActiveTab('return');
+        break;
+      case 'settings':
+        setShowAudioSettings(!showAudioSettings);
+        break;
+      case 'scan':
+        handleQRScan();
+        break;
+      case 'try-on':
+        handleTryOn();
+        break;
+      case 'issue':
+        handleIssue();
+        break;
+      case 'start-receiving':
+        handleReceivingStart();
+        break;
+      case 'next':
+        handleReceivingNext();
+        break;
+      case 'return-item':
+        handleReturnStart();
+        break;
+      default:
+        console.log('Unknown command:', command);
+    }
+  };
+
+  const handleAudioFilesUpdate = (files: {[key: string]: string}) => {
+    setCustomAudioFiles(files);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white">
       <AppHeader 
@@ -93,7 +148,8 @@ const Index = () => {
 
       {/* Tabs */}
       <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex space-x-1 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex space-x-1">
           {[
             { id: 'delivery', label: 'Выдача', count: 6 },
             { id: 'receiving', label: 'Приемка', count: null },
@@ -116,6 +172,28 @@ const Index = () => {
               )}
             </button>
           ))}
+          </div>
+          
+          {/* Кнопки управления */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowVoiceControl(!showVoiceControl)}
+              className={showVoiceControl ? 'bg-green-50 border-green-200' : ''}
+            >
+              <Icon name="Mic" className="w-4 h-4 mr-1" />
+              Голос
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAudioSettings(!showAudioSettings)}
+            >
+              <Icon name="Settings" className="w-4 h-4 mr-1" />
+              Озвучка
+            </Button>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -155,7 +233,34 @@ const Index = () => {
             playAudio={playAudio}
           />
         )}
+
+        {/* Настройки озвучки */}
+        {showAudioSettings && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Настройки озвучки</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAudioSettings(false)}
+                >
+                  <Icon name="X" className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="p-4">
+                <AudioSettings onAudioFilesUpdate={handleAudioFilesUpdate} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Голосовое управление */}
+      <VoiceControl 
+        onCommand={handleVoiceCommand}
+        isVisible={showVoiceControl}
+      />
     </div>
   );
 };
