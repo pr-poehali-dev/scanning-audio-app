@@ -42,7 +42,16 @@ const Index = () => {
   });
 
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
-  const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
+  // Сохраняем настройку озвучки в localStorage
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('audioEnabled');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Сохраняем изменения в localStorage
+  useEffect(() => {
+    localStorage.setItem('audioEnabled', JSON.stringify(audioEnabled));
+  }, [audioEnabled]);
   
   // Принудительный сброс isProcessing через 3 секунды (максимально быстро)
   useEffect(() => {
@@ -141,14 +150,13 @@ const Index = () => {
         // 1. Озвучка ячейки и скидки (клиент сканирует QR)
         console.log('🔊 Начинаем озвучку для QR сканирования');
         
-        try {
-          await playAudio('cell-number');
-          await new Promise(resolve => setTimeout(resolve, 100));
-          await playCellAudio(String(cellNumber));
-          await new Promise(resolve => setTimeout(resolve, 200));
-          await playAudio('check-discount-wallet');
-        } catch (audioError) {
-          console.warn('Ошибка озвучки (продолжаем):', audioError);
+        // Озвучиваем только номер ячейки без дополнительных звуков
+        if (audioEnabled) {
+          try {
+            await playCellAudio(String(cellNumber));
+          } catch (audioError) {
+            console.warn('Ошибка озвучки (продолжаем):', audioError);
+          }
         }
         
         // Мгновенное завершение сканирования
@@ -175,12 +183,7 @@ const Index = () => {
       console.log('🔊 Менеджер сканирует товар');
       setCurrentStep('check');
       
-      // Озвучка проверки товара под камерой
-      try {
-        await playAudio('check-product-camera');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки (продолжаем):', audioError);
-      }
+      // Без звуковых сигналов
       
       // Моментальный переход к действиям
       setTimeout(() => {
@@ -208,12 +211,7 @@ const Index = () => {
       // Быстрая примерка (0.5 секунды)
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // После примерки запускаем процесс оплаты и оценки
-      try {
-        await playAudio('rate-pickup-point');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки (продолжаем):', audioError);
-      }
+      // Без звуковых сигналов оценки
       
       // Моментальное завершение
       setTimeout(() => {
@@ -240,12 +238,7 @@ const Index = () => {
       // Мгновенная оплата (0.3 секунды)
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Озвучка просьбы оценить пункт выдачи
-      try {
-        await playAudio('rate-pickup-point');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки (продолжаем):', audioError);
-      }
+      // Без звуковых сигналов оценки
       
       // Моментальное завершение
       setTimeout(() => {
@@ -268,7 +261,6 @@ const Index = () => {
 
   // Обработчики для приемки
   const handleReceivingStart = () => {
-    playAudio('receiving-start');
     setReceivingStep(2);
   };
 
@@ -276,10 +268,6 @@ const Index = () => {
     if (receivingStep < 4) {
       const nextStep = receivingStep + 1;
       setReceivingStep(nextStep);
-      
-      if (nextStep === 4) {
-        playAudio('receiving-complete');
-      }
     }
   };
 
@@ -289,12 +277,10 @@ const Index = () => {
 
   // Обработчики для возврата
   const handleReturnStart = () => {
-    playAudio('return-start');
     setReturnStep(2);
   };
 
   const handleReturnComplete = () => {
-    playAudio('return-complete');
     setReturnStep(1);
   };
 
