@@ -44,13 +44,13 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
   
-  // Принудительный сброс isProcessing через 10 секунд на случай зависания
+  // Принудительный сброс isProcessing через 3 секунды (максимально быстро)
   useEffect(() => {
     if (isProcessing) {
       const timeoutId = setTimeout(() => {
-        console.warn('⚠️ Принудительный сброс isProcessing через 10 секунд');
+        console.warn('⚠️ Мгновенный сброс isProcessing');
         setIsProcessing(false);
-      }, 10000);
+      }, 3000);
       
       return () => clearTimeout(timeoutId);
     }
@@ -143,23 +143,23 @@ const Index = () => {
         
         try {
           await playAudio('cell-number');
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 100));
           await playCellAudio(String(cellNumber));
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise(resolve => setTimeout(resolve, 200));
           await playAudio('check-discount-wallet');
         } catch (audioError) {
           console.warn('Ошибка озвучки (продолжаем):', audioError);
         }
         
-        // Завершаем сканирование и переходим к следующему этапу
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Мгновенное завершение сканирования
+        await new Promise(resolve => setTimeout(resolve, 300));
         setIsScanning(false);
         setCurrentStep('manager-scan');
         
-        // Автоматически имитируем действие менеджера через 1 секунду
+        // Моментальный переход к менеджеру
         setTimeout(() => {
           handleManagerScan();
-        }, 1000);
+        }, 400);
         
       } catch (error) {
         console.error('Ошибка в процессе QR сканирования:', error);
@@ -182,10 +182,10 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // Через 1 секунду переходим к действиям
+      // Моментальный переход к действиям
       setTimeout(() => {
         setCurrentStep('actions');
-      }, 1000);
+      }, 400);
       
     } catch (error) {
       console.error('Ошибка при сканировании менеджером:', error);
@@ -205,8 +205,8 @@ const Index = () => {
     setCurrentStep('payment');
     
     try {
-      // Имитируем время на примерку (2 секунды)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Быстрая примерка (0.5 секунды)
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // После примерки запускаем процесс оплаты и оценки
       try {
@@ -215,12 +215,12 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // В любом случае завершаем через 1.5 секунды
+      // Моментальное завершение
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber('');
         setIsProcessing(false);
-      }, 1500);
+      }, 500);
       
     } catch (error) {
       console.error('Ошибка в процессе примерки:', error);
@@ -237,8 +237,8 @@ const Index = () => {
     setCurrentStep('payment');
     
     try {
-      // Симуляция ожидания оплаты (1.5 секунды)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Мгновенная оплата (0.3 секунды)
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Озвучка просьбы оценить пункт выдачи
       try {
@@ -247,12 +247,12 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // В любом случае завершаем через 1.5 секунды
+      // Моментальное завершение
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber(''); // Очищаем номер телефона
         setIsProcessing(false); // Разрешаем новый цикл
-      }, 1500);
+      }, 400);
       
     } catch (error) {
       console.error('Ошибка в процессе выдачи:', error);

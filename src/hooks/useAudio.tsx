@@ -56,11 +56,11 @@ export const useAudio = () => {
       }
       
       gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
       
       oscillator.type = 'sine';
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
+      oscillator.stop(audioContext.currentTime + 0.15);
       
       console.log(`🎵 Тестовый звук для ${audioKey}`);
       
@@ -94,11 +94,11 @@ export const useAudio = () => {
       oscillator.frequency.value = 400 + (cellNum % 20) * 50;
       
       gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
       
       oscillator.type = 'square';
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
+      oscillator.stop(audioContext.currentTime + 0.2);
       
       console.log(`🎵 Звук ячейки ${cellNumber}`);
       
