@@ -17,7 +17,7 @@ interface DeliveryTabProps {
   handleConfirmCode: () => void;
   handleTryOn: () => void;
   handleIssue: () => void;
-  playAudio: (audioKey: string, priority?: 'high' | 'normal') => void;
+
 }
 
 export const DeliveryTab = ({
@@ -33,7 +33,7 @@ export const DeliveryTab = ({
   handleConfirmCode,
   handleTryOn,
   handleIssue,
-  playAudio
+
 }: DeliveryTabProps) => {
   const mockProducts = [
     {
@@ -89,7 +89,7 @@ export const DeliveryTab = ({
                 placeholder="4456"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                onFocus={() => playAudio('input-focus')}
+  
                 className="flex-1"
               />
               <Button 
@@ -104,7 +104,7 @@ export const DeliveryTab = ({
               placeholder="967898"
               value={secondPhone}
               onChange={(e) => setSecondPhone(e.target.value)}
-              onFocus={() => playAudio('input-focus')}
+
             />
             <Button 
               onClick={handleConfirmCode}
@@ -155,7 +155,7 @@ export const DeliveryTab = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => playAudio('button-click')}
+
                   >
                     Не сканировать
                   </Button>
@@ -182,7 +182,7 @@ export const DeliveryTab = ({
 
           <Button 
             className="w-full mt-6 bg-purple-500 hover:bg-purple-600"
-            onClick={() => playAudio('button-click')}
+
           >
             Пропустить всё
           </Button>

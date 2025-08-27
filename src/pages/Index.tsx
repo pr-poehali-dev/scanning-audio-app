@@ -37,55 +37,36 @@ const Index = () => {
     }
   }, [customAudioFiles]);
 
-  // Озвучка при смене вкладок
-  useEffect(() => {
-    const audioKeys = {
-      delivery: 'tab-delivery',
-      receiving: 'tab-receiving', 
-      return: 'tab-return'
-    };
-    if (audioKeys[activeTab]) {
-      playAudio(audioKeys[activeTab]);
-    }
-  }, [activeTab, playAudio]);
+
 
   const handleQRScan = () => {
     setIsScanning(true);
-    playAudio('scan-discount-check', 'high');
     
     setTimeout(() => {
       setIsScanning(false);
-      playAudio('check-product-camera');
     }, 2000);
   };
 
   const handleTryOn = () => {
-    playAudio('product-to-fitting');
+    // Действие без озвучки
   };
 
   const handleIssue = () => {
-    playAudio('product-issued-rate', 'high');
+    // Действие без озвучки
   };
 
   const handleReceivingStart = () => {
     setReceivingStep(1);
-    playAudio('receiving-start');
   };
 
   const handleReceivingNext = () => {
     if (receivingStep < 4) {
       setReceivingStep(prev => prev + 1);
-      const audioKeys = {
-        2: 'check-package',
-        3: 'place-in-cell',
-        4: 'receiving-complete'
-      };
-      playAudio(audioKeys[receivingStep + 1]);
     }
   };
 
   const handleReturnStart = () => {
-    playAudio('return-start');
+    // Действие без озвучки
   };
 
   const handleConfirmCode = () => {
@@ -105,7 +86,6 @@ const Index = () => {
       <AppHeader 
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
-        playAudio={playAudio}
       />
 
       {/* Tabs */}
@@ -165,7 +145,7 @@ const Index = () => {
             handleConfirmCode={handleConfirmCode}
             handleTryOn={handleTryOn}
             handleIssue={handleIssue}
-            playAudio={playAudio}
+
           />
         )}
 
@@ -177,14 +157,14 @@ const Index = () => {
             cellNumber={cellNumber}
             handleReceivingNext={handleReceivingNext}
             handleReceivingStart={handleReceivingStart}
-            playAudio={playAudio}
+
           />
         )}
 
         {activeTab === 'return' && (
           <ReturnTab
             handleReturnStart={handleReturnStart}
-            playAudio={playAudio}
+
           />
         )}
 

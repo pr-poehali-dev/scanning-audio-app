@@ -6,10 +6,9 @@ import Icon from '@/components/ui/icon';
 interface AppHeaderProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  playAudio: (audioKey: string, priority?: 'high' | 'normal') => void;
 }
 
-export const AppHeader = ({ sidebarOpen, setSidebarOpen, playAudio }: AppHeaderProps) => {
+export const AppHeader = ({ sidebarOpen, setSidebarOpen }: AppHeaderProps) => {
   const sidebarMenuItems = [
     { icon: 'Package', label: 'Товары', id: 'products', badge: '150' },
     { icon: 'RefreshCw', label: 'Смена ячейки', id: 'change-cell' },
@@ -33,7 +32,7 @@ export const AppHeader = ({ sidebarOpen, setSidebarOpen, playAudio }: AppHeaderP
           <div className="flex items-center space-x-6">
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={() => playAudio('menu-open')}>
+                <Button variant="ghost" size="sm">
                   <Icon name="Menu" className="text-gray-600" />
                 </Button>
               </SheetTrigger>
@@ -46,10 +45,7 @@ export const AppHeader = ({ sidebarOpen, setSidebarOpen, playAudio }: AppHeaderP
                         key={item.id}
                         variant="ghost"
                         className="w-full justify-start"
-                        onClick={() => {
-                          playAudio('button-click');
-                          setSidebarOpen(false);
-                        }}
+                        onClick={() => setSidebarOpen(false)}
                       >
                         <Icon name={item.icon} className="mr-3" />
                         {item.label}
@@ -65,10 +61,10 @@ export const AppHeader = ({ sidebarOpen, setSidebarOpen, playAudio }: AppHeaderP
               </SheetContent>
             </Sheet>
             
-            <Button variant="ghost" size="sm" onClick={() => playAudio('products-open')}>
+            <Button variant="ghost" size="sm">
               <Icon name="Package" className="text-gray-600" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => playAudio('search-open')}>
+            <Button variant="ghost" size="sm">
               <Icon name="Search" className="text-gray-600" />
             </Button>
             
@@ -78,13 +74,13 @@ export const AppHeader = ({ sidebarOpen, setSidebarOpen, playAudio }: AppHeaderP
             </div>
             
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" onClick={() => playAudio('button-click')}>
+              <Button variant="ghost" size="sm">
                 <Icon name="MoreHorizontal" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => playAudio('button-click')}>
+              <Button variant="ghost" size="sm">
                 <Icon name="RefreshCw" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => playAudio('button-click')}>
+              <Button variant="ghost" size="sm">
                 <Icon name="MessageCircle" />
               </Button>
             </div>
