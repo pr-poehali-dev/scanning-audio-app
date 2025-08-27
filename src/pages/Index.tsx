@@ -4,6 +4,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
+import { useAudio, audioSystem } from '@/components/AudioSystem';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('delivery');
@@ -17,70 +18,63 @@ const Index = () => {
   const [totalProducts, setTotalProducts] = useState(150);
   const [barcode, setBarcode] = useState('');
 
-  // Расширенная аудио система для озвучки
-  const playAudio = (message: string, priority: 'high' | 'normal' = 'normal') => {
-    console.log(`🔊 Озвучка (${priority}): ${message}`);
-    if (window.speechSynthesis) {
-      if (priority === 'high') {
-        window.speechSynthesis.cancel();
-      }
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.lang = 'ru-RU';
-      utterance.rate = priority === 'high' ? 1.1 : 0.9;
-      utterance.pitch = priority === 'high' ? 1.2 : 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
+  // Новая система озвучки из облака
+  const { playAudio } = useAudio();
+  
+  // Предзагрузка критически важных аудиофайлов
+  useEffect(() => {
+    audioSystem.preloadCriticalAudio();
+  }, []);
 
   // Озвучка при смене вкладок
   useEffect(() => {
-    const messages = {
-      delivery: 'Вкладка выдача активна',
-      receiving: 'Вкладка приемка активна', 
-      return: 'Вкладка возврат активна'
+    const audioKeys = {
+      delivery: 'tab-delivery',
+      receiving: 'tab-receiving', 
+      return: 'tab-return'
     };
-    if (messages[activeTab]) {
-      playAudio(messages[activeTab]);
+    if (audioKeys[activeTab]) {
+      playAudio(audioKeys[activeTab]);
     }
-  }, [activeTab]);
+  }, [activeTab, playAudio]);
 
   const handleQRScan = () => {
     setIsScanning(true);
-    playAudio('Товары со скидкой проверьте ВБ кошелек', 'high');
+    playAudio('scan-discount-check', 'high');
     
     setTimeout(() => {
       setIsScanning(false);
-      playAudio('Проверьте товар под камерой');
+      playAudio('check-product-camera');
     }, 2000);
   };
 
   const handleTryOn = () => {
-    playAudio('Товар передан на примерку');
+    playAudio('product-to-fitting');
   };
 
   const handleIssue = () => {
-    playAudio('Товар выдан клиенту. Оцените наш пункт выдачи в приложении', 'high');
+    playAudio('product-issued-rate', 'high');
   };
 
   const handleReceivingStart = () => {
     setReceivingStep(1);
-    playAudio('Начинаем приемку товара. Отсканируйте стикер коробки');
+    playAudio('receiving-start');
   };
 
   const handleReceivingNext = () => {
     if (receivingStep < 4) {
       setReceivingStep(prev => prev + 1);
-      const messages = {
-        2: 'Проверьте целостность упаковки',
-        3: 'Разместите товар в ячейке',
-        4: 'Приемка завершена успешно'
+      const audioKeys = {
+        2: 'check-package',
+        3: 'place-in-cell',
+        4: 'receiving-complete'
       };
-      playAudio(messages[receivingStep + 1]);
+      playAudio(audioKeys[receivingStep + 1]);
     }
   };
 
   const handleReturnStart = () => {
-    playAudio('Начинаем процесс возврата. Отсканируйте товар для возврата');
+    playAudio('return-start');
   };
 
   const handleConfirmCode = () => {
@@ -109,7 +103,6 @@ const Index = () => {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
-                playAudio(`Переключение на ${tab.label}`);
               }}
               className={`px-6 py-3 rounded-lg font-medium transition-all ${
                 activeTab === tab.id

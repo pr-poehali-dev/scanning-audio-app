@@ -11,7 +11,7 @@ interface ReceivingTabProps {
   cellNumber: number;
   handleReceivingNext: () => void;
   handleReceivingStart: () => void;
-  playAudio: (message: string, priority?: 'high' | 'normal') => void;
+  playAudio: (audioKey: string, priority?: 'high' | 'normal') => void;
 }
 
 export const ReceivingTab = ({
@@ -30,7 +30,7 @@ export const ReceivingTab = ({
           <Button 
             variant="ghost" 
             className="flex items-center space-x-2"
-            onClick={() => playAudio('Возвращаемся к приемке')}
+            onClick={() => playAudio('button-click')}
           >
             <Icon name="ArrowLeft" />
             <span>Вернуться к приемке</span>
@@ -79,7 +79,7 @@ export const ReceivingTab = ({
                 placeholder="89585787658"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                onFocus={() => playAudio('Поле ввода штрих-кода')}
+                onFocus={() => playAudio('input-focus')}
               />
               <Button 
                 onClick={handleReceivingNext}
@@ -112,7 +112,7 @@ export const ReceivingTab = ({
                 <Button 
                   variant="outline"
                   className="border-red-300 text-red-600"
-                  onClick={() => playAudio('Упаковка повреждена, требуется проверка')}
+                  onClick={() => playAudio('button-click')}
                 >
                   Повреждения
                 </Button>

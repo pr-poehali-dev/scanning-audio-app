@@ -5,7 +5,7 @@ import Icon from '@/components/ui/icon';
 
 interface ReturnTabProps {
   handleReturnStart: () => void;
-  playAudio: (message: string, priority?: 'high' | 'normal') => void;
+  playAudio: (audioKey: string, priority?: 'high' | 'normal') => void;
 }
 
 export const ReturnTab = ({ handleReturnStart, playAudio }: ReturnTabProps) => {
@@ -36,7 +36,7 @@ export const ReturnTab = ({ handleReturnStart, playAudio }: ReturnTabProps) => {
             
             <Input
               placeholder="Введите штрих-код товара"
-              onFocus={() => playAudio('Поле ввода штрих-кода для возврата')}
+              onFocus={() => playAudio('input-focus')}
             />
           </div>
 
@@ -48,7 +48,7 @@ export const ReturnTab = ({ handleReturnStart, playAudio }: ReturnTabProps) => {
                   key={reason}
                   variant="outline"
                   className="w-full text-left justify-start"
-                  onClick={() => playAudio(`Выбрана причина: ${reason}`)}
+                  onClick={() => playAudio('button-click')}
                 >
                   {reason}
                 </Button>
@@ -60,7 +60,7 @@ export const ReturnTab = ({ handleReturnStart, playAudio }: ReturnTabProps) => {
         <div className="pt-6 border-t">
           <Button 
             className="bg-purple-500 hover:bg-purple-600 w-full py-3"
-            onClick={() => playAudio('Возврат товара оформлен успешно. Деньги вернутся на карту в течение 5-10 дней', 'high')}
+            onClick={() => playAudio('return-complete', 'high')}
           >
             Оформить возврат
           </Button>
