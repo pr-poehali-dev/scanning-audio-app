@@ -6,6 +6,7 @@ import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
 import { AudioSettings } from '@/components/AudioSettings';
+import { AudioManager } from '@/components/AudioManager';
 import { useAudio } from '@/hooks/useAudio';
 import Icon from '@/components/ui/icon';
 
@@ -32,6 +33,7 @@ const Index = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [showAudioManager, setShowAudioManager] = useState(false);
   const [audioFiles, setAudioFiles] = useState<AudioFiles>({
     delivery: [],
     receiving: [],
@@ -304,11 +306,16 @@ const Index = () => {
     setReturnStep(step);
   };
 
-  // Функция обновления аудиофайлов
+  // Функция обновления аудиофайлов (старая система)
   const handleAudioFilesUpdate = (newAudioFiles: AudioFiles) => {
     setAudioFiles(newAudioFiles);
-    // Здесь можно добавить логику обновления хука useAudio, если это необходимо
     console.log('Аудиофайлы обновлены:', newAudioFiles);
+  };
+
+  // Обновление аудио через AudioManager
+  const handleAudioManagerUpdate = (newFiles: { [key: string]: string }) => {
+    updateAudioFiles(newFiles);
+    console.log('Озвучка обновлена через AudioManager:', Object.keys(newFiles));
   };
 
   return (
@@ -331,11 +338,20 @@ const Index = () => {
               <Button
                 variant="ghost" 
                 size="sm"
+                onClick={() => setShowAudioManager(true)}
+                className="text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg"
+              >
+                <Icon name="Volume2" className="w-5 h-5 mr-2" />
+                Загрузить озвучку
+              </Button>
+              <Button
+                variant="ghost" 
+                size="sm"
                 onClick={() => setShowAudioSettings(true)}
                 className="text-gray-600 hover:text-blue-600"
               >
                 <Icon name="Settings" className="w-5 h-5 mr-2" />
-                Озвучка
+                Настройки
               </Button>
               <Icon name="Menu" className="w-6 h-6 text-gray-600" />
               <Icon name="Package" className="w-6 h-6 text-gray-600" />
@@ -434,7 +450,15 @@ const Index = () => {
         )}
       </div>
 
-      {/* Модальное окно настроек озвучки */}
+      {/* Модальное окно загрузки озвучки */}
+      {showAudioManager && (
+        <AudioManager
+          onClose={() => setShowAudioManager(false)}
+          onAudioFilesUpdate={handleAudioManagerUpdate}
+        />
+      )}
+
+      {/* Модальное окно настроек озвучки (старое) */}
       {showAudioSettings && (
         <AudioSettings
           onClose={() => setShowAudioSettings(false)}
