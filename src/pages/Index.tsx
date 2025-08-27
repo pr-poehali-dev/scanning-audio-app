@@ -300,10 +300,25 @@ const Index = () => {
               <Button 
                 onClick={() => {
                   enableAudio();
-                  playAudio('cell-number').catch(e => {
-                    console.error('Тест озвучки не удался:', e);
-                    alert('Озвучка не работает. Проверьте:\n1. Загружены ли аудиофайлы\n2. Разрешено ли воспроизведение в браузере');
-                  });
+                  
+                  // Показываем все доступные аудиофайлы
+                  const stored = localStorage.getItem('wb-audio-files');
+                  const files = stored ? JSON.parse(stored) : {};
+                  console.log('🔍 Все загруженные аудиофайлы:', files);
+                  console.log('🔍 Ключи файлов:', Object.keys(files));
+                  
+                  // Пробуем воспроизвести первый доступный файл
+                  const keys = Object.keys(files);
+                  if (keys.length > 0) {
+                    const firstKey = keys[0];
+                    console.log(`🎵 Пробуем воспроизвести: ${firstKey}`);
+                    playAudio(firstKey).catch(e => {
+                      console.error('Ошибка воспроизведения:', e);
+                    });
+                  } else {
+                    console.warn('❌ Нет загруженных аудиофайлов');
+                    alert('Нет загруженных аудиофайлов!\nЗагрузите файлы через кнопку "Озвучка"');
+                  }
                 }}
                 variant="outline"
                 size="sm"
@@ -311,6 +326,19 @@ const Index = () => {
               >
                 <Icon name="Play" className="w-4 h-4 mr-2" />
                 Тест
+              </Button>
+              <Button 
+                onClick={() => {
+                  setIsProcessing(false);
+                  setCurrentStep('scan');
+                  console.log('🔄 Принудительный сброс состояния');
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-red-50"
+              >
+                <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
+                Сброс
               </Button>
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <Icon name="Download" className="w-4 h-4 mr-2" />

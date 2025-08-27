@@ -243,33 +243,25 @@ export const DeliveryTab = ({
                     <Icon name="RotateCcw" className="w-5 h-5 text-green-600" />
                   </div>
                   
-                  <div className="bg-white rounded-lg border p-4">
+                  <div className="bg-white rounded-lg border p-3 h-[380px] flex flex-col">
                     <img 
                       src={`https://via.placeholder.com/200x200/f0f0f0/999?text=Товар`}
                       alt="Product"
-                      className="w-full h-48 object-cover rounded-lg mb-4"
+                      className="w-full h-40 object-cover rounded-lg mb-3"
                     />
                     
-                    <div className="space-y-1 h-[120px] flex flex-col">
-                      <div className="font-medium text-sm truncate">{product.id} {product.article}</div>
-                      <div 
-                        className="text-xs text-gray-600 h-8 overflow-hidden"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical' as any
-                        }}
-                      >
-                        {product.name}
+                    <div className="flex-1 space-y-1 overflow-hidden">
+                      <div className="font-medium text-xs truncate">{product.id} {product.article}</div>
+                      <div className="text-xs text-gray-600 h-6 overflow-hidden line-clamp-2">
+                        {product.name.slice(0, 30)}{product.name.length > 30 ? '...' : ''}
                       </div>
                       <div className="text-purple-600 text-sm font-bold">1 935 ₽ 5 670 ₽</div>
-                      <div className="text-xs text-gray-500 truncate">
-                        Цвет: {product.color}
+                      <div className="text-xs text-gray-500">
+                        {product.color} • {product.size}
                       </div>
-                      <div className="text-xs text-gray-500 truncate">
-                        Размер: {product.size}
+                      <div className="text-xs text-gray-400 truncate">
+                        {product.barcode.slice(0, 15)}...
                       </div>
-                      <div className="text-xs text-gray-400 truncate">Баркод: {product.barcode}</div>
                     </div>
                   </div>
                   
