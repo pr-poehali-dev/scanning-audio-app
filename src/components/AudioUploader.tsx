@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
+import { DropZone } from './DropZone';
 
 interface AudioFile {
   key: string;
@@ -182,37 +183,19 @@ export const AudioUploader = ({
             )}
           </div>
 
-          {/* Загрузка папки */}
-          <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-purple-50">
-            <Icon name="FolderOpen" className="mx-auto h-12 w-12 text-purple-400 mb-4" />
-            <h3 className="text-lg font-medium mb-2 text-purple-800">Загрузить папку с озвучкой</h3>
-            <p className="text-purple-600 mb-4">
-              Выберите папку с аудиофайлами для автоматического распознавания.
-              Файлы сохранятся в браузере и будут доступны при следующих запусках.
-            </p>
-            <Button 
-              onClick={handleFolderUpload} 
-              disabled={isUploading}
-              className="bg-purple-500 hover:bg-purple-600"
-            >
-              {isUploading ? 'Загружаю папку...' : 'Выбрать папку'}
-            </Button>
-            <input
-              ref={folderInputRef}
-              type="file"
-              webkitdirectory=""
-              multiple
-              accept="audio/*"
-              onChange={handleFolderFiles}
-              className="hidden"
-            />
-            {isUploading && (
-              <div className="mt-4">
-                <Progress value={uploadProgress} className="bg-purple-100" />
-                <div className="text-sm text-purple-600 mt-2">Обрабатываю папку...</div>
-              </div>
-            )}
-          </div>
+          {/* Загрузка папки с drag&drop */}
+          <DropZone onFolderDrop={handleFolderFiles} isUploading={isUploading} uploadProgress={uploadProgress} />
+
+          {/* Скрытый input для выбора папки */}
+          <input
+            ref={folderInputRef}
+            type="file"
+            webkitdirectory=""
+            multiple
+            accept="audio/*"
+            onChange={handleFolderFiles}
+            className="hidden"
+          />
 
           {/* Список файлов */}
           <div className="space-y-3">
