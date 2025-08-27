@@ -11,6 +11,8 @@ interface Product {
   size: string;
   color: string;
   barcode: string;
+  currentPrice: number;
+  originalPrice: number;
 }
 
 interface DeliveryTabProps {
@@ -21,6 +23,7 @@ interface DeliveryTabProps {
   isScanning: boolean;
   isProcessing: boolean;
   phoneNumber: string;
+  customerPhone: string;
   onPhoneNumberChange: (value: string) => void;
   onQRScan: () => void;
   onManagerScan: () => void;
@@ -37,6 +40,7 @@ export const DeliveryTab = ({
   isScanning,
   isProcessing,
   phoneNumber,
+  customerPhone,
   onPhoneNumberChange,
   onQRScan,
   onManagerScan,
@@ -221,7 +225,7 @@ export const DeliveryTab = ({
                   <span className="text-sm">Снять все</span>
                 </div>
                 <div className="text-sm text-gray-600">
-                  Клиент +7 (...) ... 75 89
+                  Клиент {customerPhone}
                 </div>
               </div>
             </div>
@@ -255,7 +259,9 @@ export const DeliveryTab = ({
                       <div className="text-xs text-gray-600 h-6 overflow-hidden line-clamp-2">
                         {product.name.slice(0, 30)}{product.name.length > 30 ? '...' : ''}
                       </div>
-                      <div className="text-purple-600 text-sm font-bold">1 935 ₽ 5 670 ₽</div>
+                      <div className="text-purple-600 text-sm font-bold">
+                        {product.currentPrice.toLocaleString()} ₽ <span className="text-gray-400 line-through">{product.originalPrice.toLocaleString()} ₽</span>
+                      </div>
                       <div className="text-xs text-gray-500">
                         {product.color} • {product.size}
                       </div>

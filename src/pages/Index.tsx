@@ -16,6 +16,8 @@ interface Product {
   size: string;
   color: string;
   barcode: string;
+  currentPrice: number;
+  originalPrice: number;
 }
 
 interface AudioFiles {
@@ -40,13 +42,13 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
   
-  // Принудительный сброс isProcessing через 30 секунд на случай зависания
+  // Принудительный сброс isProcessing через 10 секунд на случай зависания
   useEffect(() => {
     if (isProcessing) {
       const timeoutId = setTimeout(() => {
-        console.warn('⚠️ Принудительный сброс isProcessing через 30 секунд');
+        console.warn('⚠️ Принудительный сброс isProcessing через 10 секунд');
         setIsProcessing(false);
-      }, 30000);
+      }, 10000);
       
       return () => clearTimeout(timeoutId);
     }
@@ -55,7 +57,14 @@ const Index = () => {
   // Состояния для выдачи
   const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
   const [currentStep, setCurrentStep] = useState('scan'); // scan, manager-scan, check, try-on, payment, rate
-  const [itemsCount] = useState(() => Math.floor(Math.random() * 5) + 1); // Случайное количество 1-5 товаров
+  const [itemsCount] = useState(() => Math.floor(Math.random() * 8) + 1); // Случайное количество 1-8 товаров
+  const [customerPhone] = useState(() => {
+    // Генерируем случайный номер телефона
+    const codes = ['9', '8', '7', '6', '5'];
+    const code = codes[Math.floor(Math.random() * codes.length)];
+    const digits = Math.floor(Math.random() * 9000) + 1000;
+    return `+7 (...) ... ${code}${digits.toString().slice(0, 1)} ${digits.toString().slice(1, 3)}`;
+  });
   
   // Состояния для приемки
   const [receivingStep, setReceivingStep] = useState(1); // 1-4 этапы приемки
@@ -86,14 +95,27 @@ const Index = () => {
     'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый'
   ];
 
-  const mockProducts: Product[] = Array.from({ length: itemsCount }, (_, index) => ({
-    id: `16466782${index + 7}`,
-    article: `456${index + 9}`,
-    name: productNames[Math.floor(Math.random() * productNames.length)],
-    size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', 'Универсальный'][Math.floor(Math.random() * 9)],
-    color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый'][Math.floor(Math.random() * 8)],
-    barcode: `48574857475${index + 8}`,
-  }));
+  // Функция для генерации реальных цен
+  const generatePrices = () => {
+    const originalPrice = Math.floor(Math.random() * 8000) + 500; // От 500 до 8500
+    const discountPercent = Math.floor(Math.random() * 70) + 10; // Скидка от 10% до 80%
+    const currentPrice = Math.floor(originalPrice * (100 - discountPercent) / 100);
+    return { currentPrice, originalPrice };
+  };
+
+  const mockProducts: Product[] = Array.from({ length: itemsCount }, (_, index) => {
+    const { currentPrice, originalPrice } = generatePrices();
+    return {
+      id: `16466782${Math.floor(Math.random() * 9000) + 1000}${index}`,
+      article: `${Math.floor(Math.random() * 9000) + 1000}`,
+      name: productNames[Math.floor(Math.random() * productNames.length)],
+      size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', '46', '48', 'Универсальный'][Math.floor(Math.random() * 11)],
+      color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый', 'Розовый', 'Коричневый'][Math.floor(Math.random() * 10)],
+      barcode: `${Math.floor(Math.random() * 900000000000) + 100000000000}`,
+      currentPrice,
+      originalPrice
+    };
+  });
 
   // Включение аудио при первом взаимодействии
   const enableAudio = () => {
@@ -128,14 +150,14 @@ const Index = () => {
         }
         
         // Завершаем сканирование и переходим к следующему этапу
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         setIsScanning(false);
         setCurrentStep('manager-scan');
         
-        // Автоматически имитируем действие менеджера через 3 секунды
+        // Автоматически имитируем действие менеджера через 1 секунду
         setTimeout(() => {
           handleManagerScan();
-        }, 3000);
+        }, 1000);
         
       } catch (error) {
         console.error('Ошибка в процессе QR сканирования:', error);
@@ -158,10 +180,10 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // Через 2 секунды переходим к действиям
+      // Через 1 секунду переходим к действиям
       setTimeout(() => {
         setCurrentStep('actions');
-      }, 2000);
+      }, 1000);
       
     } catch (error) {
       console.error('Ошибка при сканировании менеджером:', error);
@@ -181,8 +203,8 @@ const Index = () => {
     setCurrentStep('payment');
     
     try {
-      // Имитируем время на примерку (6 секунд)
-      await new Promise(resolve => setTimeout(resolve, 6000));
+      // Имитируем время на примерку (2 секунды)
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // После примерки запускаем процесс оплаты и оценки
       try {
@@ -191,12 +213,12 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // В любом случае завершаем через 3 секунды
+      // В любом случае завершаем через 1.5 секунды
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber('');
         setIsProcessing(false);
-      }, 3000);
+      }, 1500);
       
     } catch (error) {
       console.error('Ошибка в процессе примерки:', error);
@@ -213,8 +235,8 @@ const Index = () => {
     setCurrentStep('payment');
     
     try {
-      // Симуляция ожидания оплаты (4 секунды)
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      // Симуляция ожидания оплаты (1.5 секунды)
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Озвучка просьбы оценить пункт выдачи
       try {
@@ -223,12 +245,12 @@ const Index = () => {
         console.warn('Ошибка озвучки (продолжаем):', audioError);
       }
       
-      // В любом случае завершаем через 3 секунды
+      // В любом случае завершаем через 1.5 секунды
       setTimeout(() => {
         setCurrentStep('scan');
         setPhoneNumber(''); // Очищаем номер телефона
         setIsProcessing(false); // Разрешаем новый цикл
-      }, 3000);
+      }, 1500);
       
     } catch (error) {
       console.error('Ошибка в процессе выдачи:', error);
@@ -377,6 +399,7 @@ const Index = () => {
             isScanning={isScanning}
             isProcessing={isProcessing}
             phoneNumber={phoneNumber}
+            customerPhone={customerPhone}
             onPhoneNumberChange={setPhoneNumber}
             onQRScan={handleQRScan}
             onManagerScan={handleManagerScan}

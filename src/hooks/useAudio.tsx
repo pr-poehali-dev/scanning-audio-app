@@ -22,85 +22,97 @@ export const useAudio = () => {
   const playAudio = useCallback(async (audioKey: string) => {
     try {
       console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
-      console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
       
-      // Проверяем есть ли пользовательский файл
+      // Простая тестовая озвучка - генерируем короткий бип
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Настраиваем звук в зависимости от типа
+      switch(audioKey) {
+        case 'cell-number':
+          oscillator.frequency.value = 800;
+          break;
+        case 'check-discount-wallet':
+          oscillator.frequency.value = 600;
+          break;
+        case 'check-product-camera':
+          oscillator.frequency.value = 400;
+          break;
+        case 'delivery-complete':
+          oscillator.frequency.value = 900;
+          break;
+        case 'receiving-scan':
+          oscillator.frequency.value = 500;
+          break;
+        case 'return-complete':
+          oscillator.frequency.value = 300;
+          break;
+        default:
+          oscillator.frequency.value = 700;
+      }
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.type = 'sine';
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+      
+      console.log(`🎵 Тестовый звук для ${audioKey}`);
+      
+      // Если есть пользовательский файл, играем его
       const audioUrl = customAudioFiles[audioKey];
-      
-      if (!audioUrl) {
-        console.warn(`❌ Аудиофайл для ключа "${audioKey}" не найден в customAudioFiles`);
-        console.log(`💾 Проверяем localStorage...`);
-        
-        // Пробуем загрузить из localStorage напрямую
-        const stored = localStorage.getItem('wb-audio-files');
-        if (stored) {
-          const storedFiles = JSON.parse(stored);
-          const storedUrl = storedFiles[audioKey];
-          if (storedUrl) {
-            console.log(`✅ Найден в localStorage: ${audioKey}`);
-            const audio = new Audio(storedUrl);
-            await audio.play();
-            return;
-          }
-        }
-        return;
-      }
-
-      console.log(`✅ Воспроизводим файл: ${audioKey}`);
-      
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      // Добавляем обработчики событий для диагностики
-      audio.addEventListener('canplay', () => {
-        console.log(`📻 Аудио готово к воспроизведению: ${audioKey}`);
-      });
-      
-      audio.addEventListener('error', (e) => {
-        console.error(`💥 Ошибка загрузки аудио: ${audioKey}`, e);
-      });
-      
-      // Пытаемся воспроизвести
-      try {
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
         await audio.play();
-        console.log(`🎵 Успешно воспроизведен: ${audioKey}`);
-      } catch (playError) {
-        console.error(`🚫 Браузер заблокировал автовоспроизведение для "${audioKey}":`, playError);
-        console.log(`💡 Попробуйте кликнуть в любом месте страницы, чтобы разрешить воспроизведение`);
-        
-        // Сохраняем ошибку для показа пользователю
-        throw new Error(`Браузер заблокировал воспроизведение. Кликните в любом месте страницы.`);
+        console.log(`🎵 Пользовательский звук: ${audioKey}`);
       }
+      
     } catch (error) {
-      console.error(`❌ Общая ошибка воспроизведения аудио "${audioKey}":`, error);
+      console.error(`❌ Ошибка воспроизведения "${audioKey}":`, error);
     }
   }, [customAudioFiles]);
 
   const playCellAudio = useCallback(async (cellNumber: string) => {
     try {
-      // Получаем озвучку ячеек из localStorage
+      console.log(`🔊 Озвучка ячейки: ${cellNumber}`);
+      
+      // Простая озвучка ячейки - генерируем звук с числом
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Тон зависит от номера ячейки
+      const cellNum = parseInt(cellNumber) || 1;
+      oscillator.frequency.value = 400 + (cellNum % 20) * 50;
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.type = 'square';
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+      
+      console.log(`🎵 Звук ячейки ${cellNumber}`);
+      
+      // Проверяем пользовательский файл
       const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
       const audioUrl = cellAudios[cellNumber];
       
-      if (!audioUrl) {
-        console.log(`Озвучка для ячейки ${cellNumber} не найдена`);
-        return;
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        await audio.play();
+        console.log(`🎵 Пользовательская озвучка ячейки ${cellNumber}`);
       }
-
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      await audio.play();
     } catch (error) {
-      console.error(`Ошибка воспроизведения озвучки ячейки ${cellNumber}:`, error);
+      console.error(`❌ Ошибка озвучки ячейки ${cellNumber}:`, error);
     }
   }, []);
 
