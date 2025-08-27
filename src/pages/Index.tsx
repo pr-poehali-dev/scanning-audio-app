@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
+import { AudioSettings } from '@/components/AudioSettings';
 import { useAudio } from '@/hooks/useAudio';
 import Icon from '@/components/ui/icon';
 
@@ -17,10 +18,24 @@ interface Product {
   barcode: string;
 }
 
+interface AudioFiles {
+  delivery: File[];
+  receiving: File[];
+  return: File[];
+  cells: File[];
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [audioFiles, setAudioFiles] = useState<AudioFiles>({
+    delivery: [],
+    receiving: [],
+    return: [],
+    cells: []
+  });
 
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
@@ -267,6 +282,13 @@ const Index = () => {
     setReturnStep(step);
   };
 
+  // Функция обновления аудиофайлов
+  const handleAudioFilesUpdate = (newAudioFiles: AudioFiles) => {
+    setAudioFiles(newAudioFiles);
+    // Здесь можно добавить логику обновления хука useAudio, если это необходимо
+    console.log('Аудиофайлы обновлены:', newAudioFiles);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
@@ -284,6 +306,15 @@ const Index = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowAudioSettings(true)}
+                className="text-gray-600 hover:text-blue-600"
+              >
+                <Icon name="Settings" className="w-5 h-5 mr-2" />
+                Озвучка
+              </Button>
               <Icon name="Menu" className="w-6 h-6 text-gray-600" />
               <Icon name="Package" className="w-6 h-6 text-gray-600" />
               <Icon name="Search" className="w-6 h-6 text-gray-600" />
@@ -380,7 +411,14 @@ const Index = () => {
         )}
       </div>
 
-
+      {/* Модальное окно настроек озвучки */}
+      {showAudioSettings && (
+        <AudioSettings
+          onClose={() => setShowAudioSettings(false)}
+          onAudioFilesUpdate={handleAudioFilesUpdate}
+          existingFiles={audioFiles}
+        />
+      )}
     </div>
   );
 };
