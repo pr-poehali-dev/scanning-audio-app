@@ -70,11 +70,27 @@ export const useAudio = () => {
     const updatedFiles = { ...customAudioFiles, ...files };
     setCustomAudioFiles(updatedFiles);
     
-    // Сохраняем в localStorage
+    // Сохраняем в localStorage с проверкой размера
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFiles));
+      const dataToSave = JSON.stringify(updatedFiles);
+      const sizeInMB = (new Blob([dataToSave]).size / 1024 / 1024).toFixed(2);
+      
+      console.log(`💾 Сохраняю ${Object.keys(updatedFiles).length} файлов (${sizeInMB} МБ)`);
+      
+      localStorage.setItem(STORAGE_KEY, dataToSave);
+      
+      // Проверяем что действительно сохранилось
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        console.log('✅ Файлы успешно сохранены в localStorage');
+      } else {
+        console.error('❌ Файлы не сохранились в localStorage');
+      }
     } catch (error) {
-      console.error('Ошибка сохранения аудиофайлов в localStorage:', error);
+      console.error('❌ Ошибка сохранения аудиофайлов:', error);
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        alert('Ошибка: Недостаточно места в браузере для сохранения файлов. Попробуйте загрузить меньше файлов или очистить данные браузера.');
+      }
     }
   }, [customAudioFiles]);
 

@@ -126,10 +126,21 @@ export const AudioUploader = ({
     setTimeout(() => {
       setIsUploading(false);
       setUploadProgress(0);
-      onAudioFilesUpdate(updatedFiles);
       
-      const matchedCount = Object.keys(updatedFiles).length;
-      alert(`Успешно загружено ${matchedCount} из ${totalFiles} файлов из папки`);
+      try {
+        onAudioFilesUpdate(updatedFiles);
+        console.log('Сохранено файлов:', updatedFiles);
+        
+        // Проверяем что действительно сохранилось
+        const saved = localStorage.getItem('wb-audio-files');
+        console.log('В localStorage:', saved);
+        
+        const matchedCount = Object.keys(updatedFiles).length;
+        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n🔍 Проверьте консоль для отладочной информации`);
+      } catch (error) {
+        console.error('Ошибка при сохранении:', error);
+        alert('❌ Ошибка при сохранении файлов. Проверьте консоль.');
+      }
     }, 500);
   };
 
@@ -374,10 +385,42 @@ export const AudioUploader = ({
           {/* Информация о хранении */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">💾 Автоматическое сохранение</h4>
-            <p className="text-blue-700 text-sm">
+            <p className="text-blue-700 text-sm mb-3">
               Загруженные аудиофайлы автоматически сохраняются в браузере и будут работать 
               даже после закрытия и повторного открытия приложения.
             </p>
+            
+            {/* Диагностика */}
+            <div className="border-t border-blue-200 pt-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const storage1 = localStorage.getItem('wb-audio-files');
+                  const storage2 = localStorage.getItem('cellAudios');
+                  const info = `
+🔍 ДИАГНОСТИКА СОХРАНЕНИЯ:
+
+📁 Основные файлы: ${storage1 ? 'найдены' : 'НЕ НАЙДЕНЫ'}
+📱 Ячейки: ${storage2 ? 'найдены' : 'НЕ НАЙДЕНЫ'}
+
+💾 Размер localStorage: ${((JSON.stringify(localStorage).length * 2) / 1024 / 1024).toFixed(2)} МБ
+
+🌐 Браузер: ${navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Другой'}
+🔒 Приватный режим: ${!window.indexedDB ? 'ДА (может блокировать сохранение)' : 'НЕТ'}
+
+📊 Детали:
+- Основные: ${storage1 ? Object.keys(JSON.parse(storage1)).length + ' файлов' : '0 файлов'}  
+- Ячейки: ${storage2 ? Object.keys(JSON.parse(storage2)).length + ' ячеек' : '0 ячеек'}
+                  `.trim();
+                  alert(info);
+                }}
+                className="text-xs"
+              >
+                <Icon name="Search" className="w-3 h-3 mr-1" />
+                Диагностика
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
