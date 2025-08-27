@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AudioUploader } from '@/components/AudioUploader';
+
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
@@ -21,7 +21,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [showAudioUploader, setShowAudioUploader] = useState(false);
+
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
   const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
   
@@ -289,57 +289,6 @@ const Index = () => {
               <Icon name="Search" className="w-6 h-6 text-gray-600" />
               <Icon name="MessageCircle" className="w-6 h-6 text-gray-600" />
               <Icon name="User" className="w-6 h-6 text-gray-600" />
-              <Button 
-                onClick={() => setShowAudioUploader(true)}
-                variant="outline"
-                size="sm"
-              >
-                <Icon name="Volume2" className="w-4 h-4 mr-2" />
-                Озвучка
-              </Button>
-              <Button 
-                onClick={() => {
-                  enableAudio();
-                  
-                  // Показываем все доступные аудиофайлы
-                  const stored = localStorage.getItem('wb-audio-files');
-                  const files = stored ? JSON.parse(stored) : {};
-                  console.log('🔍 Все загруженные аудиофайлы:', files);
-                  console.log('🔍 Ключи файлов:', Object.keys(files));
-                  
-                  // Пробуем воспроизвести первый доступный файл
-                  const keys = Object.keys(files);
-                  if (keys.length > 0) {
-                    const firstKey = keys[0];
-                    console.log(`🎵 Пробуем воспроизвести: ${firstKey}`);
-                    playAudio(firstKey).catch(e => {
-                      console.error('Ошибка воспроизведения:', e);
-                    });
-                  } else {
-                    console.warn('❌ Нет загруженных аудиофайлов');
-                    alert('Нет загруженных аудиофайлов!\nЗагрузите файлы через кнопку "Озвучка"');
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="bg-blue-50"
-              >
-                <Icon name="Play" className="w-4 h-4 mr-2" />
-                Тест
-              </Button>
-              <Button 
-                onClick={() => {
-                  setIsProcessing(false);
-                  setCurrentStep('scan');
-                  console.log('🔄 Принудительный сброс состояния');
-                }}
-                variant="outline"
-                size="sm"
-                className="bg-red-50"
-              >
-                <Icon name="RotateCcw" className="w-4 h-4 mr-2" />
-                Сброс
-              </Button>
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <Icon name="Download" className="w-4 h-4 mr-2" />
                 Установить версию
@@ -431,16 +380,7 @@ const Index = () => {
         )}
       </div>
 
-      {/* Audio Uploader Modal */}
-      {showAudioUploader && (
-        <AudioUploader
-          onAudioFilesUpdate={updateAudioFiles}
-          onClose={() => setShowAudioUploader(false)}
-          removeAudioFile={removeAudioFile}
-          clearAllAudio={clearAllAudio}
-          existingFiles={customAudioFiles}
-        />
-      )}
+
     </div>
   );
 };
