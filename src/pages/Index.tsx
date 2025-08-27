@@ -14,8 +14,9 @@ const Index = () => {
   const [showAudioUploader, setShowAudioUploader] = useState(false);
   
   // Состояния для выдачи
-  const [cellNumber] = useState(1189);
-  const [currentStep, setCurrentStep] = useState('scan'); // scan, check, actions, payment
+  const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
+  const [currentStep, setCurrentStep] = useState('scan'); // scan, manager-scan, check, try-on, payment, rate
+  const [itemsCount] = useState(() => Math.floor(Math.random() * 5) + 1); // Случайное количество 1-5 товаров
   
   // Состояния для приемки
   const [receivingStep, setReceivingStep] = useState(1); // 1-4 этапы приемки
@@ -27,59 +28,64 @@ const Index = () => {
 
   const { playAudio, playCellAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
 
-  // Симуляция товаров
-  const mockProducts = [
-    {
-      id: '164667827',
-      article: '4569',
-      name: 'ТЕЛОДВИЖЕНИЯ / Лонгслив женский...',
-      size: 'Серый',
-      color: 'Серый',
-      barcode: '485748574758',
-    },
-    {
-      id: '164667828',
-      article: '4570',
-      name: 'ТЕЛОДВИЖЕНИЯ / Свитшот женский...',
-      size: 'Черный',
-      color: 'Черный',
-      barcode: '485748574759',
-    }
-  ];
+  // Симуляция товаров - генерируем случайное количество
+  const mockProducts = Array.from({ length: itemsCount }, (_, index) => ({
+    id: `16466782${index + 7}`,
+    article: `456${index + 9}`,
+    name: ['ТЕЛОДВИЖЕНИЯ / Свитшот женский...', 'ТЕЛОДВИЖЕНИЯ / Лонгслив женский...', 'ТЕЛОДВИЖЕНИЯ / Худи унисекс...'][Math.floor(Math.random() * 3)],
+    size: ['S', 'M', 'L', 'XL'][Math.floor(Math.random() * 4)],
+    color: ['Розовый', 'Черный', 'Белый', 'Серый'][Math.floor(Math.random() * 4)],
+    barcode: `48574857475${index + 8}`,
+  }));
 
   const handleQRScan = async () => {
     if (activeTab === 'delivery') {
       setIsScanning(true);
       
-      // Озвучка ячейки и скидки
+      // 1. Озвучка ячейки и скидки (клиент сканирует QR)
       await playAudio('cell-number');
       setTimeout(() => playCellAudio(String(cellNumber)), 500);
       setTimeout(() => playAudio('check-discount-wallet'), 2000);
       
       setTimeout(() => {
         setIsScanning(false);
-        setCurrentStep('check');
+        setCurrentStep('manager-scan'); // Ждем когда менеджер принесет товар
         
-        // Автоматическое сканирование товара менеджером
+        // Автоматический вызов сканирования менеджером (имитация)
         setTimeout(() => {
-          playAudio('check-product-camera');
-          setCurrentStep('actions');
-        }, 2000);
-      }, 3000);
+          handleManagerScan();
+        }, 3000); // Менеджер принесет товар через 3 секунды
+      }, 3500);
     }
   };
 
+  const handleManagerScan = async () => {
+    // 2. Менеджер приносит товар со склада и сканирует (автоматически)
+    setCurrentStep('check');
+    await playAudio('check-product-camera');
+    
+    // Переход к кнопкам действий
+    setTimeout(() => {
+      setCurrentStep('actions'); // Исправлено: должно быть 'actions' чтобы совпадало с JSX
+    }, 2000);
+  };
+
   const handleTryOn = () => {
-    console.log('Товар на примерку');
+    console.log('Товар отправлен на примерку');
+    setCurrentStep('payment'); // Ждем пока клиент примерит
   };
 
   const handleIssue = () => {
+    console.log('Товар выдан клиенту');
     setCurrentStep('payment');
-    // Симуляция оплаты
+    // Симуляция: когда оплата пройдет, играем озвучку оценки
     setTimeout(() => {
       playAudio('rate-pickup-point');
-      setCurrentStep('scan'); // Возврат к начальному состоянию
-    }, 2000);
+      setTimeout(() => {
+        // Сброс к начальному состоянию для следующего клиента
+        setCurrentStep('scan');
+      }, 3000);
+    }, 4000); // Ждем 4 секунды до "оплаты"
   };
 
   // Приемка
@@ -242,10 +248,19 @@ const Index = () => {
               </>
             )}
 
-            {currentStep === 'check' && (
+            {currentStep === 'manager-scan' && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
                 <div className="text-lg text-blue-600">Менеджер приносит товар со склада...</div>
+                <div className="animate-pulse">⏳ Ожидание сканирования товара</div>
+              </div>
+            )}
+
+            {currentStep === 'check' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
+                <div className="text-lg text-green-600">📱 Товар отсканирован менеджером</div>
+                <div className="text-lg text-blue-600">🔍 "Проверьте товар под камерой"</div>
               </div>
             )}
 
@@ -288,8 +303,10 @@ const Index = () => {
 
             {currentStep === 'payment' && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold">Оплата проходит...</h2>
-                <div className="text-lg text-green-600">Пожалуйста, подождите</div>
+                <h2 className="text-xl font-semibold">💳 Ожидание оплаты</h2>
+                <div className="text-lg text-blue-600">Клиент производит оплату...</div>
+                <div className="text-sm text-gray-500">После оплаты прозвучит просьба оценить пункт выдачи</div>
+                <div className="animate-pulse text-green-600">⏳ Ожидание...</div>
               </div>
             )}
           </div>
