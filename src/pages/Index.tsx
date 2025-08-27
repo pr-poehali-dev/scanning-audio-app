@@ -23,6 +23,7 @@ const Index = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [showAudioUploader, setShowAudioUploader] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
+  const [audioEnabled, setAudioEnabled] = useState(false); // Разрешение на воспроизведение аудио
   
   // Состояния для выдачи
   const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
@@ -40,17 +41,47 @@ const Index = () => {
   const { playAudio, playCellAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
 
   // Симуляция товаров - генерируем случайное количество
+  const productNames = [
+    'Nike / Кроссовки мужские Air Max',
+    'Adidas / Футболка женская Originals',
+    'Zara / Джинсы женские slim fit',
+    'H&M / Платье вечернее чёрное',
+    'Uniqlo / Рубашка мужская белая',
+    'Levi\'s / Куртка джинсовая классическая',
+    'Calvin Klein / Трусы мужские набор 3шт',
+    'Tommy Hilfiger / Поло мужское синее',
+    'Apple / Чехол для iPhone 14 Pro',
+    'Samsung / Наушники Galaxy Buds Pro',
+    'Xiaomi / Powerbank 20000mAh',
+    'Logitech / Мышь беспроводная MX Master',
+    'ТЕЛОДВИЖЕНИЯ / Худи унисекс черное',
+    'ТЕЛОДВИЖЕНИЯ / Свитшот женский розовый',
+    'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый'
+  ];
+
   const mockProducts: Product[] = Array.from({ length: itemsCount }, (_, index) => ({
     id: `16466782${index + 7}`,
     article: `456${index + 9}`,
-    name: ['ТЕЛОДВИЖЕНИЯ / Свитшот женский...', 'ТЕЛОДВИЖЕНИЯ / Лонгслив женский...', 'ТЕЛОДВИЖЕНИЯ / Худи унисекс...'][Math.floor(Math.random() * 3)],
-    size: ['S', 'M', 'L', 'XL'][Math.floor(Math.random() * 4)],
-    color: ['Розовый', 'Черный', 'Белый', 'Серый'][Math.floor(Math.random() * 4)],
+    name: productNames[Math.floor(Math.random() * productNames.length)],
+    size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', 'Универсальный'][Math.floor(Math.random() * 9)],
+    color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый'][Math.floor(Math.random() * 8)],
     barcode: `48574857475${index + 8}`,
   }));
 
+  // Включение аудио при первом взаимодействии
+  const enableAudio = () => {
+    if (!audioEnabled) {
+      setAudioEnabled(true);
+      // Тестовый тихий звук для разблокировки
+      const silent = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAAAMAC4AAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+      silent.play().catch(() => {});
+      console.log('🔊 Аудио разблокировано');
+    }
+  };
+
   // Обработчики для выдачи
   const handleQRScan = async () => {
+    enableAudio();
     if (activeTab === 'delivery' && !isProcessing) {
       setIsProcessing(true);
       setIsScanning(true);
@@ -87,6 +118,7 @@ const Index = () => {
   };
 
   const handleManagerScan = async () => {
+    enableAudio();
     try {
       console.log('🔊 Менеджер сканирует товар');
       setCurrentStep('check');
@@ -105,6 +137,10 @@ const Index = () => {
   };
 
   const handleTryOn = async () => {
+    if (isProcessing) return;
+    
+    enableAudio();
+    setIsProcessing(true);
     console.log('✅ Товар отправлен на примерку');
     setCurrentStep('payment');
     
@@ -128,6 +164,10 @@ const Index = () => {
   };
 
   const handleIssue = async () => {
+    if (isProcessing) return;
+    
+    enableAudio();
+    setIsProcessing(true);
     console.log('✅ Товар выдан клиенту');
     setCurrentStep('payment');
     
