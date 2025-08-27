@@ -37,7 +37,11 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [folderUploadProgress, setFolderUploadProgress] = useState(0);
+  const [isFolderUploading, setIsFolderUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const [matchingResults, setMatchingResults] = useState<{matched: number, total: number}>({matched: 0, total: 0});
 
   const handleFileUpload = (key: string, file: File) => {
     if (!file.type.startsWith('audio/')) {
@@ -69,6 +73,46 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
     fileInputRef.current?.click();
   };
 
+  const handleFolderUpload = () => {
+    folderInputRef.current?.click();
+  };
+
+  // Улучшенный алгоритм сопоставления файлов
+  const matchAudioFileByName = (fileName: string): AudioFile | null => {
+    const cleanFileName = fileName.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
+    
+    // Прямое совпадение по ключу
+    let match = audioFiles.find(item => item.key.toLowerCase() === cleanFileName);
+    if (match) return match;
+    
+    // Поиск по содержанию ключевых слов
+    const keywordMatches: {[key: string]: string[]} = {
+      'tab-delivery': ['выдача', 'delivery', 'выдать', 'доставка'],
+      'tab-receiving': ['приемка', 'receiving', 'прием', 'получение'],
+      'tab-return': ['возврат', 'return', 'вернуть'],
+      'scan-discount-check': ['скидка', 'discount', 'check', 'проверка'],
+      'check-product-camera': ['камера', 'camera', 'товар', 'product'],
+      'product-to-fitting': ['примерка', 'fitting', 'примерить'],
+      'product-issued-rate': ['выдан', 'issued', 'оценка', 'rate'],
+      'receiving-start': ['начало', 'start', 'приемка'],
+      'receiving-complete': ['завершена', 'complete', 'готово'],
+      'return-start': ['возврат', 'return', 'начало'],
+      'return-complete': ['возврат', 'return', 'завершен'],
+      'input-focus': ['ввод', 'input', 'фокус', 'focus'],
+      'button-click': ['кнопка', 'button', 'click', 'нажатие']
+    };
+    
+    // Поиск по ключевым словам
+    for (const [key, keywords] of Object.entries(keywordMatches)) {
+      if (keywords.some(keyword => cleanFileName.includes(keyword))) {
+        match = audioFiles.find(item => item.key === key);
+        if (match) return match;
+      }
+    }
+    
+    return null;
+  };
+
   const handleBulkFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -87,13 +131,8 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
         return;
       }
 
-      // Пытаемся определить ключ по имени файла
-      const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a)$/, '');
-      const matchingAudioFile = audioFiles.find(item => 
-        item.key.toLowerCase() === fileName ||
-        fileName.includes(item.key.toLowerCase()) ||
-        item.key.toLowerCase().includes(fileName)
-      );
+      // Используем улучшенный алгоритм сопоставления
+      const matchingAudioFile = matchAudioFileByName(file.name);
 
       if (matchingAudioFile) {
         const url = URL.createObjectURL(file);
@@ -113,7 +152,60 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
     setTimeout(() => {
       setIsUploading(false);
       setUploadProgress(0);
+      setMatchingResults({matched: Object.keys(updatedFiles).length, total: totalFiles});
       onAudioFilesUpdate(updatedFiles);
+    }, 500);
+  };
+
+  // Обработка загрузки папки
+  const handleFolderFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    setIsFolderUploading(true);
+    setFolderUploadProgress(0);
+
+    const audioFiles = Array.from(files).filter(file => file.type.startsWith('audio/'));
+    const totalFiles = audioFiles.length;
+    let processedFiles = 0;
+    const updatedFiles: { [key: string]: string } = {};
+
+    if (totalFiles === 0) {
+      alert('В выбранной папке не найдено аудиофайлов');
+      setIsFolderUploading(false);
+      return;
+    }
+
+    audioFiles.forEach((file) => {
+      const matchingAudioFile = matchAudioFileByName(file.name);
+
+      if (matchingAudioFile) {
+        const url = URL.createObjectURL(file);
+        updatedFiles[matchingAudioFile.key] = url;
+
+        setAudioFiles(prev => prev.map(item => 
+          item.key === matchingAudioFile.key
+            ? { ...item, file, url, uploaded: true }
+            : item
+        ));
+      }
+
+      processedFiles++;
+      setFolderUploadProgress((processedFiles / totalFiles) * 100);
+    });
+
+    setTimeout(() => {
+      setIsFolderUploading(false);
+      setFolderUploadProgress(0);
+      setMatchingResults({matched: Object.keys(updatedFiles).length, total: totalFiles});
+      onAudioFilesUpdate(updatedFiles);
+      
+      // Показываем результат сопоставления
+      if (Object.keys(updatedFiles).length > 0) {
+        alert(`Успешно загружено ${Object.keys(updatedFiles).length} из ${totalFiles} файлов из папки`);
+      } else {
+        alert('Не удалось сопоставить файлы из папки с известными командами озвучки');
+      }
     }, 500);
   };
 
@@ -148,29 +240,83 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
       
       <CardContent className="space-y-6">
         {/* Bulk Upload */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <Icon name="Upload" className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Загрузить аудиофайлы</h3>
-          <p className="text-gray-600 mb-4">
-            Выберите несколько аудиофайлов. Система автоматически определит их назначение по именам файлов.
-          </p>
-          <Button onClick={handleBulkUpload} disabled={isUploading}>
-            {isUploading ? 'Загрузка...' : 'Выбрать файлы'}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="audio/*"
-            onChange={handleBulkFiles}
-            className="hidden"
-          />
-          {isUploading && (
-            <div className="mt-4">
-              <Progress value={uploadProgress} />
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Файлы */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="FileAudio" className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium mb-2">Выбрать файлы</h3>
+            <p className="text-gray-600 mb-4">
+              Загрузите несколько аудиофайлов
+            </p>
+            <Button onClick={handleBulkUpload} disabled={isUploading || isFolderUploading}>
+              {isUploading ? 'Загружаю файлы...' : 'Выбрать файлы'}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="audio/*"
+              onChange={handleBulkFiles}
+              className="hidden"
+            />
+            {isUploading && (
+              <div className="mt-4">
+                <Progress value={uploadProgress} />
+                <div className="text-sm text-gray-500 mt-2">Загружаю файлы...</div>
+              </div>
+            )}
+          </div>
+
+          {/* Папка */}
+          <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-purple-50">
+            <Icon name="FolderOpen" className="mx-auto h-12 w-12 text-purple-400 mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-purple-800">Загрузить папку</h3>
+            <p className="text-purple-600 mb-4">
+              Выберите папку с аудиофайлами для автоматического распознавания
+            </p>
+            <Button 
+              onClick={handleFolderUpload} 
+              disabled={isUploading || isFolderUploading}
+              className="bg-purple-500 hover:bg-purple-600"
+            >
+              {isFolderUploading ? 'Загружаю папку...' : 'Выбрать папку'}
+            </Button>
+            <input
+              ref={folderInputRef}
+              type="file"
+              webkitdirectory=""
+              multiple
+              accept="audio/*"
+              onChange={handleFolderFiles}
+              className="hidden"
+            />
+            {isFolderUploading && (
+              <div className="mt-4">
+                <Progress value={folderUploadProgress} className="bg-purple-100" />
+                <div className="text-sm text-purple-600 mt-2">Обрабатываю папку...</div>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Результаты сопоставления */}
+        {matchingResults.total > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="Info" className="text-blue-600 w-5 h-5" />
+              <h4 className="font-medium text-blue-900">Результат загрузки</h4>
+            </div>
+            <p className="text-blue-700 text-sm">
+              Успешно сопоставлено {matchingResults.matched} из {matchingResults.total} файлов с командами озвучки.
+            </p>
+            {matchingResults.matched < matchingResults.total && (
+              <p className="text-orange-600 text-sm mt-1">
+                {matchingResults.total - matchingResults.matched} файлов не удалось сопоставить. 
+                Проверьте имена файлов или загрузите их вручную.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Individual Files */}
         <div className="space-y-3">
@@ -234,11 +380,24 @@ export const AudioSettings = ({ onAudioFilesUpdate }: AudioSettingsProps) => {
           </div>
         </div>
 
+        {/* Правила именования файлов */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-medium text-yellow-900 mb-3">Правила именования файлов для автоматического распознавания</h4>
+          <div className="text-yellow-800 text-sm space-y-2">
+            <div><strong>Навигация:</strong> delivery, receiving, return, выдача, приемка, возврат</div>
+            <div><strong>Действия:</strong> scan, camera, fitting, issued, start, complete</div>
+            <div><strong>Ключевые слова:</strong> скидка, товар, примерка, кнопка, ввод, фокус</div>
+            <div className="mt-2 text-xs">
+              <em>Примеры: "выдача.mp3", "scan-discount.wav", "товар-на-примерку.mp3"</em>
+            </div>
+          </div>
+        </div>
+
         {/* Audio Format Info */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">Поддерживаемые форматы</h4>
           <p className="text-blue-700 text-sm">
-            MP3, WAV, OGG, M4A. Рекомендуемое качество: 44.1kHz, битрейт 128-320 kbps.
+            MP3, WAV, OGG, M4A, AAC. Рекомендуемое качество: 44.1kHz, битрейт 128-320 kbps.
           </p>
         </div>
       </CardContent>
