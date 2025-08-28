@@ -1,539 +1,146 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import { ReturnTab } from '@/components/ReturnTab';
 import { AudioSettings } from '@/components/AudioSettings';
 import { AudioManager } from '@/components/AudioManager';
-import { useAudio } from '@/hooks/useAudio';
-import Icon from '@/components/ui/icon';
-
-interface Product {
-  id: string;
-  article: string;
-  name: string;
-  size: string;
-  color: string;
-  barcode: string;
-  currentPrice: number;
-  originalPrice: number;
-}
-
-interface AudioFiles {
-  delivery: File[];
-  receiving: File[];
-  return: File[];
-  cells: File[];
-}
+import { AppHeader } from '@/components/AppHeader';
+import { TabNavigation } from '@/components/TabNavigation';
+import { useWarehouseApp } from '@/hooks/useWarehouseApp';
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState('delivery');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [showAudioSettings, setShowAudioSettings] = useState(false);
-  const [showAudioManager, setShowAudioManager] = useState(false);
-  const [audioFiles, setAudioFiles] = useState<AudioFiles>({
-    delivery: [],
-    receiving: [],
-    return: [],
-    cells: []
-  });
+  const {
+    // Состояния
+    activeTab,
+    phoneNumber,
+    isScanning,
+    showAudioSettings,
+    showAudioManager,
+    audioFiles,
+    isProcessing,
+    audioEnabled,
+    cellNumber,
+    currentStep,
+    itemsCount,
+    customerPhone,
+    receivingStep,
+    receivingBarcode,
+    returnStep,
+    returnReason,
+    mockProducts,
+    customAudioFiles,
+    
+    // Сеттеры
+    setActiveTab,
+    setPhoneNumber,
+    setShowAudioSettings,
+    setShowAudioManager,
+    setAudioFiles,
+    setAudioEnabled,
+    setReceivingBarcode,
+    
+    // Обработчики
+    handleQRScan,
+    handleConfirmCode,
+    handleReceivingStart,
+    handleReceivingNext,
+    handleReceivingReset,
+    handleReturnStart,
+    handleReturnComplete,
+    handleReturnReasonSelect,
+    handleReturnStepChange,
+    handleAudioManagerUpdate,
+    handleTestAudio,
+    clearAllAudio,
+    removeAudioFile
+  } = useWarehouseApp();
 
-  const [isProcessing, setIsProcessing] = useState(false); // Предотвращаем множественные вызовы
-  // Сохраняем настройку озвучки в localStorage
-  const [audioEnabled, setAudioEnabled] = useState(() => {
-    const saved = localStorage.getItem('audioEnabled');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
-
-  // Сохраняем изменения в localStorage
-  useEffect(() => {
-    localStorage.setItem('audioEnabled', JSON.stringify(audioEnabled));
-  }, [audioEnabled]);
-  
-  // Принудительный сброс isProcessing через 3 секунды (максимально быстро)
-  useEffect(() => {
-    if (isProcessing) {
-      const timeoutId = setTimeout(() => {
-        console.warn('⚠️ Мгновенный сброс isProcessing');
-        setIsProcessing(false);
-      }, 3000);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isProcessing]);
-  
-  // Состояния для выдачи
-  const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1); // Случайная ячейка 1-482
-  const [currentStep, setCurrentStep] = useState('scan'); // scan, manager-scan, check, try-on, payment, rate
-  const [itemsCount] = useState(() => Math.floor(Math.random() * 8) + 1); // Случайное количество 1-8 товаров
-  const [customerPhone] = useState(() => {
-    // Генерируем случайный номер телефона
-    const codes = ['9', '8', '7', '6', '5'];
-    const code = codes[Math.floor(Math.random() * codes.length)];
-    const digits = Math.floor(Math.random() * 9000) + 1000;
-    return `+7 (...) ... ${code}${digits.toString().slice(0, 1)} ${digits.toString().slice(1, 3)}`;
-  });
-  
-  // Состояния для приемки
-  const [receivingStep, setReceivingStep] = useState(1); // 1-4 этапы приемки
-  const [receivingBarcode, setReceivingBarcode] = useState('');
-  
-  // Состояния для возврата
-  const [returnStep, setReturnStep] = useState(1); // 1-3 этапы возврата
-  const [returnReason, setReturnReason] = useState('');
-
-  const { playAudio, playCellAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
-
-  // Симуляция товаров - генерируем случайное количество
-  const productNames = [
-    'Nike / Кроссовки мужские Air Max',
-    'Adidas / Футболка женская Originals',
-    'Zara / Джинсы женские slim fit',
-    'H&M / Платье вечернее чёрное',
-    'Uniqlo / Рубашка мужская белая',
-    'Levi\'s / Куртка джинсовая классическая',
-    'Calvin Klein / Трусы мужские набор 3шт',
-    'Tommy Hilfiger / Поло мужское синее',
-    'Apple / Чехол для iPhone 14 Pro',
-    'Samsung / Наушники Galaxy Buds Pro',
-    'Xiaomi / Powerbank 20000mAh',
-    'Logitech / Мышь беспроводная MX Master',
-    'ТЕЛОДВИЖЕНИЯ / Худи унисекс черное',
-    'ТЕЛОДВИЖЕНИЯ / Свитшот женский розовый',
-    'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый'
+  // Конфигурация вкладок
+  const tabs = [
+    { id: 'delivery', label: 'Выдача', count: itemsCount, icon: 'Package' },
+    { id: 'receiving', label: 'Приёмка', count: 47, icon: 'ArrowDown' },
+    { id: 'return', label: 'Возврат', count: 13, icon: 'RotateCcw' }
   ];
-
-  // Функция для генерации реальных цен
-  const generatePrices = () => {
-    const originalPrice = Math.floor(Math.random() * 8000) + 500; // От 500 до 8500
-    const discountPercent = Math.floor(Math.random() * 70) + 10; // Скидка от 10% до 80%
-    const currentPrice = Math.floor(originalPrice * (100 - discountPercent) / 100);
-    return { currentPrice, originalPrice };
-  };
-
-  const mockProducts: Product[] = Array.from({ length: itemsCount }, (_, index) => {
-    const { currentPrice, originalPrice } = generatePrices();
-    return {
-      id: `16466782${Math.floor(Math.random() * 9000) + 1000}${index}`,
-      article: `${Math.floor(Math.random() * 9000) + 1000}`,
-      name: productNames[Math.floor(Math.random() * productNames.length)],
-      size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', '46', '48', 'Универсальный'][Math.floor(Math.random() * 11)],
-      color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый', 'Розовый', 'Коричневый'][Math.floor(Math.random() * 10)],
-      barcode: `${Math.floor(Math.random() * 900000000000) + 100000000000}`,
-      currentPrice,
-      originalPrice
-    };
-  });
-
-  // Включение аудио при первом взаимодействии
-  const enableAudio = () => {
-    if (!audioEnabled) {
-      setAudioEnabled(true);
-      // Тестовый тихий звук для разблокировки
-      const silent = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAAAMAC4AAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-      silent.play().catch(() => {});
-      console.log('🔊 Аудио разблокировано');
-    }
-  };
-
-  // Обработчики для выдачи
-  const handleQRScan = async () => {
-    enableAudio();
-    if (activeTab === 'delivery' && !isProcessing) {
-      setIsProcessing(true);
-      setIsScanning(true);
-      
-      try {
-        // 1. Озвучка ячейки и скидки (клиент сканирует QR)
-        console.log('🔊 Начинаем озвучку для QR сканирования');
-        
-        // Озвучиваем только номер ячейки без дополнительных звуков
-        if (audioEnabled) {
-          try {
-            await playCellAudio(String(cellNumber));
-          } catch (audioError) {
-            console.warn('Ошибка озвучки (продолжаем):', audioError);
-          }
-        }
-        
-        // Мгновенное завершение сканирования
-        await new Promise(resolve => setTimeout(resolve, 300));
-        setIsScanning(false);
-        setCurrentStep('manager-scan');
-        
-        // Озвучка при переходе к сканированию менеджером
-        if (audioEnabled) {
-          try {
-            await playAudio('manager-scan');
-          } catch (audioError) {
-            console.warn('Ошибка озвучки менеджера (продолжаем):', audioError);
-          }
-        }
-        
-        // Моментальный переход к менеджеру
-        setTimeout(() => {
-          handleManagerScan();
-        }, 400);
-        
-      } catch (error) {
-        console.error('Ошибка в процессе QR сканирования:', error);
-        setIsScanning(false);
-        setIsProcessing(false);
-      }
-    }
-  };
-
-  const handleManagerScan = async () => {
-    enableAudio();
-    try {
-      console.log('🔊 Менеджер сканирует товар');
-      setCurrentStep('check');
-      
-      // Без звуковых сигналов
-      
-      // Моментальный переход к действиям
-      setTimeout(() => {
-        setCurrentStep('actions');
-      }, 400);
-      
-    } catch (error) {
-      console.error('Ошибка при сканировании менеджером:', error);
-      // В любом случае переходим к actions
-      setTimeout(() => {
-        setCurrentStep('actions');
-      }, 1000);
-    }
-  };
-
-  const handleTryOn = async () => {
-    if (isProcessing) return;
-    
-    enableAudio();
-    setIsProcessing(true);
-    console.log('✅ Товар отправлен на примерку');
-    setCurrentStep('payment');
-    
-    try {
-      // Быстрая примерка (0.5 секунды)
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Без звуковых сигналов оценки
-      
-      // Моментальное завершение
-      setTimeout(() => {
-        setCurrentStep('scan');
-        setPhoneNumber('');
-        setIsProcessing(false);
-      }, 500);
-      
-    } catch (error) {
-      console.error('Ошибка в процессе примерки:', error);
-      setIsProcessing(false);
-    }
-  };
-
-  const handleIssue = async () => {
-    if (isProcessing) return;
-    
-    enableAudio();
-    setIsProcessing(true);
-    console.log('✅ Товар выдан клиенту');
-    setCurrentStep('payment');
-    
-    try {
-      // Мгновенная оплата (0.3 секунды)
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Без звуковых сигналов оценки
-      
-      // Озвучка завершения выдачи
-      if (audioEnabled) {
-        try {
-          await playAudio('delivery-complete');
-        } catch (audioError) {
-          console.warn('Ошибка озвучки завершения (продолжаем):', audioError);
-        }
-      }
-      
-      // Моментальное завершение
-      setTimeout(() => {
-        setCurrentStep('scan');
-        setPhoneNumber(''); // Очищаем номер телефона
-        setIsProcessing(false); // Разрешаем новый цикл
-      }, 400);
-      
-    } catch (error) {
-      console.error('Ошибка в процессе выдачи:', error);
-      setIsProcessing(false);
-    }
-  };
-
-  const handleConfirmCode = () => {
-    if (phoneNumber.length === 4) {
-      handleQRScan();
-    }
-  };
-
-  // Обработчики для приемки
-  const handleReceivingStart = async () => {
-    enableAudio();
-    setReceivingStep(2);
-    
-    // Озвучка начала приемки
-    if (audioEnabled) {
-      try {
-        await playAudio('receiving-start');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки начала приемки:', audioError);
-      }
-    }
-  };
-
-  const handleReceivingNext = async () => {
-    if (receivingStep < 4) {
-      const nextStep = receivingStep + 1;
-      setReceivingStep(nextStep);
-      
-      // Озвучка сканирования при приемке
-      if (audioEnabled) {
-        try {
-          await playAudio('receiving-scan');
-        } catch (audioError) {
-          console.warn('Ошибка озвучки приемки:', audioError);
-        }
-      }
-    }
-  };
-
-  const handleReceivingReset = () => {
-    setReceivingStep(1);
-  };
-
-  // Обработчики для возврата
-  const handleReturnStart = () => {
-    setReturnStep(2);
-  };
-
-  const handleReturnComplete = async () => {
-    setReturnStep(1);
-    
-    // Озвучка завершения возврата
-    if (audioEnabled) {
-      try {
-        await playAudio('return-complete');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки завершения возврата:', audioError);
-      }
-    }
-  };
-
-  const handleReturnReasonSelect = (reason: string) => {
-    setReturnReason(reason);
-  };
-
-  const handleReturnStepChange = (step: number) => {
-    setReturnStep(step);
-  };
-
-  // Функция обновления аудиофайлов (старая система)
-  const handleAudioFilesUpdate = (newAudioFiles: AudioFiles) => {
-    setAudioFiles(newAudioFiles);
-    console.log('Аудиофайлы обновлены:', newAudioFiles);
-  };
-
-  // Обновление аудио через AudioManager
-  const handleAudioManagerUpdate = (newFiles: { [key: string]: string }) => {
-    updateAudioFiles(newFiles);
-    console.log('Озвучка обновлена через AudioManager:', Object.keys(newFiles));
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                <img src="https://cdn.poehali.dev/files/042b80d5-4fd3-473f-b81d-c42ef32edea0.png" alt="WB" className="w-8 h-8" />
-              </div>
-              <div className="text-sm text-gray-600">
-                <div>ID 50006760</div>
-                <div>V1.0.67</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowAudioManager(true)}
-                className="text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-lg relative"
-              >
-                <Icon name="Volume2" className="w-5 h-5 mr-2" />
-                Загрузить озвучку
-                {Object.keys(customAudioFiles).length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    {Object.keys(customAudioFiles).length}
-                  </span>
-                )}
-              </Button>
-              <Button
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowAudioSettings(true)}
-                className="text-gray-600 hover:text-blue-600"
-              >
-                <Icon name="Settings" className="w-5 h-5 mr-2" />
-                Настройки
-              </Button>
-              {Object.keys(customAudioFiles).length > 0 && (
-                <>
-                  <Button
-                    variant="ghost" 
-                    size="sm"
-                    onClick={async () => {
-                      enableAudio();
-                      try {
-                        await playAudio('delivery-complete');
-                      } catch (error) {
-                        console.error('Ошибка тестирования аудио:', error);
-                      }
-                    }}
-                    className="text-green-600 hover:text-green-700"
-                  >
-                    <Icon name="Play" className="w-5 h-5 mr-2" />
-                    Тест
-                  </Button>
-                  <Button
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Удалить все загруженные аудиофайлы?')) {
-                        clearAllAudio();
-                      }
-                    }}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Icon name="Trash2" className="w-5 h-5 mr-2" />
-                    Очистить
-                  </Button>
-                </>
-              )}
-              <Icon name="Menu" className="w-6 h-6 text-gray-600" />
-              <Icon name="Package" className="w-6 h-6 text-gray-600" />
-              <Icon name="Search" className="w-6 h-6 text-gray-600" />
-              <Icon name="MessageCircle" className="w-6 h-6 text-gray-600" />
-              <Icon name="User" className="w-6 h-6 text-gray-600" />
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Icon name="Download" className="w-4 h-4 mr-2" />
-                Установить версию
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        customAudioFiles={customAudioFiles}
+        onShowAudioManager={() => setShowAudioManager(true)}
+        onShowAudioSettings={() => setShowAudioSettings(true)}
+        onTestAudio={handleTestAudio}
+        onClearAudio={clearAllAudio}
+      />
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex space-x-8">
-            {[
-              { id: 'delivery', label: 'Выдача', count: null, icon: 'Package' },
-              { id: 'receiving', label: 'Приёмка', count: null, icon: 'Inbox' },
-              { id: 'return', label: 'Возврат', count: 13, icon: 'RotateCcw' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Icon name={tab.icon} className="w-5 h-5" />
-                <span>{tab.label}</span>
-                {tab.count && (
-                  <Badge className="bg-gray-200 text-gray-800 text-xs">
-                    {tab.count}
-                  </Badge>
-                )}
-              </button>
-            ))}
-          </div>
+      {/* Tab Navigation */}
+      <TabNavigation
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {/* Content */}
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Выдача */}
+          {activeTab === 'delivery' && (
+            <DeliveryTab
+              cellNumber={cellNumber}
+              currentStep={currentStep}
+              itemsCount={itemsCount}
+              customerPhone={customerPhone}
+              phoneNumber={phoneNumber}
+              isScanning={isScanning}
+              isProcessing={isProcessing}
+              products={mockProducts}
+              onPhoneNumberChange={setPhoneNumber}
+              onConfirmCode={handleConfirmCode}
+              onQRScan={handleQRScan}
+            />
+          )}
+
+          {/* Приёмка */}
+          {activeTab === 'receiving' && (
+            <ReceivingTab
+              receivingStep={receivingStep}
+              receivingBarcode={receivingBarcode}
+              onReceivingBarcodeChange={setReceivingBarcode}
+              onReceivingStart={handleReceivingStart}
+              onReceivingNext={handleReceivingNext}
+              onReceivingReset={handleReceivingReset}
+            />
+          )}
+
+          {/* Возврат */}
+          {activeTab === 'return' && (
+            <ReturnTab
+              returnStep={returnStep}
+              returnReason={returnReason}
+              onReturnStart={handleReturnStart}
+              onReturnComplete={handleReturnComplete}
+              onReturnReasonSelect={handleReturnReasonSelect}
+              onReturnStepChange={handleReturnStepChange}
+            />
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* User Avatar */}
-        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-8">
-          <Icon name="User" className="w-6 h-6 text-purple-600" />
-        </div>
-
-        {/* Выдача */}
-        {activeTab === 'delivery' && (
-          <DeliveryTab
-            currentStep={currentStep}
-            cellNumber={cellNumber}
-            itemsCount={itemsCount}
-            mockProducts={mockProducts}
-            isScanning={isScanning}
-            isProcessing={isProcessing}
-            phoneNumber={phoneNumber}
-            customerPhone={customerPhone}
-            onPhoneNumberChange={setPhoneNumber}
-            onQRScan={handleQRScan}
-            onManagerScan={handleManagerScan}
-            onTryOn={handleTryOn}
-            onIssue={handleIssue}
-            onConfirmCode={handleConfirmCode}
-          />
-        )}
-
-        {/* Приёмка */}
-        {activeTab === 'receiving' && (
-          <ReceivingTab
-            receivingStep={receivingStep}
-            receivingBarcode={receivingBarcode}
-            onReceivingBarcodeChange={setReceivingBarcode}
-            onReceivingStart={handleReceivingStart}
-            onReceivingNext={handleReceivingNext}
-            onReceivingReset={handleReceivingReset}
-          />
-        )}
-
-        {/* Возврат */}
-        {activeTab === 'return' && (
-          <ReturnTab
-            returnStep={returnStep}
-            returnReason={returnReason}
-            onReturnStart={handleReturnStart}
-            onReturnComplete={handleReturnComplete}
-            onReturnReasonSelect={handleReturnReasonSelect}
-            onReturnStepChange={handleReturnStepChange}
-          />
-        )}
-      </div>
-
-      {/* Модальное окно загрузки озвучки */}
-      {showAudioManager && (
-        <AudioManager
-          onClose={() => setShowAudioManager(false)}
-          onAudioFilesUpdate={handleAudioManagerUpdate}
+      {/* Модальные окна */}
+      {showAudioSettings && (
+        <AudioSettings 
+          onClose={() => setShowAudioSettings(false)}
+          onAudioFilesUpdate={(files) => {
+            setAudioFiles(files);
+          }}
+          existingFiles={audioFiles}
         />
       )}
 
-      {/* Модальное окно настроек озвучки (старое) */}
-      {showAudioSettings && (
-        <AudioSettings
-          onClose={() => setShowAudioSettings(false)}
-          onAudioFilesUpdate={handleAudioFilesUpdate}
-          existingFiles={audioFiles}
+      {showAudioManager && (
+        <AudioManager 
+          onClose={() => setShowAudioManager(false)}
+          onAudioUpdate={handleAudioManagerUpdate}
+          existingFiles={customAudioFiles}
         />
       )}
     </div>
