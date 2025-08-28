@@ -1,12 +1,15 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAudio } from '@/hooks/useAudio';
+import QRScanner from '@/components/QRScanner';
 import Icon from '@/components/ui/icon';
 
 const WBPVZApp = () => {
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [scannedData, setScannedData] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
 
@@ -16,13 +19,32 @@ const WBPVZApp = () => {
     { id: 'return', label: 'Возврат', icon: 'RotateCcw', badge: null }
   ];
 
-  const handleQRScan = useCallback(async () => {
+  const handleQRScan = useCallback(() => {
+    setShowQRScanner(true);
+  }, []);
+
+  const handleQRScanResult = useCallback(async (data: string) => {
+    console.log('QR код отсканирован:', data);
+    setScannedData(data);
     setIsScanning(true);
-    await playAudio('scan-success');
     
-    setTimeout(async () => {
+    // Определяем тип озвучки по QR-коду
+    let audioKey = 'scan-success'; // по умолчанию
+    
+    if (data.includes('check_product') || data.includes('проверь')) {
+      audioKey = 'check-product';
+    } else if (data.includes('discount') || data.includes('скидка')) {
+      audioKey = 'discount';
+    } else if (data.includes('rate') || data.includes('оцените')) {
+      audioKey = 'rate-service';
+    } else if (data.includes('client') || data.includes('клиент')) {
+      audioKey = 'client-found';
+    }
+    
+    await playAudio(audioKey);
+    
+    setTimeout(() => {
       setIsScanning(false);
-      await playAudio('client-found');
     }, 2000);
   }, [playAudio]);
 
@@ -155,11 +177,19 @@ const WBPVZApp = () => {
                   <div className="absolute inset-0 bg-purple-100 bg-opacity-80 rounded-xl flex items-center justify-center">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-purple-600 text-sm font-medium">Сканирование...</span>
+                      <span className="text-purple-600 text-sm font-medium">Обработка...</span>
                     </div>
                   </div>
                 )}
               </div>
+              
+              {/* Результат сканирования */}
+              {scannedData && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h4 className="font-medium text-green-800 mb-2">Отсканировано:</h4>
+                  <p className="text-sm text-green-700 break-all">{scannedData}</p>
+                </div>
+              )}
             </div>
 
             {/* Divider */}
@@ -309,12 +339,22 @@ const WBPVZApp = () => {
                   <li>client-found.mp3 - клиент найден</li>
                   <li>phone-input.mp3 - ввод телефона</li>
                   <li>delivery-complete.mp3 - выдача завершена</li>
+                  <li>check-product.mp3 - проверьте товар под камерой</li>
+                  <li>discount.mp3 - товары со скидкой</li>
+                  <li>rate-service.mp3 - оцените наш ПВЗ</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
       )}
+      
+      {/* QR Scanner Modal */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onScan={handleQRScanResult}
+        onClose={() => setShowQRScanner(false)}
+      />
     </div>
   );
 };
