@@ -16,40 +16,50 @@ const WBPVZApp = () => {
     { id: 'return', label: 'Возврат', icon: 'RotateCcw', badge: null }
   ];
 
-  const handleQRScan = useCallback(() => {
+  const handleQRScan = useCallback(async () => {
     setIsScanning(true);
+    await playAudio('scan-success');
     
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsScanning(false);
+      await playAudio('client-found');
     }, 2000);
-  }, []);
+  }, [playAudio]);
 
-  const handlePhoneSubmit = useCallback(() => {
+  const handlePhoneSubmit = useCallback(async () => {
     if (phoneNumber.length === 4) {
+      await playAudio('phone-input');
       setPhoneNumber('');
     }
-  }, [phoneNumber]);
+  }, [phoneNumber, playAudio]);
 
   const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
+    console.log('Выбрано файлов:', files?.length);
+    
     if (!files) return;
 
     const audioFiles: { [key: string]: string } = {};
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      console.log('Обрабатываю файл:', file.name, 'Тип:', file.type);
+      
       if (file.type.startsWith('audio/')) {
         const fileName = file.name.replace(/\.[^/.]+$/, ''); // убираем расширение
         const audioUrl = URL.createObjectURL(file);
         audioFiles[fileName] = audioUrl;
+        console.log('Добавлен аудиофайл:', fileName);
       }
     }
 
+    console.log('Итого аудиофайлов:', Object.keys(audioFiles));
+
     if (Object.keys(audioFiles).length > 0) {
       updateAudioFiles(audioFiles);
-      alert(`Загружено ${Object.keys(audioFiles).length} аудиофайлов`);
+      alert(`Загружено ${Object.keys(audioFiles).length} аудиофайлов: ${Object.keys(audioFiles).join(', ')}`);
     } else {
-      alert('Аудиофайлы не найдены');
+      alert('Аудиофайлы не найдены. Проверьте что выбрали файлы с расширением .mp3, .wav, .ogg или другими аудио форматами');
     }
 
     // Очищаем input
@@ -216,7 +226,15 @@ const WBPVZApp = () => {
       <div className="bg-white border-t px-4 py-3">
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>Версия 2.1.0</span>
-          <span>Загружено аудио: {Object.keys(customAudioFiles).length}</span>
+          <div className="flex items-center gap-4">
+            <span>Загружено аудио: {Object.keys(customAudioFiles).length}</span>
+            <button 
+              onClick={() => playAudio('test')}
+              className="text-purple-600 hover:text-purple-700 text-xs"
+            >
+              🔊 Тест звука
+            </button>
+          </div>
         </div>
       </div>
 
@@ -241,13 +259,19 @@ const WBPVZApp = () => {
                   Названия файлов должны соответствовать событиям.
                 </p>
                 
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
-                >
-                  <Icon name="FolderOpen" size={18} />
-                  Выбрать папку с аудио
-                </button>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Icon name="FolderOpen" size={18} />
+                    Выбрать файлы аудио
+                  </button>
+                  
+                  <p className="text-xs text-gray-500">
+                    Выберите несколько аудиофайлов (Ctrl/Cmd + клик для множественного выбора)
+                  </p>
+                </div>
                 
                 <input
                   ref={fileInputRef}
@@ -256,8 +280,6 @@ const WBPVZApp = () => {
                   accept="audio/*"
                   onChange={handleFolderUpload}
                   className="hidden"
-                  webkitdirectory=""
-                  directory=""
                 />
               </div>
               
