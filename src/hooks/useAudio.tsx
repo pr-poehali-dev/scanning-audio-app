@@ -22,8 +22,27 @@ export const useAudio = () => {
   const playAudio = useCallback(async (audioKey: string) => {
     try {
       console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
+      console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
       
-      // Простая тестовая озвучка - генерируем короткий бип
+      // Ищем пользовательский файл по ключу
+      const audioUrl = customAudioFiles[audioKey];
+      
+      if (audioUrl) {
+        console.log(`🎵 Найден пользовательский файл для "${audioKey}"`);
+        try {
+          const audio = new Audio(audioUrl);
+          audio.volume = 0.8;
+          await audio.play();
+          console.log(`✅ Успешно воспроизведен пользовательский звук: ${audioKey}`);
+          return; // Если пользовательский файл есть, не играем тестовый звук
+        } catch (audioError) {
+          console.error(`❌ Ошибка воспроизведения пользовательского файла "${audioKey}":`, audioError);
+        }
+      } else {
+        console.log(`⚠️ Пользовательский файл не найден для "${audioKey}"`);
+      }
+      
+      // Если пользовательского файла нет или он не воспроизвелся - играем тестовый звук
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -62,15 +81,7 @@ export const useAudio = () => {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.15);
       
-      console.log(`🎵 Тестовый звук для ${audioKey}`);
-      
-      // Если есть пользовательский файл, играем его
-      const audioUrl = customAudioFiles[audioKey];
-      if (audioUrl) {
-        const audio = new Audio(audioUrl);
-        await audio.play();
-        console.log(`🎵 Пользовательский звук: ${audioKey}`);
-      }
+      console.log(`🎵 Воспроизведен тестовый звук для "${audioKey}"`);
       
     } catch (error) {
       console.error(`❌ Ошибка воспроизведения "${audioKey}":`, error);
@@ -80,8 +91,28 @@ export const useAudio = () => {
   const playCellAudio = useCallback(async (cellNumber: string) => {
     try {
       console.log(`🔊 Озвучка ячейки: ${cellNumber}`);
+      console.log(`📁 Доступные файлы ячеек:`, Object.keys(customAudioFiles).filter(key => key.startsWith('cell-')));
       
-      // Простая озвучка ячейки - генерируем звук с числом
+      // Создаем ключ для поиска аудио файла ячейки
+      const cellKey = `cell-${cellNumber}`;
+      const audioUrl = customAudioFiles[cellKey];
+      
+      if (audioUrl) {
+        console.log(`🎵 Найден пользовательский файл для ячейки ${cellNumber}`);
+        try {
+          const audio = new Audio(audioUrl);
+          audio.volume = 0.8;
+          await audio.play();
+          console.log(`✅ Успешно воспроизведена пользовательская озвучка ячейки ${cellNumber}`);
+          return; // Если пользовательский файл есть, не играем тестовый звук
+        } catch (audioError) {
+          console.error(`❌ Ошибка воспроизведения пользовательского файла ячейки ${cellNumber}:`, audioError);
+        }
+      } else {
+        console.log(`⚠️ Пользовательский файл не найден для ячейки ${cellNumber} (ключ: ${cellKey})`);
+      }
+      
+      // Если пользовательского файла нет - играем тестовый звук
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -100,21 +131,12 @@ export const useAudio = () => {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.2);
       
-      console.log(`🎵 Звук ячейки ${cellNumber}`);
+      console.log(`🎵 Воспроизведен тестовый звук ячейки ${cellNumber}`);
       
-      // Проверяем пользовательский файл
-      const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
-      const audioUrl = cellAudios[cellNumber];
-      
-      if (audioUrl) {
-        const audio = new Audio(audioUrl);
-        await audio.play();
-        console.log(`🎵 Пользовательская озвучка ячейки ${cellNumber}`);
-      }
     } catch (error) {
       console.error(`❌ Ошибка озвучки ячейки ${cellNumber}:`, error);
     }
-  }, []);
+  }, [customAudioFiles]);
 
   const updateAudioFiles = useCallback((files: {[key: string]: string}) => {
     const updatedFiles = { ...customAudioFiles, ...files };

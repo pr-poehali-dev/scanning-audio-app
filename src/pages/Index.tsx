@@ -164,6 +164,15 @@ const Index = () => {
         setIsScanning(false);
         setCurrentStep('manager-scan');
         
+        // Озвучка при переходе к сканированию менеджером
+        if (audioEnabled) {
+          try {
+            await playAudio('manager-scan');
+          } catch (audioError) {
+            console.warn('Ошибка озвучки менеджера (продолжаем):', audioError);
+          }
+        }
+        
         // Моментальный переход к менеджеру
         setTimeout(() => {
           handleManagerScan();
@@ -240,6 +249,15 @@ const Index = () => {
       
       // Без звуковых сигналов оценки
       
+      // Озвучка завершения выдачи
+      if (audioEnabled) {
+        try {
+          await playAudio('delivery-complete');
+        } catch (audioError) {
+          console.warn('Ошибка озвучки завершения (продолжаем):', audioError);
+        }
+      }
+      
       // Моментальное завершение
       setTimeout(() => {
         setCurrentStep('scan');
@@ -260,14 +278,33 @@ const Index = () => {
   };
 
   // Обработчики для приемки
-  const handleReceivingStart = () => {
+  const handleReceivingStart = async () => {
+    enableAudio();
     setReceivingStep(2);
+    
+    // Озвучка начала приемки
+    if (audioEnabled) {
+      try {
+        await playAudio('receiving-start');
+      } catch (audioError) {
+        console.warn('Ошибка озвучки начала приемки:', audioError);
+      }
+    }
   };
 
-  const handleReceivingNext = () => {
+  const handleReceivingNext = async () => {
     if (receivingStep < 4) {
       const nextStep = receivingStep + 1;
       setReceivingStep(nextStep);
+      
+      // Озвучка сканирования при приемке
+      if (audioEnabled) {
+        try {
+          await playAudio('receiving-scan');
+        } catch (audioError) {
+          console.warn('Ошибка озвучки приемки:', audioError);
+        }
+      }
     }
   };
 
@@ -280,8 +317,17 @@ const Index = () => {
     setReturnStep(2);
   };
 
-  const handleReturnComplete = () => {
+  const handleReturnComplete = async () => {
     setReturnStep(1);
+    
+    // Озвучка завершения возврата
+    if (audioEnabled) {
+      try {
+        await playAudio('return-complete');
+      } catch (audioError) {
+        console.warn('Ошибка озвучки завершения возврата:', audioError);
+      }
+    }
   };
 
   const handleReturnReasonSelect = (reason: string) => {
@@ -345,19 +391,37 @@ const Index = () => {
                 Настройки
               </Button>
               {Object.keys(customAudioFiles).length > 0 && (
-                <Button
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    if (confirm('Удалить все загруженные аудиофайлы?')) {
-                      clearAllAudio();
-                    }
-                  }}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Icon name="Trash2" className="w-5 h-5 mr-2" />
-                  Очистить
-                </Button>
+                <>
+                  <Button
+                    variant="ghost" 
+                    size="sm"
+                    onClick={async () => {
+                      enableAudio();
+                      try {
+                        await playAudio('delivery-complete');
+                      } catch (error) {
+                        console.error('Ошибка тестирования аудио:', error);
+                      }
+                    }}
+                    className="text-green-600 hover:text-green-700"
+                  >
+                    <Icon name="Play" className="w-5 h-5 mr-2" />
+                    Тест
+                  </Button>
+                  <Button
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Удалить все загруженные аудиофайлы?')) {
+                        clearAllAudio();
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Icon name="Trash2" className="w-5 h-5 mr-2" />
+                    Очистить
+                  </Button>
+                </>
               )}
               <Icon name="Menu" className="w-6 h-6 text-gray-600" />
               <Icon name="Package" className="w-6 h-6 text-gray-600" />
