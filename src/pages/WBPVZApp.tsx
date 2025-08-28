@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAudio } from '@/hooks/useAudio';
 import Icon from '@/components/ui/icon';
 
@@ -6,7 +6,9 @@ const WBPVZApp = () => {
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const { playAudio } = useAudio();
+  const [showSettings, setShowSettings] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
 
   const tabs = [
     { id: 'delivery', label: 'Выдача', icon: 'Package', badge: '15' },
@@ -14,22 +16,47 @@ const WBPVZApp = () => {
     { id: 'return', label: 'Возврат', icon: 'RotateCcw', badge: null }
   ];
 
-  const handleQRScan = useCallback(async () => {
+  const handleQRScan = useCallback(() => {
     setIsScanning(true);
-    await playAudio('scan-success');
     
     setTimeout(() => {
       setIsScanning(false);
-      playAudio('client-found');
     }, 2000);
-  }, [playAudio]);
+  }, []);
 
-  const handlePhoneSubmit = useCallback(async () => {
+  const handlePhoneSubmit = useCallback(() => {
     if (phoneNumber.length === 4) {
-      await playAudio('phone-input');
       setPhoneNumber('');
     }
-  }, [phoneNumber, playAudio]);
+  }, [phoneNumber]);
+
+  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const audioFiles: { [key: string]: string } = {};
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('audio/')) {
+        const fileName = file.name.replace(/\.[^/.]+$/, ''); // убираем расширение
+        const audioUrl = URL.createObjectURL(file);
+        audioFiles[fileName] = audioUrl;
+      }
+    }
+
+    if (Object.keys(audioFiles).length > 0) {
+      updateAudioFiles(audioFiles);
+      alert(`Загружено ${Object.keys(audioFiles).length} аудиофайлов`);
+    } else {
+      alert('Аудиофайлы не найдены');
+    }
+
+    // Очищаем input
+    if (event.target) {
+      event.target.value = '';
+    }
+  }, [updateAudioFiles]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -55,7 +82,10 @@ const WBPVZApp = () => {
             <button className="p-2 hover:bg-gray-100 rounded-lg">
               <Icon name="Bell" size={20} className="text-gray-600" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
+            <button 
+              className="p-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => setShowSettings(true)}
+            >
               <Icon name="Settings" size={20} className="text-gray-600" />
             </button>
             <button className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
@@ -186,14 +216,83 @@ const WBPVZApp = () => {
       <div className="bg-white border-t px-4 py-3">
         <div className="flex items-center justify-between text-sm text-gray-500">
           <span>Версия 2.1.0</span>
-          <button 
-            onClick={() => playAudio('welcome')}
-            className="text-purple-600 hover:text-purple-700"
-          >
-            🔊 Тест звука
-          </button>
+          <span>Загружено аудио: {Object.keys(customAudioFiles).length}</span>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Настройки озвучки</h3>
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <Icon name="X" size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Загрузите папку с аудиофайлами для озвучки действий.
+                  Названия файлов должны соответствовать событиям.
+                </p>
+                
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+                >
+                  <Icon name="FolderOpen" size={18} />
+                  Выбрать папку с аудио
+                </button>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="audio/*"
+                  onChange={handleFolderUpload}
+                  className="hidden"
+                  webkitdirectory=""
+                  directory=""
+                />
+              </div>
+              
+              {Object.keys(customAudioFiles).length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Загруженные файлы:</h4>
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {Object.keys(customAudioFiles).map((fileName) => (
+                      <div key={fileName} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
+                        <span>{fileName}</span>
+                        <button
+                          onClick={() => playAudio(fileName)}
+                          className="text-purple-600 hover:text-purple-700"
+                        >
+                          <Icon name="Play" size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="text-xs text-gray-500">
+                <p className="mb-1">Примеры названий файлов:</p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>scan-success.mp3 - успешное сканирование</li>
+                  <li>client-found.mp3 - клиент найден</li>
+                  <li>phone-input.mp3 - ввод телефона</li>
+                  <li>delivery-complete.mp3 - выдача завершена</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
