@@ -89,6 +89,28 @@ const WBPVZApp = () => {
         
         setIsScanning(false);
       }, 1500); // Имитируем задержку сканирования
+    } else if (activeTab === 'acceptance') {
+      // Фиктивное сканирование для приемки - БЕЗ КАМЕРЫ
+      console.log('📦 ПРИЕМКА: Фиктивное сканирование');
+      setIsScanning(true);
+      
+      setTimeout(async () => {
+        console.log('✅ ПРИЕМКА: Товар принят на склад');
+        await playAudio('receiving-start');
+        setIsScanning(false);
+      }, 2000);
+      
+    } else if (activeTab === 'returns') {
+      // Фиктивное сканирование для возврата - БЕЗ КАМЕРЫ  
+      console.log('↩️ ВОЗВРАТ: Фиктивное сканирование');
+      setIsScanning(true);
+      
+      setTimeout(async () => {
+        console.log('✅ ВОЗВРАТ: Товар принят к возврату');
+        await playAudio('return-start');
+        setIsScanning(false);
+      }, 2000);
+      
     } else {
       // Для других вкладок открываем настоящий сканер
       setShowQRScanner(true);
@@ -247,8 +269,30 @@ const WBPVZApp = () => {
 
   // Функции для процесса выдачи
   const handleCellClick = useCallback(async (cellNumber: string) => {
-    // Озвучиваем номер ячейки при клике
-    await playAudio(`cell-${cellNumber}`);
+    console.log(`🏠 КЛИК ПО ЯЧЕЙКЕ: "${cellNumber}"`);
+    
+    // Пробуем разные варианты названий файлов
+    const cellAudioKeys = [
+      cellNumber,           // 123
+      `cell-${cellNumber}`, // cell-123  
+      `ячейка-${cellNumber}`, // ячейка-123
+      `${cellNumber}.mp3`,    // 123.mp3
+      `${cellNumber}.wav`     // 123.wav
+    ];
+    
+    console.log(`🎯 Пробуем ключи для ячейки:`, cellAudioKeys);
+    
+    for (const key of cellAudioKeys) {
+      try {
+        await playAudio(key);
+        console.log(`✅ ОЗВУЧКА ЯЧЕЙКИ НАЙДЕНА: ${key}`);
+        return; // Успешно воспроизвели
+      } catch (error) {
+        console.log(`⚠️ Не найден ключ: ${key}`);
+      }
+    }
+    
+    console.warn(`❌ ОЗВУЧКА ДЛЯ ЯЧЕЙКИ "${cellNumber}" НЕ НАЙДЕНА!`);
   }, [playAudio]);
 
   const handleScanProduct = useCallback(async () => {
