@@ -19,8 +19,8 @@ const DeliveryInterface = ({
   isProductScanned,
   scannedData
 }: DeliveryInterfaceProps) => {
-  const [selectedCell, setSelectedCell] = useState<string>('');
-  const [currentStep, setCurrentStep] = useState<'cell' | 'scan' | 'check' | 'deliver'>('cell');
+  const [selectedCell, setSelectedCell] = useState<string>(order?.cellNumber || '');
+  const [currentStep, setCurrentStep] = useState<'cell' | 'scan' | 'check' | 'deliver'>('scan');
 
   if (!order) {
     return (
@@ -97,12 +97,11 @@ const DeliveryInterface = ({
         </div>
       </div>
 
-      {/* Товары */}
-      {currentStep !== 'cell' && (
-        <div className="bg-white rounded-lg border p-6">
+      {/* Товары - показываем всегда */}
+      <div className="bg-white rounded-lg border p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Товары к выдаче</h3>
-            {currentStep === 'scan' && (
+            {!isProductScanned && (
               <button
                 onClick={handleScanProduct}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
@@ -157,7 +156,7 @@ const DeliveryInterface = ({
           </div>
 
           {/* Кнопка "Выдать товар" */}
-          {currentStep === 'check' && isProductScanned && (
+          {isProductScanned && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="text-center">
                 <button
@@ -170,7 +169,6 @@ const DeliveryInterface = ({
             </div>
           )}
         </div>
-      )}
 
       {/* Сообщение о выдаче */}
       {currentStep === 'deliver' && (
