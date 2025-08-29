@@ -52,9 +52,33 @@ const WBPVZApp = () => {
     }
   }, []);
 
-  const handleQRScan = useCallback(() => {
-    setShowQRScanner(true);
-  }, []);
+  const handleQRScan = useCallback(async () => {
+    if (activeTab === 'delivery') {
+      // Фиктивное сканирование для вкладки выдачи
+      setIsScanning(true);
+      
+      // Эмулируем процесс сканирования
+      setTimeout(async () => {
+        // Берем тестовый заказ
+        const order = findOrderByPhone('5667');
+        if (order) {
+          setCurrentOrder(order);
+          setDeliveryStep('client-scanned');
+          setScannedData('fake-qr-code-data');
+          
+          // Озвучиваем номер ячейки и про скидку
+          await playAudio(`cell-${order.cellNumber}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await playAudio('discount');
+        }
+        
+        setIsScanning(false);
+      }, 1500); // Имитируем задержку сканирования
+    } else {
+      // Для других вкладок открываем настоящий сканер
+      setShowQRScanner(true);
+    }
+  }, [activeTab, playAudio]);
 
   const toggleMenuItem = useCallback((item: string) => {
     const newExpanded = {
@@ -176,6 +200,7 @@ const WBPVZApp = () => {
     setActiveTab(tab);
     if (tab !== 'delivery') {
       setDeliveryStep('initial');
+      setCurrentOrder(null);
       setIsProductScanned(false);
       setScannedData('');
     }

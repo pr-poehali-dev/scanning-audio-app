@@ -73,17 +73,24 @@ const TabContent = ({
               <div className="absolute inset-0 bg-purple-100 bg-opacity-80 rounded-xl flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-purple-600 text-sm font-medium">Обработка...</span>
+                  <span className="text-purple-600 text-sm font-medium">Поиск заказа...</span>
                 </div>
               </div>
             )}
           </div>
           
           {/* Результат сканирования */}
-          {scannedData && (
+          {scannedData && currentOrder && (
             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="font-medium text-green-800 mb-2">Отсканировано:</h4>
-              <p className="text-sm text-green-700 break-all">{scannedData}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <Icon name="CheckCircle" size={20} className="text-green-600" />
+                <h4 className="font-medium text-green-800">Готово к выдаче!</h4>
+              </div>
+              <div className="text-sm text-green-700 space-y-1">
+                <p><strong>Клиент:</strong> {currentOrder.customerName}</p>
+                <p><strong>Ячейка:</strong> {currentOrder.cellNumber}</p>
+                <p><strong>Товаров:</strong> {currentOrder.items.length}</p>
+              </div>
             </div>
           )}
         </div>
