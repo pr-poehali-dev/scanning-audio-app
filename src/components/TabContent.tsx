@@ -33,12 +33,9 @@ const TabContent = ({
   onDeliverProduct,
   currentOrder
 }: TabContentProps) => {
-  console.log('TabContent - activeTab:', activeTab, 'deliveryStep:', deliveryStep, 'currentOrder:', currentOrder?.customerName);
-  
   if (activeTab === 'delivery') {
-    // Если клиент отсканирован, показываем интерфейс выдачи
+    // Если клиент отсканирован, показываем интерфейс выдачи  
     if (deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed') {
-      console.log('Показываем DeliveryInterface для заказа:', currentOrder?.customerName);
       return (
         <DeliveryInterface
           order={currentOrder}
@@ -82,20 +79,7 @@ const TabContent = ({
             )}
           </div>
           
-          {/* Результат сканирования */}
-          {scannedData && currentOrder && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon name="CheckCircle" size={20} className="text-green-600" />
-                <h4 className="font-medium text-green-800">Готово к выдаче!</h4>
-              </div>
-              <div className="text-sm text-green-700 space-y-1">
-                <p><strong>Клиент:</strong> {currentOrder.customerName}</p>
-                <p><strong>Ячейка:</strong> {currentOrder.cellNumber}</p>
-                <p><strong>Товаров:</strong> {currentOrder.items.length}</p>
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* Divider */}

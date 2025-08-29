@@ -72,7 +72,17 @@ const WBPVZApp = () => {
           console.log('Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
           
           // Озвучиваем номер ячейки и про скидку
-          await playAudio(`cell-${order.cellNumber}`);
+          // Пробуем несколько вариантов названий аудиофайлов для ячейки
+          try {
+            await playAudio(order.cellNumber); // A12, B05, C07, D13, E09
+          } catch {
+            try {
+              await playAudio(`cell-${order.cellNumber}`); // cell-A12
+            } catch {
+              await playAudio(`ячейка-${order.cellNumber}`); // ячейка-A12
+            }
+          }
+          
           await new Promise(resolve => setTimeout(resolve, 1000));
           await playAudio('discount');
         }
@@ -159,7 +169,17 @@ const WBPVZApp = () => {
       setDeliveryStep('client-scanned');
       
       // Озвучиваем номер ячейки и про скидку
-      await playAudio(`cell-${order.cellNumber}`);
+      // Пробуем несколько вариантов названий аудиофайлов для ячейки
+      try {
+        await playAudio(order.cellNumber); // A12, B05, C07, D13, E09
+      } catch {
+        try {
+          await playAudio(`cell-${order.cellNumber}`); // cell-A12
+        } catch {
+          await playAudio(`ячейка-${order.cellNumber}`); // ячейка-A12
+        }
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
       await playAudio('discount');
       
