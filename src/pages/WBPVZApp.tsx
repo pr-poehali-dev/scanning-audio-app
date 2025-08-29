@@ -20,7 +20,14 @@ const WBPVZApp = () => {
     address: localStorage.getItem('wb-pvz-address') || '',
     employeeId: localStorage.getItem('wb-pvz-employee-id') || ''
   });
+  const [audioSettings, setAudioSettings] = useState({
+    speed: parseFloat(localStorage.getItem('wb-pvz-audio-speed') || '1'),
+    activeTab: localStorage.getItem('wb-pvz-audio-tab') || 'delivery',
+    phrases: JSON.parse(localStorage.getItem('wb-pvz-audio-phrases') || '{}'),
+    enabled: JSON.parse(localStorage.getItem('wb-pvz-audio-enabled') || '{}')
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioTabInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
 
   const tabs = [
@@ -82,40 +89,99 @@ const WBPVZApp = () => {
     }
   }, [phoneNumber, playAudio]);
 
-  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const updateAudioSetting = useCallback((key: string, value: any) => {
+    setAudioSettings(prev => {
+      const updated = { ...prev, [key]: value };
+      localStorage.setItem(`wb-pvz-audio-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, 
+        typeof value === 'object' ? JSON.stringify(value) : String(value)
+      );
+      return updated;
+    });
+  }, []);
+
+  const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>, tabType: string) => {
     const files = event.target.files;
-    console.log('Выбрано файлов:', files?.length);
+    console.log('Выбрано файлов для', tabType, ':', files?.length);
     
     if (!files) return;
 
-    const audioFiles: { [key: string]: string } = {};
+    const audioFiles: { [key: string]: string } = { ...customAudioFiles };
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       console.log('Обрабатываю файл:', file.name, 'Тип:', file.type);
       
       if (file.type.startsWith('audio/')) {
-        const fileName = file.name.replace(/\.[^/.]+$/, ''); // убираем расширение
+        const fileName = `${tabType}-${file.name.replace(/\.[^/.]+$/, '')}`;
         const audioUrl = URL.createObjectURL(file);
         audioFiles[fileName] = audioUrl;
         console.log('Добавлен аудиофайл:', fileName);
       }
     }
 
-    console.log('Итого аудиофайлов:', Object.keys(audioFiles));
-
-    if (Object.keys(audioFiles).length > 0) {
+    if (Object.keys(audioFiles).length > Object.keys(customAudioFiles).length) {
       updateAudioFiles(audioFiles);
-      alert(`Загружено ${Object.keys(audioFiles).length} аудиофайлов: ${Object.keys(audioFiles).join(', ')}`);
+      const newFilesCount = Object.keys(audioFiles).length - Object.keys(customAudioFiles).length;
+      alert(`Для вкладки "${getTabName(tabType)}" загружено ${newFilesCount} аудиофайлов`);
     } else {
       alert('Аудиофайлы не найдены. Проверьте что выбрали файлы с расширением .mp3, .wav, .ogg или другими аудио форматами');
     }
 
-    // Очищаем input
     if (event.target) {
       event.target.value = '';
     }
-  }, [updateAudioFiles]);
+  }, [updateAudioFiles, customAudioFiles]);
+
+  const getTabName = (tabId: string) => {
+    const names: { [key: string]: string } = {
+      'delivery': 'Выдача',
+      'acceptance': 'Приемка', 
+      'returns': 'Возврат',
+      'general': 'Общие'
+    };
+    return names[tabId] || tabId;
+  };
+
+  const getPhrasesByTab = (tabId: string) => {
+    const phrases: { [key: string]: string[] } = {
+      'delivery': ['Спасибо за заказ! Оцените пункт выдачи!', 'Верните на ячейку'],
+      'acceptance': ['Принято в ПВЗ', 'Ошибка приемки'],
+      'returns': ['Возврат оформлен', 'Ошибка возврата'],
+      'general': ['Общий сигнал', 'Ошибка системы']
+    };
+    return phrases[tabId] || [];
+  };
+
+  const getDescriptionsByTab = (tabId: string) => {
+    const descriptions: { [key: string]: { text: string; enabled: boolean }[] } = {
+      'delivery': [
+        { text: 'Завершение выдачи заказа клиенту', enabled: true },
+        { text: 'Снятие заказа клиента с примерки', enabled: false }
+      ],
+      'acceptance': [
+        { text: 'Успешное принятие товара', enabled: true },
+        { text: 'Ошибка при приемке', enabled: true }
+      ],
+      'returns': [
+        { text: 'Успешное оформление возврата', enabled: true },
+        { text: 'Ошибка при возврате', enabled: false }
+      ],
+      'general': [
+        { text: 'Общие уведомления', enabled: true },
+        { text: 'Системные ошибки', enabled: true }
+      ]
+    };
+    return descriptions[tabId] || [];
+  };
+
+  const togglePhraseEnabled = (tabId: string, phraseIndex: number) => {
+    const currentEnabled = audioSettings.enabled[`${tabId}-${phraseIndex}`] || false;
+    const newEnabled = {
+      ...audioSettings.enabled,
+      [`${tabId}-${phraseIndex}`]: !currentEnabled
+    };
+    updateAudioSetting('enabled', newEnabled);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -327,78 +393,137 @@ const WBPVZApp = () => {
       {/* Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Настройки озвучки</h3>
+          <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center gap-4 p-6 border-b bg-gray-50">
               <button 
                 onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-2 hover:bg-gray-100 rounded-lg"
               >
-                <Icon name="X" size={20} />
+                <Icon name="ArrowLeft" size={20} className="text-gray-600" />
               </button>
+              <h3 className="text-lg font-semibold text-gray-900">Настройки</h3>
             </div>
             
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600 mb-2">
-                  Загрузите папку с аудиофайлами для озвучки действий.
-                  Названия файлов должны соответствовать событиям.
-                </p>
-                
-                <div className="space-y-2">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Скорость озвучки */}
+              <div className="mb-8">
+                <h4 className="text-base font-medium text-gray-900 mb-4">Скорость озвучки</h4>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-600">x1</span>
+                  <div className="flex-1">
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={audioSettings.speed}
+                      onChange={(e) => updateAudioSetting('speed', parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                    />
+                  </div>
+                  <span className="text-sm text-gray-600">x1,5</span>
+                  <button 
+                    onClick={() => playAudio('test')}
+                    className="p-2 bg-purple-100 hover:bg-purple-200 rounded-full"
                   >
-                    <Icon name="FolderOpen" size={18} />
-                    Выбрать файлы аудио
+                    <Icon name="Volume2" size={18} className="text-purple-600" />
                   </button>
-                  
-                  <p className="text-xs text-gray-500">
-                    Выберите несколько аудиофайлов (Ctrl/Cmd + клик для множественного выбора)
-                  </p>
                 </div>
-                
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="audio/*"
-                  onChange={handleFolderUpload}
-                  className="hidden"
-                />
               </div>
-              
-              {Object.keys(customAudioFiles).length > 0 && (
-                <div>
-                  <h4 className="font-medium mb-2">Загруженные файлы:</h4>
-                  <div className="max-h-32 overflow-y-auto space-y-1">
-                    {Object.keys(customAudioFiles).map((fileName) => (
-                      <div key={fileName} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
-                        <span>{fileName}</span>
-                        <button
-                          onClick={() => playAudio(fileName)}
-                          className="text-purple-600 hover:text-purple-700"
-                        >
-                          <Icon name="Play" size={14} />
-                        </button>
+
+              {/* Фразы для озвучки */}
+              <div>
+                <h4 className="text-base font-medium text-gray-900 mb-4">Фразы для озвучки</h4>
+                
+                {/* Вкладки */}
+                <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+                  {[
+                    { id: 'delivery', name: 'Выдача', color: 'purple' },
+                    { id: 'acceptance', name: 'Приемка', color: 'gray' },
+                    { id: 'returns', name: 'Возврат', color: 'gray' },
+                    { id: 'general', name: 'Общие', color: 'gray' }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => updateAudioSetting('activeTab', tab.id)}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        audioSettings.activeTab === tab.id
+                          ? 'bg-purple-600 text-white'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-white'
+                      }`}
+                    >
+                      {tab.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Список фраз */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Левая колонка - Фразы */}
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-700 mb-3">Фраза или звук</h5>
+                      <div className="space-y-3">
+                        {getPhrasesByTab(audioSettings.activeTab).map((phrase, index) => (
+                          <div key={index} className="text-sm text-gray-600 py-2">
+                            {phrase}
+                          </div>
+                        ))}
                       </div>
+                    </div>
+
+                    {/* Правая колонка - Описания и переключатели */}
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-700 mb-3">Описание действия в интерфейсе</h5>
+                      <div className="space-y-3">
+                        {getDescriptionsByTab(audioSettings.activeTab).map((desc, index) => (
+                          <div key={index} className="flex items-center justify-between py-2">
+                            <span className="text-sm text-gray-600 flex-1">{desc.text}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">{desc.enabled ? 'Вкл' : 'Выкл'}</span>
+                              <button
+                                onClick={() => togglePhraseEnabled(audioSettings.activeTab, index)}
+                                className={`w-10 h-6 rounded-full transition-colors ${
+                                  desc.enabled ? 'bg-purple-600' : 'bg-gray-300'
+                                }`}
+                              >
+                                <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                                  desc.enabled ? 'translate-x-5' : 'translate-x-1'
+                                } mt-1`} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Кнопка загрузки */}
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <button
+                      onClick={() => audioTabInputRefs.current[audioSettings.activeTab]?.click()}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 text-sm"
+                    >
+                      <Icon name="Upload" size={16} />
+                      Загрузить аудио для вкладки "{getTabName(audioSettings.activeTab)}"
+                    </button>
+                    
+                    {/* Скрытые input'ы для каждой вкладки */}
+                    {['delivery', 'acceptance', 'returns', 'general'].map(tabId => (
+                      <input
+                        key={tabId}
+                        ref={(el) => audioTabInputRefs.current[tabId] = el}
+                        type="file"
+                        multiple
+                        accept="audio/*"
+                        onChange={(e) => handleFolderUpload(e, tabId)}
+                        className="hidden"
+                      />
                     ))}
                   </div>
                 </div>
-              )}
-              
-              <div className="text-xs text-gray-500">
-                <p className="mb-1">Примеры названий файлов:</p>
-                <ul className="list-disc list-inside space-y-0.5">
-                  <li>scan-success.mp3 - успешное сканирование</li>
-                  <li>client-found.mp3 - клиент найден</li>
-                  <li>phone-input.mp3 - ввод телефона</li>
-                  <li>delivery-complete.mp3 - выдача завершена</li>
-                  <li>check-product.mp3 - проверьте товар под камерой</li>
-                  <li>discount.mp3 - товары со скидкой</li>
-                  <li>rate-service.mp3 - оцените наш ПВЗ</li>
-                </ul>
               </div>
             </div>
           </div>
