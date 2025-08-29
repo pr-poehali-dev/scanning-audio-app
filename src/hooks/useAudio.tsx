@@ -67,46 +67,10 @@ export const useAudio = () => {
         console.log(`⚠️ Пользовательский файл не найден для "${audioKey}". Проверены ключи:`, possibleKeys);
       }
       
-      // Если пользовательского файла нет или он не воспроизвелся - играем тестовый звук
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Настраиваем звук в зависимости от типа
-      switch(audioKey) {
-        case 'scan-success':
-        case 'client-found':
-        case 'phone-input':
-          oscillator.frequency.value = 800;
-          break;
-        case 'check-product':
-        case 'discount':
-          oscillator.frequency.value = 600;
-          break;
-        case 'rate-service':
-          oscillator.frequency.value = 400;
-          break;
-        case 'delivery-complete':
-          oscillator.frequency.value = 900;
-          break;
-        case 'test':
-          oscillator.frequency.value = 500;
-          break;
-        default:
-          oscillator.frequency.value = 700;
-      }
-      
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-      
-      oscillator.type = 'sine';
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.15);
-      
-      console.log(`🎵 Воспроизведен тестовый звук для "${audioKey}"`);
+      // ВСТРОЕННЫЙ ЗВУК ОТКЛЮЧЕН - только пользовательские файлы
+      console.log(`📁 Доступные файлы в customAudioFiles:`, Object.keys(customAudioFiles));
+      console.log(`❌ ЗВУК НЕ ВОСПРОИЗВЕДЕН - загрузите аудиофайл для "${audioKey}" в настройках`);
+      return;
       
     } catch (error) {
       console.error(`❌ Ошибка воспроизведения "${audioKey}":`, error);
@@ -144,26 +108,10 @@ export const useAudio = () => {
         console.log(`⚠️ Пользовательский файл не найден для ячейки ${cellNumber} (ключ: ${cellKey})`);
       }
       
-      // Если пользовательского файла нет - играем тестовый звук
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Тон зависит от номера ячейки
-      const cellNum = parseInt(cellNumber) || 1;
-      oscillator.frequency.value = 400 + (cellNum % 20) * 50;
-      
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      
-      oscillator.type = 'square';
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-      
-      console.log(`🎵 Воспроизведен тестовый звук ячейки ${cellNumber}`);
+      // ВСТРОЕННЫЙ ЗВУК ДЛЯ ЯЧЕЕК ТОЖЕ ОТКЛЮЧЕН
+      console.log(`📁 Доступные файлы ячеек:`, Object.keys(customAudioFiles).filter(key => key.startsWith('cell-')));
+      console.log(`❌ ЗВУК ЯЧЕЙКИ НЕ ВОСПРОИЗВЕДЕН - загрузите аудиофайл cell-${cellNumber}.mp3 в настройках`);
+      return;
       
     } catch (error) {
       console.error(`❌ Ошибка озвучки ячейки ${cellNumber}:`, error);
@@ -171,31 +119,17 @@ export const useAudio = () => {
   }, [customAudioFiles]);
 
   const updateAudioFiles = useCallback((files: {[key: string]: string}) => {
+    console.log(`🔄 Обновляю аудиофайлы. Новые файлы:`, Object.keys(files));
+    console.log(`📄 Типы URL в files:`, Object.entries(files).map(([key, url]) => ({ key, isBlob: url.startsWith('blob:') })));
+    
     const updatedFiles = { ...customAudioFiles, ...files };
     setCustomAudioFiles(updatedFiles);
     
-    // Сохраняем в localStorage с проверкой размера
-    try {
-      const dataToSave = JSON.stringify(updatedFiles);
-      const sizeInMB = (new Blob([dataToSave]).size / 1024 / 1024).toFixed(2);
-      
-      console.log(`💾 Сохраняю ${Object.keys(updatedFiles).length} файлов (${sizeInMB} МБ)`);
-      
-      localStorage.setItem(STORAGE_KEY, dataToSave);
-      
-      // Проверяем что действительно сохранилось
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        console.log('✅ Файлы успешно сохранены в localStorage');
-      } else {
-        console.error('❌ Файлы не сохранились в localStorage');
-      }
-    } catch (error) {
-      console.error('❌ Ошибка сохранения аудиофайлов:', error);
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        alert('Ошибка: Недостаточно места в браузере для сохранения файлов. Попробуйте загрузить меньше файлов или очистить данные браузера.');
-      }
-    }
+    // Не сохраняем blob URL в localStorage, так как они не переживают перезагрузку
+    // Оставляем их только в памяти текущей сессии
+    console.log(`💾 Аудиофайлы загружены в память:`, Object.keys(updatedFiles));
+    console.log(`⚠️ ВНИМАНИЕ: файлы будут доступны только до перезагрузки страницы`);
+    console.log(`ℹ️ Для постоянного сохранения файлы нужно загружать заново после каждого обновления`);
   }, [customAudioFiles]);
 
   const removeAudioFile = useCallback((audioKey: string) => {
