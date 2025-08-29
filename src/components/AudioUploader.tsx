@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
-import { DropZone } from './DropZone';
+import { AudioFileList } from './audio/AudioFileList';
+import { FolderUploadSection } from './audio/FolderUploadSection';
+import { CellAudioSection } from './audio/CellAudioSection';
+import { AudioDiagnostics } from './audio/AudioDiagnostics';
 
 interface AudioFile {
   key: string;
@@ -42,8 +44,6 @@ export const AudioUploader = ({
   const [isUploading, setIsUploading] = useState(false);
   const [cellUploadProgress, setCellUploadProgress] = useState(0);
   const [isCellUploading, setIsCellUploading] = useState(false);
-  const folderInputRef = useRef<HTMLInputElement>(null);
-  const cellFolderInputRef = useRef<HTMLInputElement>(null);
 
   // Обновляем состояние при загрузке существующих файлов
   useEffect(() => {
@@ -81,10 +81,6 @@ export const AudioUploader = ({
     }
     
     return null;
-  };
-
-  const handleFolderUpload = () => {
-    folderInputRef.current?.click();
   };
 
   const handleFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,10 +150,6 @@ export const AudioUploader = ({
         alert('❌ Ошибка при сохранении файлов. Проверьте консоль.');
       }
     }, 500);
-  };
-
-  const handleCellFolderUpload = () => {
-    cellFolderInputRef.current?.click();
   };
 
   const handleCellFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,6 +250,18 @@ export const AudioUploader = ({
     }
   };
 
+  const handlePlayFile = (url: string) => {
+    const audio = new Audio(url);
+    audio.play().catch(console.error);
+  };
+
+  const handleClearCells = () => {
+    if (confirm('Удалить все озвучки ячеек?')) {
+      localStorage.removeItem('cellAudios');
+      window.location.reload();
+    }
+  };
+
   const uploadedCount = audioFiles.filter(item => item.uploaded).length;
   
   // Получаем информацию о загруженных ячейках
@@ -289,214 +293,42 @@ export const AudioUploader = ({
                 </div>
               )}
             </div>
-            {(uploadedCount > 0 || cellCount > 0) && (
-              <div className="flex gap-2">
-                {cellCount > 0 && (
-                  <Button 
-                    onClick={() => {
-                      if (confirm('Удалить все озвучки ячеек?')) {
-                        localStorage.removeItem('cellAudios');
-                        window.location.reload();
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <Icon name="Hash" className="w-4 h-4 mr-1" />
-                    Очистить ячейки
-                  </Button>
-                )}
-                {uploadedCount > 0 && (
-                  <Button 
-                    onClick={handleClearAll}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Icon name="Trash" className="w-4 h-4 mr-1" />
-                    Очистить все
-                  </Button>
-                )}
-              </div>
+            {uploadedCount > 0 && (
+              <Button 
+                onClick={handleClearAll}
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700"
+              >
+                <Icon name="Trash" className="w-4 h-4 mr-1" />
+                Очистить все
+              </Button>
             )}
           </div>
 
-          {/* Загрузка папки с drag&drop */}
-          <DropZone onFolderDrop={handleFolderFiles} isUploading={isUploading} uploadProgress={uploadProgress} />
-
-          {/* Загрузка папки с ячейками */}
-          <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center bg-blue-50">
-            <Icon name="Hash" className="mx-auto h-12 w-12 text-blue-400 mb-4" />
-            <h3 className="text-lg font-medium mb-2 text-blue-800">Папка с озвучкой ячеек</h3>
-            <p className="text-blue-600 mb-4">
-              Загрузите отдельную папку с озвучкой номеров ячеек.
-              Файлы должны содержать номера ячеек в названии (например: "1.mp3", "ячейка-15.wav", "cell_42.mp3")
-            </p>
-            <Button 
-              onClick={handleCellFolderUpload} 
-              disabled={isCellUploading}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              {isCellUploading ? 'Загружаю ячейки...' : 'Выбрать папку с ячейками'}
-            </Button>
-            {isCellUploading && (
-              <div className="mt-4">
-                <Progress value={cellUploadProgress} className="bg-blue-100" />
-                <div className="text-sm text-blue-600 mt-2">Обрабатываю ячейки...</div>
-              </div>
-            )}
-          </div>
-
-          {/* Скрытые inputs для выбора папок */}
-          <input
-            ref={folderInputRef}
-            type="file"
-            webkitdirectory=""
-            multiple
-            accept="audio/*"
-            onChange={handleFolderFiles}
-            className="hidden"
-          />
-          <input
-            ref={cellFolderInputRef}
-            type="file"
-            webkitdirectory=""
-            multiple
-            accept="audio/*"
-            onChange={handleCellFolderFiles}
-            className="hidden"
+          <FolderUploadSection
+            audioFiles={audioFiles}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            onFolderFiles={handleFolderFiles}
+            onFolderUpload={() => {}}
           />
 
-          {/* Список файлов */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">Список аудиофайлов</h3>
-            <div className="grid gap-3">
-              {audioFiles.map((audioFile) => (
-                <div key={audioFile.key} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      audioFile.uploaded ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
-                    <div>
-                      <div className="font-medium">{audioFile.name}</div>
-                      <div className="text-sm text-gray-500">{audioFile.key}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    {audioFile.uploaded && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            if (audioFile.url) {
-                              const audio = new Audio(audioFile.url);
-                              audio.play().catch(console.error);
-                            }
-                          }}
-                        >
-                          <Icon name="Play" className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRemoveFile(audioFile.key)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Icon name="Trash" className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CellAudioSection
+            isCellUploading={isCellUploading}
+            cellUploadProgress={cellUploadProgress}
+            cellCount={cellCount}
+            onCellFolderFiles={handleCellFolderFiles}
+            onClearCells={handleClearCells}
+          />
 
-          {/* Инструкция */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-3">Правила именования файлов</h4>
-            <div className="text-yellow-800 text-sm space-y-2">
-              <div><strong>Примеры:</strong> "ячейка.mp3", "скидка.wav", "камера.mp3", "оцените.mp3"</div>
-              <div><strong>Форматы:</strong> MP3, WAV, OGG, M4A, AAC</div>
-              <div><strong>Сохранение:</strong> Файлы сохраняются в браузере и остаются доступными после перезагрузки</div>
-            </div>
-          </div>
+          <AudioFileList
+            audioFiles={audioFiles}
+            onPlayFile={handlePlayFile}
+            onRemoveFile={handleRemoveFile}
+          />
 
-          {/* Информация о хранении */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">💾 Автоматическое сохранение</h4>
-            <p className="text-blue-700 text-sm mb-3">
-              Загруженные аудиофайлы автоматически сохраняются в браузере и будут работать 
-              даже после закрытия и повторного открытия приложения.
-            </p>
-            
-            {/* Диагностика */}
-            <div className="border-t border-blue-200 pt-3 space-y-2">
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    const storage1 = localStorage.getItem('wb-audio-files');
-                    const storage2 = localStorage.getItem('cellAudios');
-                    const info = `
-🔍 ДИАГНОСТИКА СОХРАНЕНИЯ:
-
-📁 Основные файлы: ${storage1 ? 'найдены' : 'НЕ НАЙДЕНЫ'}
-📱 Ячейки: ${storage2 ? 'найдены' : 'НЕ НАЙДЕНЫ'}
-
-💾 Размер localStorage: ${((JSON.stringify(localStorage).length * 2) / 1024 / 1024).toFixed(2)} МБ
-
-🌐 Браузер: ${navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Другой'}
-🔒 Приватный режим: ${!window.indexedDB ? 'ДА (может блокировать сохранение)' : 'НЕТ'}
-
-📊 Детали:
-- Основные: ${storage1 ? Object.keys(JSON.parse(storage1)).length + ' файлов' : '0 файлов'}  
-- Ячейки: ${storage2 ? Object.keys(JSON.parse(storage2)).length + ' ячеек' : '0 ячеек'}
-                    `.trim();
-                    alert(info);
-                  }}
-                  className="text-xs"
-                >
-                  <Icon name="Search" className="w-3 h-3 mr-1" />
-                  Диагностика
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={async () => {
-                    const storage = localStorage.getItem('wb-audio-files');
-                    if (storage) {
-                      const files = JSON.parse(storage);
-                      const keys = Object.keys(files);
-                      if (keys.length > 0) {
-                        try {
-                          console.log('🧪 ТЕСТ ОЗВУЧКИ:', keys[0]);
-                          const audio = new Audio(files[keys[0]]);
-                          await audio.play();
-                          alert(`✅ Озвучка работает!\nТестирован файл: ${keys[0]}`);
-                        } catch (error) {
-                          alert(`❌ Ошибка воспроизведения!\nОшибка: ${error.message}`);
-                        }
-                      } else {
-                        alert('⚠️ Нет загруженных файлов для тестирования');
-                      }
-                    } else {
-                      alert('❌ Аудиофайлы не найдены в хранилище');
-                    }
-                  }}
-                  className="text-xs text-green-700"
-                >
-                  <Icon name="Play" className="w-3 h-3 mr-1" />
-                  Тест озвучки
-                </Button>
-              </div>
-            </div>
-          </div>
+          <AudioDiagnostics />
         </CardContent>
       </Card>
     </div>
