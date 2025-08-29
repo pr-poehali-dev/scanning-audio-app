@@ -156,6 +156,46 @@ const SettingsModal = ({
                   Загрузить аудио для вкладки "{getTabName(audioSettings.activeTab)}"
                 </button>
                 
+                {/* Примеры названий файлов */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs font-medium text-blue-800 mb-2">
+                    Примеры названий файлов для вкладки "{getTabName(audioSettings.activeTab)}":
+                  </p>
+                  <div className="text-xs text-blue-700 space-y-1">
+                    {audioSettings.activeTab === 'delivery' && (
+                      <>
+                        <div>• scan-success.mp3 - успешное сканирование QR</div>
+                        <div>• client-found.mp3 - клиент найден</div>
+                        <div>• phone-input.mp3 - ввод телефона</div>
+                        <div>• check-product.mp3 - проверьте товар под камерой</div>
+                        <div>• discount.mp3 - товары со скидкой</div>
+                        <div>• rate-service.mp3 - оцените наш ПВЗ</div>
+                        <div>• cell-123.mp3 - озвучка ячейки 123 (cell-НОМЕР.mp3)</div>
+                      </>
+                    )}
+                    {audioSettings.activeTab === 'acceptance' && (
+                      <>
+                        <div>• scan-success.mp3 - успешное сканирование</div>
+                        <div>• acceptance-complete.mp3 - приемка завершена</div>
+                        <div>• error.mp3 - ошибка приемки</div>
+                      </>
+                    )}
+                    {audioSettings.activeTab === 'returns' && (
+                      <>
+                        <div>• return-complete.mp3 - возврат оформлен</div>
+                        <div>• error.mp3 - ошибка возврата</div>
+                      </>
+                    )}
+                    {audioSettings.activeTab === 'general' && (
+                      <>
+                        <div>• test.mp3 - тестовый звук</div>
+                        <div>• error.mp3 - общие ошибки</div>
+                        <div>• notification.mp3 - уведомления</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                
                 {/* Скрытые input'ы для каждой вкладки */}
                 {['delivery', 'acceptance', 'returns', 'general'].map(tabId => (
                   <input

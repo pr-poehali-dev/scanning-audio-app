@@ -24,22 +24,47 @@ export const useAudio = () => {
       console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
       console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
       
-      // Ищем пользовательский файл по ключу
-      const audioUrl = customAudioFiles[audioKey];
+      // Создаем список возможных ключей для поиска
+      const possibleKeys = [
+        audioKey, // Точное соответствие
+        `delivery-${audioKey}`, // С префиксом delivery
+        `general-${audioKey}`, // С префиксом general
+        `acceptance-${audioKey}`, // С префиксом acceptance 
+        `returns-${audioKey}` // С префиксом returns
+      ];
       
-      if (audioUrl) {
-        console.log(`🎵 Найден пользовательский файл для "${audioKey}"`);
+      // Ищем первый подходящий файл
+      let foundKey = null;
+      let audioUrl = null;
+      
+      for (const key of possibleKeys) {
+        if (customAudioFiles[key]) {
+          foundKey = key;
+          audioUrl = customAudioFiles[key];
+          break;
+        }
+      }
+      
+      if (audioUrl && foundKey) {
+        console.log(`🎵 Найден пользовательский файл "${foundKey}" для "${audioKey}"`);
         try {
           const audio = new Audio(audioUrl);
           audio.volume = 0.8;
+          
+          // Применяем скорость из настроек если есть
+          const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
+          if (savedSpeed) {
+            audio.playbackRate = parseFloat(savedSpeed);
+          }
+          
           await audio.play();
-          console.log(`✅ Успешно воспроизведен пользовательский звук: ${audioKey}`);
+          console.log(`✅ Успешно воспроизведен пользовательский звук: ${foundKey}`);
           return; // Если пользовательский файл есть, не играем тестовый звук
         } catch (audioError) {
-          console.error(`❌ Ошибка воспроизведения пользовательского файла "${audioKey}":`, audioError);
+          console.error(`❌ Ошибка воспроизведения пользовательского файла "${foundKey}":`, audioError);
         }
       } else {
-        console.log(`⚠️ Пользовательский файл не найден для "${audioKey}"`);
+        console.log(`⚠️ Пользовательский файл не найден для "${audioKey}". Проверены ключи:`, possibleKeys);
       }
       
       // Если пользовательского файла нет или он не воспроизвелся - играем тестовый звук
@@ -52,23 +77,23 @@ export const useAudio = () => {
       
       // Настраиваем звук в зависимости от типа
       switch(audioKey) {
-        case 'cell-number':
+        case 'scan-success':
+        case 'client-found':
+        case 'phone-input':
           oscillator.frequency.value = 800;
           break;
-        case 'check-discount-wallet':
+        case 'check-product':
+        case 'discount':
           oscillator.frequency.value = 600;
           break;
-        case 'check-product-camera':
+        case 'rate-service':
           oscillator.frequency.value = 400;
           break;
         case 'delivery-complete':
           oscillator.frequency.value = 900;
           break;
-        case 'receiving-scan':
+        case 'test':
           oscillator.frequency.value = 500;
-          break;
-        case 'return-complete':
-          oscillator.frequency.value = 300;
           break;
         default:
           oscillator.frequency.value = 700;
@@ -102,6 +127,13 @@ export const useAudio = () => {
         try {
           const audio = new Audio(audioUrl);
           audio.volume = 0.8;
+          
+          // Применяем скорость из настроек если есть
+          const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
+          if (savedSpeed) {
+            audio.playbackRate = parseFloat(savedSpeed);
+          }
+          
           await audio.play();
           console.log(`✅ Успешно воспроизведена пользовательская озвучка ячейки ${cellNumber}`);
           return; // Если пользовательский файл есть, не играем тестовый звук
