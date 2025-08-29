@@ -59,21 +59,36 @@ export const useAudio = () => {
         `general-${audioKey}` // С префиксом general
       ];
       
-      // Добавляем специальные маппинги для всех ключей
+      // КРИТИЧНО: Маппинг системных ключей на РЕАЛЬНЫЕ загруженные файлы
       const keyMappings: {[key: string]: string[]} = {
-        // КРИТИЧНО: Основные системные ключи → загруженные файлы
-        'discount': ['check-discount-wallet', 'скидка', 'discount'],
-        'check-product': ['check-product-camera', 'камера', 'товар', 'check-product'],
-        'check-product-camera': ['check-product', 'камера', 'товар'],
-        'rate-service': ['rate-pickup-point', 'оцените', 'rate-service'],
+        // === МАППИНГ НА РЕАЛЬНЫЕ РУССКИЕ НАЗВАНИЯ ===
+        'discount': [
+          'Товары со со скидкой проверьте ВБ кошелек',
+          'delivery-Товары со со скидкой проверьте ВБ кошелек',
+          'скидка', 'кошелек', 'check-discount-wallet'
+        ],
+        
+        'check-product': [
+          'Проверьте товар под камерой', 
+          'delivery-Проверьте товар под камерой',
+          'камера', 'товар', 'check-product-camera'
+        ],
+        
+        'check-product-camera': [
+          'Проверьте товар под камерой',
+          'delivery-Проверьте товар под камерой', 
+          'камера', 'товар'
+        ],
+        
+        'rate-service': [
+          'Оцените ПВЗ в приложении',
+          'delivery-Оцените ПВЗ в приложении',
+          'оцените', 'rate-pickup-point'
+        ],
+        
         'cell-number': ['cell-number', 'ячейка'],
         
-        // И обратно - загруженные файлы → системные ключи  
-        'check-discount-wallet': ['discount', 'скидка'],
-        'check-product-camera': ['check-product', 'камера', 'товар'],
-        'rate-pickup-point': ['rate-service', 'оцените'],
-        
-        // Дополнительные варианты
+        // === ДОПОЛНИТЕЛЬНЫЕ СИСТЕМНЫЕ КЛЮЧИ ===
         'receiving-start': ['приемка', 'начало'],
         'receiving-complete': ['приемка', 'завершена'],
         'return-start': ['возврат', 'начало'],
@@ -99,6 +114,59 @@ export const useAudio = () => {
         }
       }
       
+      // ЕСЛИ НЕ НАЙДЕН - ПРОБУЕМ УМНЫЙ ПОИСК
+      if (!audioUrl || !foundKey) {
+        console.log(`🔍 ЗАПУСКАЕМ УМНЫЙ ПОИСК для "${audioKey}"...`);
+        const availableKeys = Object.keys(customAudioFiles);
+        
+        // Ищем ключи со словами из искомого
+        const searchWords = audioKey.toLowerCase().split('-');
+        console.log(`🔤 Ищем по словам:`, searchWords);
+        
+        for (const availKey of availableKeys) {
+          const availKeyLower = availKey.toLowerCase();
+          
+          // Проверяем каждое слово
+          for (const word of searchWords) {
+            if (word.length > 2 && availKeyLower.includes(word)) {
+              console.log(`✅ НАЙДЕНО СОВПАДЕНИЕ: "${availKey}" содержит "${word}"`);
+              foundKey = availKey;
+              audioUrl = customAudioFiles[availKey];
+              break;
+            }
+          }
+          
+          if (foundKey) break;
+        }
+        
+        // Ещё один способ - поиск по русским ключевым словам
+        if (!foundKey) {
+          const russianKeywords = {
+            'discount': ['скидк', 'кошел', 'товары'],
+            'check-product': ['товар', 'камер', 'провер'],  
+            'rate-service': ['оцени', 'пвз', 'приложен']
+          };
+          
+          const keywords = russianKeywords[audioKey] || [];
+          console.log(`🔤 Ищем по русским словам для "${audioKey}":`, keywords);
+          
+          for (const availKey of availableKeys) {
+            const availKeyLower = availKey.toLowerCase();
+            
+            for (const keyword of keywords) {
+              if (availKeyLower.includes(keyword)) {
+                console.log(`✅ НАЙДЕНО ПО РУССКОМУ СЛОВУ: "${availKey}" содержит "${keyword}"`);
+                foundKey = availKey;
+                audioUrl = customAudioFiles[availKey];
+                break;
+              }
+            }
+            
+            if (foundKey) break;
+          }
+        }
+      }
+
       if (audioUrl && foundKey) {
         console.log(`🎵 НАЙДЕН ФАЙЛ "${foundKey}" ДЛЯ "${audioKey}"`);
         console.log(`🔗 URL:`, audioUrl.substring(0, 50) + '...');
