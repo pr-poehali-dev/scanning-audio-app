@@ -51,20 +51,24 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           
           console.log('Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
           
-          // Умное озвучивание ячейки с расширенным поиском
+          // Генерируем случайный номер ячейки от 1 до 482
+          const randomCellNumber = Math.floor(Math.random() * 482) + 1;
+          order.cellNumber = randomCellNumber.toString();
+          
+          // Умное озвучивание ячейки (только цифры)
           const cellAudioOptions = [
-            order.cellNumber,                    // A12, B05, C07
-            `cell-${order.cellNumber}`,         // cell-A12
-            `ячейка-${order.cellNumber}`,       // ячейка-A12  
-            `delivery-${order.cellNumber}`,     // delivery-A12
-            order.cellNumber.toLowerCase(),      // a12, b05
-            `cell-${order.cellNumber.toLowerCase()}`, // cell-a12
-            order.cellNumber.replace(/0+/, ''), // A12 -> A12, B05 -> B5
-            `${order.cellNumber[0]}${parseInt(order.cellNumber.slice(1))}` // A05 -> A5
+            order.cellNumber,                    // 123, 45, 7
+            `cell-${order.cellNumber}`,         // cell-123
+            `ячейка-${order.cellNumber}`,       // ячейка-123
+            `delivery-${order.cellNumber}`,     // delivery-123
+            `${order.cellNumber}`,              // 123
+            `ячейка${order.cellNumber}`,        // ячейка123
+            `cell${order.cellNumber}`,          // cell123
+            `номер-${order.cellNumber}`         // номер-123
           ];
           
           let cellAudioPlayed = false;
-          console.log(`🔍 Ищу аудио для ячейки ${order.cellNumber} среди:`, cellAudioOptions);
+          console.log(`🔍 Поиск аудио для ячейки ${order.cellNumber} (цифровой) среди:`, cellAudioOptions);
           
           for (const cellAudioName of cellAudioOptions) {
             if (customAudioFiles[cellAudioName]) {
