@@ -28,7 +28,7 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   const [acceptanceItems, setAcceptanceItems] = useState<AcceptanceItem[]>([]);
   const [audioTranscriptions, setAudioTranscriptions] = useState<Record<string, string>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [assignedCell, setAssignedCell] = useState<string>('');
+
 
   // 🔊 Озвучка ячейки в приемке (такая же как в выдаче)
   const playCellAudio = async (cellNumber: string) => {
@@ -556,8 +556,6 @@ const ${functionName} = async () => {
             <div className="flex gap-4 justify-center">
               <Button 
                 onClick={() => {
-                  const randomCell = (Math.floor(Math.random() * 500) + 1).toString();
-                  setAssignedCell(randomCell);
                   setCurrentStep('location');
                   playAcceptanceAudio('accepted');
                 }}
@@ -609,20 +607,14 @@ const ${functionName} = async () => {
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Размещение товара</h3>
               <p className="text-gray-600 mb-4">Поместите товар в назначенную ячейку</p>
               
-              {/* ЯЧЕЙКА С ОЗВУЧКОЙ */}
-              <div 
-                onClick={() => {
-                  if (assignedCell) {
-                    console.log('🔊 КЛИК ПО ЯЧЕЙКЕ В ПРИЕМКЕ - озвучка ячейки:', assignedCell);
-                    playCellAudio(assignedCell);
-                  }
-                }}
-                className="cursor-pointer hover:scale-105 transition-transform bg-white rounded-lg p-6 border-2 border-blue-300 mx-auto max-w-xs mb-4"
-                title="Нажмите для озвучки номера ячейки"
-              >
-                <div className="text-sm text-gray-500 mb-2">Ячейка назначения</div>
-                <div className="text-4xl font-bold text-blue-600 mb-2">{assignedCell || (Math.floor(Math.random() * 500) + 1)}</div>
-                <div className="text-xs text-gray-500">Нажмите для озвучки номера</div>
+              <div className="text-center space-y-2 mb-4">
+                <div className="text-gray-600">
+                  Товар готов к размещению в любую доступную ячейку
+                </div>
+                <div className="text-sm text-purple-600 bg-purple-50 rounded-lg p-3">
+                  💡 <strong>Озвучка ячеек:</strong> Загрузите аудиофайлы в разделе<br/>
+                  <em>Настройки → Голосовая озвучка → Приемка</em>
+                </div>
               </div>
             </div>
             

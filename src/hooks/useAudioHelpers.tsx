@@ -74,7 +74,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
   const getPhrasesByTab = useCallback((tabId: string) => {
     const phrases: { [key: string]: string[] } = {
       'delivery': ['Спасибо за заказ! Оцените пункт выдачи!', 'Верните на ячейку'],
-      'acceptance': ['Принято в ПВЗ', 'Ошибка приемки'],
+      'acceptance': ['Принято в ПВЗ', 'Ошибка приемки', 'Ячейка 1', 'Ячейка 2', 'Ячейка 3'],
       'returns': ['Возврат оформлен', 'Ошибка возврата'],
       'general': ['Общий сигнал', 'Ошибка системы']
     };
@@ -89,7 +89,10 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
       ],
       'acceptance': [
         { text: 'Успешное принятие товара', enabled: true },
-        { text: 'Ошибка при приемке', enabled: true }
+        { text: 'Ошибка при приемке', enabled: true },
+        { text: 'Озвучка номера ячейки (универсальная)', enabled: true },
+        { text: 'Озвучка конкретной ячейки (резерв)', enabled: true },
+        { text: 'Озвучка конкретной ячейки (резерв)', enabled: true }
       ],
       'returns': [
         { text: 'Успешное оформление возврата', enabled: true },

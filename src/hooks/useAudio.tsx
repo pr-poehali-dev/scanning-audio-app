@@ -16,6 +16,23 @@ export const useAudio = () => {
       
       if (savedFiles) {
         const parsedFiles = JSON.parse(savedFiles);
+        
+        // 🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ НАСТРОЕК ЯЧЕЕК
+        try {
+          const protectedCellFiles = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
+          const cellLock = localStorage.getItem('wb-pvz-cell-audio-lock');
+          
+          if (protectedCellFiles && cellLock === 'LOCKED') {
+            const cellSettings = JSON.parse(protectedCellFiles);
+            console.log('🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ ЯЧЕЕК:', Object.keys(cellSettings));
+            
+            // Мержим защищенные настройки ячеек с обычными файлами
+            Object.assign(parsedFiles, cellSettings);
+          }
+        } catch (error) {
+          console.warn('⚠️ Ошибка загрузки защищенных настроек ячеек:', error);
+        }
+        
         setCustomAudioFiles(parsedFiles);
         
         const cellFiles = Object.keys(parsedFiles).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
@@ -25,6 +42,7 @@ export const useAudio = () => {
         console.log(`🏠 Загружено ${cellFiles.length} файлов ячеек:`, cellFiles);
         console.log(`⏰ Последнее сохранение:`, timestamp || 'неизвестно');
         console.log(`📊 Ожидалось файлов:`, count || 'неизвестно');
+        console.log(`🔒 Защищенных настроек ячеек: ${Object.keys(localStorage.getItem('wb-pvz-cell-audio-settings-permanent') || '{}').length}`);
         
         if (cellFiles.length === 0) {
           console.warn('⚠️ ФАЙЛЫ ЯЧЕЕК НЕ НАЙДЕНЫ! Проверьте загрузку в настройках.');
@@ -330,6 +348,29 @@ export const useAudio = () => {
     
     const updatedFiles = { ...customAudioFiles, ...permanentFiles };
     setCustomAudioFiles(updatedFiles);
+    
+    // 🔒 ПРИНУДИТЕЛЬНОЕ СОХРАНЕНИЕ настроек ячеек для приемки (НАВСЕГДА!)
+    const cellFiles = Object.entries(updatedFiles).filter(([key]) => 
+      key.includes('cell-') || 
+      key.includes('ячейка') || 
+      /^\d+$/.test(key) ||
+      key.includes('acceptance-')
+    );
+    
+    if (cellFiles.length > 0) {
+      try {
+        const cellSettings = Object.fromEntries(cellFiles);
+        localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(cellSettings));
+        localStorage.setItem('wb-pvz-cell-audio-timestamp', new Date().toISOString());
+        localStorage.setItem('wb-pvz-cell-audio-lock', 'LOCKED'); // Блокировка от удаления
+        
+        console.log(`🏠 🔒 ПРИНУДИТЕЛЬНОЕ СОХРАНЕНИЕ ЯЧЕЕК: ${cellFiles.length} файлов`);
+        console.log('💎 Настройки ячеек сохранены НАВСЕГДА в отдельном защищенном ключе!');
+        console.log('🔐 Ключи ячеек:', cellFiles.map(([key]) => key));
+      } catch (error) {
+        console.error('❌ Ошибка принудительного сохранения ячеек:', error);
+      }
+    }
     
     // Расширенное сохранение в localStorage с проверками
     try {
