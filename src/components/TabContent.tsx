@@ -1,5 +1,6 @@
 import Icon from '@/components/ui/icon';
 import DeliveryInterface from './DeliveryInterface';
+import { findOrderByPhone } from '@/data/mockOrders';
 
 interface TabContentProps {
   activeTab: string;
@@ -8,12 +9,13 @@ interface TabContentProps {
   isScanning: boolean;
   scannedData: string;
   onQRScan: () => void;
-  onPhoneSubmit: () => void;
+  onPhoneSubmit: (digits: string) => void;
   deliveryStep: 'initial' | 'client-scanned' | 'product-scanned' | 'completed';
   isProductScanned: boolean;
   onCellClick: (cellNumber: string) => void;
   onScanProduct: () => void;
   onDeliverProduct: () => void;
+  currentOrder?: any;
 }
 
 const TabContent = ({
@@ -28,14 +30,15 @@ const TabContent = ({
   isProductScanned,
   onCellClick,
   onScanProduct,
-  onDeliverProduct
+  onDeliverProduct,
+  currentOrder
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи
     if (deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed') {
       return (
         <DeliveryInterface
-          cellNumbers={['390', '390', '790']}
+          order={currentOrder}
           onCellClick={onCellClick}
           onScanProduct={onScanProduct}
           onDeliverProduct={onDeliverProduct}
@@ -109,7 +112,7 @@ const TabContent = ({
             />
             
             <button
-              onClick={onPhoneSubmit}
+              onClick={() => onPhoneSubmit(phoneNumber)}
               disabled={phoneNumber.length !== 4}
               className={`w-full py-3 rounded-lg font-medium transition-colors ${
                 phoneNumber.length === 4

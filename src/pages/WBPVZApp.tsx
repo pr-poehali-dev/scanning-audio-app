@@ -6,10 +6,7 @@ import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import Footer from '@/components/Footer';
-import PhoneInput from '@/components/PhoneInput';
-import DeliveryInterface from '@/components/DeliveryInterface';
 import { findOrderByPhone, Order } from '@/data/mockOrders';
-import { useVoice } from '@/hooks/useVoice';
 
 const WBPVZApp = () => {
   const [activeTab, setActiveTab] = useState('acceptance');
@@ -22,7 +19,6 @@ const WBPVZApp = () => {
   const [deliveryStep, setDeliveryStep] = useState<'initial' | 'client-scanned' | 'product-scanned' | 'completed'>('initial');
   const [isProductScanned, setIsProductScanned] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const [showDeliveryInterface, setShowDeliveryInterface] = useState(false);
   const [expandedMenuItems, setExpandedMenuItems] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem('wb-pvz-expanded-menu');
     return saved ? JSON.parse(saved) : { settings: false };
@@ -40,7 +36,6 @@ const WBPVZApp = () => {
   });
   
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
-  const { announceCell, announceProductCheck, announceRating } = useVoice();
 
   // Восстанавливаем информацию о загруженных аудиофайлах при запуске
   useEffect(() => {
@@ -84,16 +79,19 @@ const WBPVZApp = () => {
     setIsScanning(true);
     
     if (activeTab === 'delivery') {
-      // Логика для выдачи
+      // Логика для выдачи - эмулируем поиск заказа
       if (deliveryStep === 'initial') {
-        // Первое сканирование - QR клиента/курьера
-        setDeliveryStep('client-scanned');
-        
-        // Озвучиваем номер ячейки и про скидку
-        const cellNumber = Math.floor(Math.random() * 900) + 100; // моковый номер ячейки
-        await playAudio(`cell-${cellNumber}`);
-        await new Promise(resolve => setTimeout(resolve, 1000)); // пауза
-        await playAudio('discount');
+        // Первое сканирование - QR клиента/курьера, берем случайный заказ
+        const order = findOrderByPhone('5667'); // тестовый заказ
+        if (order) {
+          setCurrentOrder(order);
+          setDeliveryStep('client-scanned');
+          
+          // Озвучиваем номер ячейки и про скидку
+          await playAudio(`cell-${order.cellNumber}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await playAudio('discount');
+        }
         
       } else if (deliveryStep === 'client-scanned') {
         // Второе сканирование - товар со склада
@@ -126,54 +124,52 @@ const WBPVZApp = () => {
   }, [playAudio, activeTab, deliveryStep]);
 
   const handlePhoneSubmit = useCallback(async (lastFourDigits: string) => {
-    if (lastFourDigits === 'fake-scan') {
-      // Эмуляция сканирования - берем случайный заказ
-      const order = findOrderByPhone('5667');
-      if (order) {
-        setCurrentOrder(order);
-        setShowDeliveryInterface(true);
-        announceCell(order.cellNumber);
-      }
-      return;
-    }
-
     const order = findOrderByPhone(lastFourDigits);
     if (order) {
       setCurrentOrder(order);
-      setShowDeliveryInterface(true);
-      announceCell(order.cellNumber);
+      setDeliveryStep('client-scanned');
+      
+      // Озвучиваем номер ячейки и про скидку
+      await playAudio(`cell-${order.cellNumber}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await playAudio('discount');
+      
+      // Очищаем номер телефона
+      setPhoneNumber('');
     } else {
       alert('Заказ не найден');
     }
-  }, [announceCell]);
+  }, [playAudio, setPhoneNumber]);
 
   // Функции для процесса выдачи
   const handleCellClick = useCallback(async (cellNumber: string) => {
     // Озвучиваем номер ячейки при клике
-    announceCell(cellNumber);
-  }, [announceCell]);
+    await playAudio(`cell-${cellNumber}`);
+  }, [playAudio]);
 
-  const handleScanProduct = useCallback(() => {
+  const handleScanProduct = useCallback(async () => {
     // Эмуляция сканирования товара
     setIsProductScanned(true);
     if (currentOrder) {
       setScannedData(currentOrder.items.map(item => item.barcode).join(','));
     }
-    announceProductCheck();
-  }, [currentOrder, announceProductCheck]);
+    
+    // Озвучиваем "Проверьте товар под камерой"
+    await playAudio('check-product');
+  }, [currentOrder, playAudio]);
 
   const handleDeliverProduct = useCallback(async () => {
     // Финальная выдача товара с озвучкой "Оцените наш ПВЗ"
-    announceRating();
+    await playAudio('rate-service');
     
     // Сброс состояния через некоторое время
     setTimeout(() => {
-      setShowDeliveryInterface(false);
+      setDeliveryStep('initial');
       setCurrentOrder(null);
       setIsProductScanned(false);
       setScannedData('');
     }, 3000);
-  }, [announceRating]);
+  }, [playAudio]);
 
   // Сброс состояния выдачи при смене вкладки
   const handleTabChange = useCallback((tab: string) => {
@@ -315,33 +311,21 @@ const WBPVZApp = () => {
       />
 
       <div className="flex-1 p-6">
-        {activeTab === 'delivery' && !showDeliveryInterface ? (
-          <PhoneInput onPhoneSubmit={handlePhoneSubmit} />
-        ) : activeTab === 'delivery' && showDeliveryInterface ? (
-          <DeliveryInterface
-            order={currentOrder}
-            onCellClick={handleCellClick}
-            onScanProduct={handleScanProduct}
-            onDeliverProduct={handleDeliverProduct}
-            isProductScanned={isProductScanned}
-            scannedData={scannedData}
-          />
-        ) : (
-          <TabContent
-            activeTab={activeTab}
-            phoneNumber={phoneNumber}
-            setPhoneNumber={setPhoneNumber}
-            isScanning={isScanning}
-            scannedData={scannedData}
-            onQRScan={handleQRScan}
-            onPhoneSubmit={handlePhoneSubmit}
-            deliveryStep={deliveryStep}
-            isProductScanned={isProductScanned}
-            onCellClick={handleCellClick}
-            onScanProduct={handleScanProduct}
-            onDeliverProduct={handleDeliverProduct}
-          />
-        )}
+        <TabContent
+          activeTab={activeTab}
+          phoneNumber={phoneNumber}
+          setPhoneNumber={setPhoneNumber}
+          isScanning={isScanning}
+          scannedData={scannedData}
+          onQRScan={handleQRScan}
+          onPhoneSubmit={handlePhoneSubmit}
+          deliveryStep={deliveryStep}
+          isProductScanned={isProductScanned}
+          onCellClick={handleCellClick}
+          onScanProduct={handleScanProduct}
+          onDeliverProduct={handleDeliverProduct}
+          currentOrder={currentOrder}
+        />
       </div>
 
       <Footer customAudioFiles={customAudioFiles} playAudio={playAudio} />
