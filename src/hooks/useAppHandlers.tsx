@@ -51,20 +51,59 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           
           console.log('Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
           
-          // Озвучиваем номер ячейки и про скидку
-          // Пробуем несколько вариантов названий аудиофайлов для ячейки
-          try {
-            await playAudio(order.cellNumber); // A12, B05, C07, D13, E09
-          } catch {
-            try {
-              await playAudio(`cell-${order.cellNumber}`); // cell-A12
-            } catch {
-              await playAudio(`ячейка-${order.cellNumber}`); // ячейка-A12
+          // Умное озвучивание ячейки с расширенным поиском
+          const cellAudioOptions = [
+            order.cellNumber,                    // A12, B05, C07
+            `cell-${order.cellNumber}`,         // cell-A12
+            `ячейка-${order.cellNumber}`,       // ячейка-A12  
+            `delivery-${order.cellNumber}`,     // delivery-A12
+            order.cellNumber.toLowerCase(),      // a12, b05
+            `cell-${order.cellNumber.toLowerCase()}`, // cell-a12
+            order.cellNumber.replace(/0+/, ''), // A12 -> A12, B05 -> B5
+            `${order.cellNumber[0]}${parseInt(order.cellNumber.slice(1))}` // A05 -> A5
+          ];
+          
+          let cellAudioPlayed = false;
+          console.log(`🔍 Ищу аудио для ячейки ${order.cellNumber} среди:`, cellAudioOptions);
+          
+          for (const cellAudioName of cellAudioOptions) {
+            if (customAudioFiles[cellAudioName]) {
+              console.log(`✅ Найдено аудио для ячейки: "${cellAudioName}"`);
+              await playAudio(cellAudioName);
+              cellAudioPlayed = true;
+              break;
             }
           }
           
+          if (!cellAudioPlayed) {
+            console.log(`❌ Аудио для ячейки ${order.cellNumber} не найдено`);
+            console.log('📁 Доступные аудиофайлы:', Object.keys(customAudioFiles));
+          }
+          
           await new Promise(resolve => setTimeout(resolve, 1000));
-          await playAudio('discount');
+          
+          // Умное озвучивание скидки
+          const discountAudioOptions = [
+            'discount',
+            'delivery-скидка',
+            'скидка',
+            'delivery-discount',
+            'Товары со со скидкой проверьте ВБ кошелек'
+          ];
+          
+          let discountAudioPlayed = false;
+          for (const discountAudioName of discountAudioOptions) {
+            if (customAudioFiles[discountAudioName]) {
+              console.log(`✅ Найдено аудио для скидки: "${discountAudioName}"`);
+              await playAudio(discountAudioName);
+              discountAudioPlayed = true;
+              break;
+            }
+          }
+          
+          if (!discountAudioPlayed) {
+            console.log('❌ Аудио для скидки не найдено');
+          }
         }
         
         setIsScanning(false);
