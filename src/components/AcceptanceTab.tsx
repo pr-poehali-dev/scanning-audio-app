@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Package, Scan, CheckCircle, XCircle, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
+import { useState } from 'react';
+import { Package, Scan, CheckCircle, XCircle, AlertTriangle, Search, ArrowLeft } from 'lucide-react';
 import QRScanner from './QRScanner';
-import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface AcceptanceTabProps {
   playAudio: (audioName: string) => void;
   customAudioFiles: Record<string, string>;
 }
+
+type AcceptanceStep = 'scan' | 'confirm' | 'location' | 'complete';
 
 interface AcceptanceItem {
   id: string;
@@ -19,9 +21,11 @@ interface AcceptanceItem {
 }
 
 const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
+  const [currentStep, setCurrentStep] = useState<AcceptanceStep>('scan');
   const [showScanner, setShowScanner] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [scannedCode, setScannedCode] = useState('');
   const [acceptanceItems, setAcceptanceItems] = useState<AcceptanceItem[]>([]);
-  const [currentScanMode, setCurrentScanMode] = useState<'accept' | 'damage' | 'reject'>('accept');
 
   // Расширенная функция для проигрывания аудио с умным алгоритмом
   const playAcceptanceAudio = (action: string, itemData?: any) => {
@@ -104,36 +108,28 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     return audioPlayed;
   };
 
-  // Обработка сканирования QR-кода с расширенной озвучкой
+  // Обработка сканирования
   const handleQRScan = (data: string) => {
-    console.log('Отсканирован товар для приемки:', data);
+    console.log('🔍 Отсканирован код для приемки:', data);
+    setScannedCode(data);
     setShowScanner(false);
     
-    // Сначала озвучиваем факт сканирования
+    // Озвучиваем сканирование
     playAcceptanceAudio('item_scanned', { barcode: data });
+    
+    // Переходим к следующему шагу
+    setCurrentStep('confirm');
     
     const newItem: AcceptanceItem = {
       id: Date.now().toString(),
       barcode: data,
       productName: `Товар ${data.slice(-6)}`,
       quantity: 1,
-      status: currentScanMode === 'accept' ? 'accepted' : 
-              currentScanMode === 'damage' ? 'damaged' : 'rejected',
+      status: 'accepted',
       timestamp: new Date().toLocaleString('ru-RU')
     };
 
     setAcceptanceItems(prev => [newItem, ...prev]);
-    
-    // Через небольшую задержку озвучиваем результат обработки
-    setTimeout(() => {
-      if (currentScanMode === 'accept') {
-        playAcceptanceAudio('accepted', newItem);
-      } else if (currentScanMode === 'damage') {
-        playAcceptanceAudio('damaged', newItem);
-      } else {
-        playAcceptanceAudio('rejected', newItem);
-      }
-    }, 500);
   };
 
   // Функция для изменения статуса товара
@@ -148,9 +144,8 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     playAcceptanceAudio(newStatus);
   };
 
-  // Функция для открытия сканера с определенным режимом и озвучкой
-  const startScanning = (mode: 'accept' | 'damage' | 'reject') => {
-    setCurrentScanMode(mode);
+  // Открытие сканера
+  const startScanning = () => {
     playAcceptanceAudio('start_scanning');
     setShowScanner(true);
   };
@@ -182,142 +177,108 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     return acc;
   }, {} as Record<string, number>);
 
+  // Степпер компонент
+  const StepIndicator = ({ step, isActive, isCompleted }: { step: number; isActive: boolean; isCompleted: boolean }) => (
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+      isCompleted ? 'bg-green-500 text-white' :
+      isActive ? 'bg-purple-500 text-white' :
+      'bg-gray-200 text-gray-600'
+    }`}>
+      {isCompleted ? <CheckCircle size={16} /> : step}
+    </div>
+  );
+
+  // QR код компонент (статичный)
+  const QRCodeDisplay = () => (
+    <div className="flex justify-center mb-8">
+      <div className="w-48 h-48 bg-white border-4 border-purple-200 rounded-xl p-4 flex items-center justify-center">
+        <img 
+          src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTc2IiBoZWlnaHQ9IjE3NiIgdmlld0JveD0iMCAwIDE3NiAxNzYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI4IiBoZWlnaHQ9IjgiIGZpbGw9IiMwMDAwMDAiLz4KPHJlY3QgeD0iOCIgeT0iMCIgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iIzAwMDAwMCIvPgo8cmVjdCB4PSIxNiIgeT0iMCIgd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsbD0iIzAwMDAwMCIvPgo8L3N2Zz4K"
+          alt="QR Code"
+          className="w-full h-full object-contain"
+        />
+        {/* Простая имитация QR кода */}
+        <div className="grid grid-cols-8 gap-1 w-full h-full">
+          {Array.from({length: 64}, (_, i) => (
+            <div 
+              key={i} 
+              className={`${Math.random() > 0.5 ? 'bg-black' : 'bg-white'} rounded-sm`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Заголовок и статистика */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Package className="text-blue-600" size={28} />
-          <h2 className="text-2xl font-bold text-gray-800">Приемка товаров</h2>
-        </div>
-        
-        {/* Статистика */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-green-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.accepted || 0}</div>
-            <div className="text-sm text-green-700">Принято</div>
+    <div className="min-h-screen bg-gray-50 p-4">
+      {/* Хедер с кнопкой назад */}
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" className="mr-4">
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Вернуться к приемке
+        </Button>
+      </div>
+
+      {/* Степпер */}
+      <div className="bg-white rounded-lg p-6 mb-6">
+        <div className="flex items-center justify-center space-x-8 mb-8">
+          <div className="flex flex-col items-center">
+            <StepIndicator step={1} isActive={currentStep === 'scan'} isCompleted={false} />
           </div>
-          <div className="bg-yellow-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-yellow-600">{stats.damaged || 0}</div>
-            <div className="text-sm text-yellow-700">Повреждено</div>
+          <div className="flex-1 h-0.5 bg-gray-200"></div>
+          <div className="flex flex-col items-center">
+            <StepIndicator step={2} isActive={currentStep === 'confirm'} isCompleted={false} />
           </div>
-          <div className="bg-red-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.rejected || 0}</div>
-            <div className="text-sm text-red-700">Отклонено</div>
+          <div className="flex-1 h-0.5 bg-gray-200"></div>
+          <div className="flex flex-col items-center">
+            <StepIndicator step={3} isActive={currentStep === 'location'} isCompleted={false} />
           </div>
-          <div className="bg-gray-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-gray-600">{acceptanceItems.length}</div>
-            <div className="text-sm text-gray-700">Всего</div>
+          <div className="flex-1 h-0.5 bg-gray-200"></div>
+          <div className="flex flex-col items-center">
+            <StepIndicator step={4} isActive={currentStep === 'complete'} isCompleted={false} />
           </div>
         </div>
 
-        {/* Кнопки для сканирования */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button
-            onClick={() => startScanning('accept')}
-            className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg transition-colors"
-          >
-            <CheckCircle size={20} />
-            <Scan size={20} />
-            <span>Принять товар</span>
-          </button>
-          
-          <button
-            onClick={() => startScanning('damage')}
-            className="flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white p-4 rounded-lg transition-colors"
-          >
-            <AlertTriangle size={20} />
-            <Scan size={20} />
-            <span>Товар поврежден</span>
-          </button>
-          
-          <button
-            onClick={() => startScanning('reject')}
-            className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white p-4 rounded-lg transition-colors"
-          >
-            <XCircle size={20} />
-            <Scan size={20} />
-            <span>Отклонить товар</span>
-          </button>
+        {/* Контент в зависимости от шага */}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-8">
+            Отсканируйте стикер коробки
+          </h1>
+
+          {/* QR код */}
+          <QRCodeDisplay />
+
+          {/* Разделитель */}
+          <div className="text-gray-500 mb-6">или</div>
+
+          {/* Поле поиска */}
+          <div className="max-w-md mx-auto">
+            <div className="relative">
+              <Input
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder="89585787658"
+                className="w-full pl-4 pr-12 py-3 text-lg border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+              />
+              <Button 
+                size="sm"
+                className="absolute right-2 top-2 bg-purple-500 hover:bg-purple-600"
+                onClick={() => {
+                  if (searchValue) {
+                    handleQRScan(searchValue);
+                    setSearchValue('');
+                  }
+                }}
+              >
+                <Search className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Список товаров */}
-      <div className="bg-white rounded-lg shadow-md">
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-800">История приемки</h3>
-        </div>
-        
-        <div className="max-h-96 overflow-y-auto">
-          {acceptanceItems.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Package size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Пока нет отсканированных товаров</p>
-              <p className="text-sm">Нажмите на кнопку сканирования выше</p>
-            </div>
-          ) : (
-            <div className="space-y-2 p-4">
-              {acceptanceItems.map((item) => (
-                <div 
-                  key={item.id}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
-                    item.status === 'accepted' ? 'border-green-200 bg-green-50' :
-                    item.status === 'damaged' ? 'border-yellow-200 bg-yellow-50' :
-                    item.status === 'rejected' ? 'border-red-200 bg-red-50' :
-                    'border-gray-200 bg-gray-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-medium text-gray-800">{item.productName}</h4>
-                      <p className="text-sm text-gray-600">Штрихкод: {item.barcode}</p>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      item.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                      item.status === 'damaged' ? 'bg-yellow-100 text-yellow-800' :
-                      item.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {item.status === 'accepted' ? 'Принято' :
-                       item.status === 'damaged' ? 'Повреждено' :
-                       item.status === 'rejected' ? 'Отклонено' : item.status}
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">{item.timestamp}</span>
-                    
-                    {/* Кнопки для смены статуса */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => changeItemStatus(item.id, 'accepted')}
-                        className="text-green-600 hover:bg-green-100 p-1 rounded transition-colors"
-                        title="Принять"
-                      >
-                        <CheckCircle size={16} />
-                      </button>
-                      <button
-                        onClick={() => changeItemStatus(item.id, 'damaged')}
-                        className="text-yellow-600 hover:bg-yellow-100 p-1 rounded transition-colors"
-                        title="Повреждено"
-                      >
-                        <AlertTriangle size={16} />
-                      </button>
-                      <button
-                        onClick={() => changeItemStatus(item.id, 'rejected')}
-                        className="text-red-600 hover:bg-red-100 p-1 rounded transition-colors"
-                        title="Отклонить"
-                      >
-                        <XCircle size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* QR Сканер */}
       <QRScanner

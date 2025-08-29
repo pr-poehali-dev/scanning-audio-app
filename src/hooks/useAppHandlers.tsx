@@ -69,11 +69,14 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           ];
           
           let cellAudioPlayed = false;
-          console.log(`🔍 Поиск аудио для ячейки ${order.cellNumber} (цифровой) среди:`, cellAudioOptions);
+          console.log(`🔍 ТЕСТ: Поиск аудио для ячейки ${order.cellNumber} среди:`, cellAudioOptions);
+          console.log(`📦 ТЕСТ: Всего доступно аудио файлов:`, Object.keys(customAudioFiles).length);
+          console.log(`📋 ТЕСТ: Список всех аудио:`, Object.keys(customAudioFiles));
           
           for (const cellAudioName of cellAudioOptions) {
+            console.log(`🔍 ТЕСТ: Проверяю файл "${cellAudioName}"`);
             if (customAudioFiles[cellAudioName]) {
-              console.log(`✅ Найдено аудио для ячейки: "${cellAudioName}"`);
+              console.log(`✅ НАЙДЕНО аудио для ячейки: "${cellAudioName}"`);
               try {
                 await playAudio(cellAudioName);
                 cellAudioPlayed = true;
@@ -81,6 +84,8 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
               } catch (error) {
                 console.log(`❌ Ошибка воспроизведения аудио ячейки:`, error);
               }
+            } else {
+              console.log(`❌ ТЕСТ: Файл "${cellAudioName}" не найден`);
             }
           }
           
