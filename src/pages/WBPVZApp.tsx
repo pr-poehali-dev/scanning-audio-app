@@ -59,12 +59,17 @@ const WBPVZApp = () => {
       
       // Эмулируем процесс сканирования
       setTimeout(async () => {
-        // Берем тестовый заказ
-        const order = findOrderByPhone('5667');
+        // Берем случайный тестовый заказ
+        const testPhones = ['5667', '3321', '8899', '1144', '3366'];
+        const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
+        const order = findOrderByPhone(randomPhone);
+        
         if (order) {
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
-          setScannedData('fake-qr-code-data');
+          setScannedData(`qr-${order.id}-${order.phone}`);
+          
+          console.log('Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
           
           // Озвучиваем номер ячейки и про скидку
           await playAudio(`cell-${order.cellNumber}`);

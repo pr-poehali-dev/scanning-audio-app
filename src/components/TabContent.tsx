@@ -33,9 +33,12 @@ const TabContent = ({
   onDeliverProduct,
   currentOrder
 }: TabContentProps) => {
+  console.log('TabContent - activeTab:', activeTab, 'deliveryStep:', deliveryStep, 'currentOrder:', currentOrder?.customerName);
+  
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи
     if (deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed') {
+      console.log('Показываем DeliveryInterface для заказа:', currentOrder?.customerName);
       return (
         <DeliveryInterface
           order={currentOrder}

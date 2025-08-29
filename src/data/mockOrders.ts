@@ -155,8 +155,16 @@ export const mockOrders: Order[] = [
 
 // Функция поиска заказа по последним 4 цифрам телефона
 export const findOrderByPhone = (lastFourDigits: string): Order | null => {
-  const order = mockOrders.find(order => 
-    order.phone.replace(/\D/g, '').slice(-4) === lastFourDigits
-  );
+  console.log('Поиск заказа по цифрам:', lastFourDigits);
+  const order = mockOrders.find(order => {
+    const phoneDigits = order.phone.replace(/\D/g, '').slice(-4);
+    console.log(`Сравниваем ${phoneDigits} с ${lastFourDigits} для ${order.customerName}`);
+    return phoneDigits === lastFourDigits;
+  });
+  if (order) {
+    console.log('Найден заказ:', order.customerName, 'Ячейка:', order.cellNumber);
+  } else {
+    console.log('Заказ не найден');
+  }
   return order || null;
 };
