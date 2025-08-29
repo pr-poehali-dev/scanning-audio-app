@@ -110,6 +110,16 @@ const WBPVZApp = () => {
     });
   }, []);
 
+  const getTabName = (tabId: string) => {
+    const names: { [key: string]: string } = {
+      'delivery': 'Выдача',
+      'acceptance': 'Приемка', 
+      'returns': 'Возврат',
+      'general': 'Общие'
+    };
+    return names[tabId] || tabId;
+  };
+
   const handleFolderUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>, tabType: string) => {
     const files = event.target.files;
     console.log('Выбрано файлов для', tabType, ':', files?.length);
@@ -168,16 +178,6 @@ const WBPVZApp = () => {
       event.target.value = '';
     }
   }, [updateAudioFiles, customAudioFiles, getTabName]);
-
-  const getTabName = (tabId: string) => {
-    const names: { [key: string]: string } = {
-      'delivery': 'Выдача',
-      'acceptance': 'Приемка', 
-      'returns': 'Возврат',
-      'general': 'Общие'
-    };
-    return names[tabId] || tabId;
-  };
 
   const getPhrasesByTab = (tabId: string) => {
     const phrases: { [key: string]: string[] } = {
