@@ -37,12 +37,13 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
       // Фиктивное сканирование для вкладки выдачи
       setIsScanning(true);
       
-      // Эмулируем процесс сканирования
+      // Мгновенный поиск заказа без задержки
+      const testPhones = ['5667', '3321', '8899', '1144', '3366'];
+      const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
+      const order = findOrderByPhone(randomPhone);
+      
+      // Небольшая задержка только для визуального эффекта сканирования
       setTimeout(async () => {
-        // Берем случайный тестовый заказ
-        const testPhones = ['5667', '3321', '8899', '1144', '3366'];
-        const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
-        const order = findOrderByPhone(randomPhone);
         
         if (order) {
           setCurrentOrder(order);
@@ -55,7 +56,7 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           const randomCellNumber = Math.floor(Math.random() * 482) + 1;
           order.cellNumber = randomCellNumber.toString();
           
-          // Умное озвучивание ячейки (только цифры)
+          // Умное озвучивание ячейки с правильным ожиданием
           const cellAudioOptions = [
             order.cellNumber,                    // 123, 45, 7
             `cell-${order.cellNumber}`,         // cell-123
@@ -73,9 +74,15 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           for (const cellAudioName of cellAudioOptions) {
             if (customAudioFiles[cellAudioName]) {
               console.log(`✅ Найдено аудио для ячейки: "${cellAudioName}"`);
-              await playAudio(cellAudioName);
-              cellAudioPlayed = true;
-              break;
+              try {
+                await playAudio(cellAudioName);
+                cellAudioPlayed = true;
+                // Даем время аудио полностью воспроизвестись
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                break;
+              } catch (error) {
+                console.log(`❌ Ошибка воспроизведения аудио ячейки:`, error);
+              }
             }
           }
           
@@ -84,12 +91,10 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
             console.log('📁 Доступные аудиофайлы:', Object.keys(customAudioFiles));
           }
           
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Умное озвучивание скидки
+          // Умное озвучивание скидки с правильным ожиданием
           const discountAudioOptions = [
             'discount',
-            'delivery-скидка',
+            'delivery-скидка', 
             'скидка',
             'delivery-discount',
             'Товары со со скидкой проверьте ВБ кошелек'
@@ -99,9 +104,13 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           for (const discountAudioName of discountAudioOptions) {
             if (customAudioFiles[discountAudioName]) {
               console.log(`✅ Найдено аудио для скидки: "${discountAudioName}"`);
-              await playAudio(discountAudioName);
-              discountAudioPlayed = true;
-              break;
+              try {
+                await playAudio(discountAudioName);
+                discountAudioPlayed = true;
+                break;
+              } catch (error) {
+                console.log(`❌ Ошибка воспроизведения аудио скидки:`, error);
+              }
             }
           }
           
@@ -111,7 +120,7 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
         }
         
         setIsScanning(false);
-      }, 1500); // Имитируем задержку сканирования
+      }, 300); // Минимальная задержка для визуального эффекта
     } else if (activeTab === 'acceptance') {
       // Расширенное сканирование для приемки с умной озвучкой
       console.log('📦 ПРИЕМКА: Фиктивное сканирование товара');
