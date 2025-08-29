@@ -113,43 +113,95 @@ const WBPVZApp = () => {
   }, []);
 
   const handleQRScanResult = useCallback(async (data: string) => {
-    console.log('QR код отсканирован:', data);
+    console.log('📱 QR код отсканирован:', data);
     setScannedData(data);
     setIsScanning(true);
     
     if (activeTab === 'delivery') {
-      // Логика для выдачи - эмулируем поиск заказа
       if (deliveryStep === 'initial') {
-        // Первое сканирование - QR клиента/курьера, берем случайный заказ
-        const order = findOrderByPhone('5667'); // тестовый заказ
+        // Первое сканирование - QR клиента/курьера
+        console.log('🔍 Поиск заказа по данным сканирования...');
+        
+        // Пытаемся извлечь номер телефона из QR кода
+        let phoneDigits = '';
+        
+        // Ищем 4 цифры подряд в конце строки (последние 4 цифры телефона)
+        const phoneMatch = data.match(/(\d{4})$/);
+        if (phoneMatch) {
+          phoneDigits = phoneMatch[1];
+        } else {
+          // Ищем любые 4 цифры в строке
+          const allDigits = data.replace(/\D/g, '');
+          if (allDigits.length >= 4) {
+            phoneDigits = allDigits.slice(-4);
+          }
+        }
+        
+        console.log('📞 Найденные последние 4 цифры телефона:', phoneDigits);
+        
+        // Ищем заказ
+        const order = findOrderByPhone(phoneDigits);
+        
         if (order) {
+          console.log('✅ Заказ найден:', order);
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
           
           // Озвучиваем номер ячейки и про скидку
-          await playAudio(`cell-${order.cellNumber}`);
+          console.log('🔊 Озвучиваем ячейку:', order.cellNumber);
+          
           await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+          console.log('📁 customAudioFiles:', customAudioFiles);
           await playAudio('discount');
+          
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await playAudio(`cell-${order.cellNumber}`);
+        } else {
+          console.log('❌ Заказ не найден. Пробуем тестовые номера...');
+          
+          // Если не найден, пробуем тестовые заказы
+          const testOrder = findOrderByPhone('5667');
+          if (testOrder) {
+            setCurrentOrder(testOrder);
+            setDeliveryStep('client-scanned');
+            
+            await playAudio(`cell-${testOrder.cellNumber}`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await playAudio('discount');
+          }
         }
         
       } else if (deliveryStep === 'client-scanned') {
         // Второе сканирование - товар со склада
+        console.log('📦 Сканирование товара завершено');
         setDeliveryStep('product-scanned');
         setIsProductScanned(true);
         
         // Озвучиваем "Проверьте товар под камерой"
-        await playAudio('check-product');
+        await playAudio('check-product-camera');
       }
+    } else if (activeTab === 'receiving') {
+      // Логика для приемки
+      console.log('📦 ПРИЕМКА: Товар отсканирован');
+      await playAudio('receiving-start');
+      
+    } else if (activeTab === 'returns') {
+      // Логика для возвратов
+      console.log('↩️ ВОЗВРАТ: Товар отсканирован');
+      await playAudio('return-start');
+      
     } else {
       // Старая логика для других вкладок
       let audioKey = 'scan-success';
       
       if (data.includes('check_product') || data.includes('проверь')) {
-        audioKey = 'check-product';
+        audioKey = 'check-product-camera';
       } else if (data.includes('discount') || data.includes('скидка')) {
         audioKey = 'discount';
       } else if (data.includes('rate') || data.includes('оцените')) {
-        audioKey = 'rate-service';
+        audioKey = 'rate-pickup-point';
       } else if (data.includes('client') || data.includes('клиент')) {
         audioKey = 'client-found';
       }
@@ -160,7 +212,7 @@ const WBPVZApp = () => {
     setTimeout(() => {
       setIsScanning(false);
     }, 2000);
-  }, [playAudio, activeTab, deliveryStep]);
+  }, [playAudio, activeTab, deliveryStep, customAudioFiles]);
 
   const handlePhoneSubmit = useCallback(async (lastFourDigits: string) => {
     const order = findOrderByPhone(lastFourDigits);

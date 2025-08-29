@@ -87,7 +87,7 @@ export const AudioUploader = ({
     folderInputRef.current?.click();
   };
 
-  const handleFolderFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -105,23 +105,35 @@ export const AudioUploader = ({
       return;
     }
 
-    audioFilesList.forEach((file) => {
+    // Конвертируем файлы в base64 асинхронно
+    for (const file of audioFilesList) {
       const matchingAudioFile = matchAudioFileByName(file.name);
 
       if (matchingAudioFile) {
-        const url = URL.createObjectURL(file);
-        updatedFiles[matchingAudioFile.key] = url;
+        try {
+          // Конвертируем файл в base64 для постоянного хранения
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
 
-        setAudioFiles(prev => prev.map(item => 
-          item.key === matchingAudioFile.key
-            ? { ...item, uploaded: true, url }
-            : item
-        ));
+          updatedFiles[matchingAudioFile.key] = base64;
+
+          setAudioFiles(prev => prev.map(item => 
+            item.key === matchingAudioFile.key
+              ? { ...item, uploaded: true, url: base64 }
+              : item
+          ));
+        } catch (error) {
+          console.error('Ошибка конвертации файла:', file.name, error);
+        }
       }
 
       processedFiles++;
       setUploadProgress((processedFiles / totalFiles) * 100);
-    });
+    }
 
     setTimeout(async () => {
       setIsUploading(false);
@@ -129,14 +141,14 @@ export const AudioUploader = ({
       
       try {
         await onAudioFilesUpdate(updatedFiles);
-        console.log('Сохранено файлов:', updatedFiles);
+        console.log('🔊 ФАЙЛЫ КОНВЕРТИРОВАНЫ В BASE64 И СОХРАНЕНЫ:', updatedFiles);
         
         // Проверяем что действительно сохранилось
         const saved = localStorage.getItem('wb-audio-files');
-        console.log('В localStorage:', saved);
+        console.log('📁 В localStorage wb-audio-files:', saved ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
         
         const matchedCount = Object.keys(updatedFiles).length;
-        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!`);
+        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!\n\n🔊 Теперь озвучка должна работать!`);
       } catch (error) {
         console.error('Ошибка при сохранении:', error);
         alert('❌ Ошибка при сохранении файлов. Проверьте консоль.');
@@ -148,7 +160,7 @@ export const AudioUploader = ({
     cellFolderInputRef.current?.click();
   };
 
-  const handleCellFolderFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCellFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -158,7 +170,6 @@ export const AudioUploader = ({
     const audioFilesList = Array.from(files).filter(file => file.type.startsWith('audio/'));
     const totalFiles = audioFilesList.length;
     let processedFiles = 0;
-    const updatedFiles: { [key: string]: string } = {};
 
     if (totalFiles === 0) {
       alert('В папке с ячейками не найдено аудиофайлов');
@@ -169,19 +180,31 @@ export const AudioUploader = ({
     // Создаем объект для хранения озвучки ячеек по номерам
     const cellAudios: { [key: string]: string } = {};
 
-    audioFilesList.forEach((file) => {
+    // Конвертируем файлы ячеек в base64 асинхронно
+    for (const file of audioFilesList) {
       // Извлекаем номер ячейки из названия файла
       const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
       const cellNumber = fileName.match(/\d+/)?.[0]; // Ищем первое число в названии
       
       if (cellNumber) {
-        const url = URL.createObjectURL(file);
-        cellAudios[cellNumber] = url;
+        try {
+          // Конвертируем файл в base64 для постоянного хранения
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+
+          cellAudios[cellNumber] = base64;
+        } catch (error) {
+          console.error('Ошибка конвертации ячейки:', file.name, error);
+        }
       }
 
       processedFiles++;
       setCellUploadProgress((processedFiles / totalFiles) * 100);
-    });
+    }
 
     setTimeout(async () => {
       setIsCellUploading(false);
@@ -190,11 +213,11 @@ export const AudioUploader = ({
       // Конвертируем ячейки в правильный формат для основной системы аудио
       const cellFilesForMainSystem: { [key: string]: string } = {};
       
-      Object.entries(cellAudios).forEach(([cellNumber, url]) => {
+      Object.entries(cellAudios).forEach(([cellNumber, base64]) => {
         // Добавляем все варианты ключей для ячеек
-        cellFilesForMainSystem[cellNumber] = url; // Просто номер: "12"
-        cellFilesForMainSystem[`cell-${cellNumber}`] = url; // С префиксом: "cell-12"  
-        cellFilesForMainSystem[`ячейка-${cellNumber}`] = url; // Русский префикс: "ячейка-12"
+        cellFilesForMainSystem[cellNumber] = base64; // Просто номер: "12"
+        cellFilesForMainSystem[`cell-${cellNumber}`] = base64; // С префиксом: "cell-12"  
+        cellFilesForMainSystem[`ячейка-${cellNumber}`] = base64; // Русский префикс: "ячейка-12"
       });
       
       try {
@@ -204,8 +227,10 @@ export const AudioUploader = ({
         // Также сохраняем отдельно для обратной совместимости
         localStorage.setItem('cellAudios', JSON.stringify(cellAudios));
         
+        console.log('📱 ЯЧЕЙКИ КОНВЕРТИРОВАНЫ В BASE64 И СОХРАНЕНЫ:', cellAudios);
+        
         const cellCount = Object.keys(cellAudios).length;
-        alert(`✅ Успешно загружено озвучки для ${cellCount} ячеек\n\n💾 Файлы интегрированы в основную систему аудио и ПОСТОЯННО сохранены!`);
+        alert(`✅ Успешно загружено озвучки для ${cellCount} ячеек\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!\n\n🔊 Теперь озвучка ячеек должна работать!`);
       } catch (error) {
         console.error('Ошибка при сохранении ячеек:', error);
         alert('❌ Ошибка при сохранении ячеек. Проверьте консоль.');
