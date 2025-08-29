@@ -78,6 +78,15 @@ const SideMenu = ({
               type="text" 
               placeholder="Поиск по ШК"
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const barcode = (e.target as HTMLInputElement).value.trim();
+                  if (barcode) {
+                    alert(`🔍 Поиск товара по ШК: ${barcode}\n\nФункция в разработке - скоро добавим полноценный поиск!`);
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }
+              }}
             />
           </div>
         </div>
@@ -102,13 +111,22 @@ const SideMenu = ({
             </button>
             {expandedMenuItems.program && (
               <div className="bg-gray-50 py-2">
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('📖 Руководство пользователя\n\nЗдесь будет открываться подробная инструкция по работе с системой.')}
+                >
                   Руководство пользователя
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('❓ Частые вопросы\n\n• Как сканировать QR-код?\n• Что делать если товар не найден?\n• Как настроить принтер?\n\nПолный список ответов в разработке.')}
+                >
                   Частые вопросы
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('🎥 Обучающие видео\n\nВидеоуроки по работе с системой скоро будут добавлены!')}
+                >
                   Обучающие видео
                 </button>
               </div>
@@ -131,10 +149,16 @@ const SideMenu = ({
             </button>
             {expandedMenuItems.labels && (
               <div className="bg-gray-50 py-2">
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('🖨️ Печать этикеток\n\nФункция печати этикеток будет добавлена в ближайшем обновлении.')}
+                >
                   Печать этикеток
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('⚙️ Настройка принтера\n\nНастройка принтера этикеток в разработке.')}
+                >
                   Настройка принтера
                 </button>
               </div>
@@ -177,7 +201,15 @@ const SideMenu = ({
             </div>
 
             {/* Оставить отзыв */}
-            <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+            <button 
+              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+              onClick={() => {
+                const feedback = prompt('⭐ Ваш отзыв о системе WB ПВЗ:\n\n(Укажите что нравится и что можно улучшить)');
+                if (feedback) {
+                  alert(`Спасибо за отзыв! 🙏\n\nВаш отзыв: "${feedback}"\n\nМы обязательно учтем ваши пожелания в следующих обновлениях.`);
+                }
+              }}
+            >
               <div className="flex items-center space-x-3">
                 <Icon name="Star" size={18} className="text-gray-600" />
                 <span className="text-sm text-gray-700">Оставить отзыв</span>
@@ -201,13 +233,22 @@ const SideMenu = ({
             </button>
             {expandedMenuItems.links && (
               <div className="bg-gray-50 py-2">
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('🔗 Портал партнеров\n\nСсылка на официальный портал партнеров WB будет добавлена.')}
+                >
                   Портал партнеров
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('📚 База знаний\n\nБаза знаний с ответами на все вопросы в разработке.')}
+                >
                   База знаний
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('🆘 Техподдержка\n\nТелефон: 8-800-XXX-XX-XX\nEmail: support@example.com\n\nСвязь с техподдержкой скоро будет добавлена.')}
+                >
                   Техподдержка
                 </button>
               </div>
@@ -230,13 +271,22 @@ const SideMenu = ({
             </button>
             {expandedMenuItems.additional && (
               <div className="bg-gray-50 py-2">
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('📡 Режим офлайн\n\nРежим работы без интернета будет добавлен в следующих версиях.')}
+                >
                   Режим офлайн
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('📊 Экспорт отчетов\n\nФункция экспорта отчетов о работе в Excel/PDF скоро появится.')}
+                >
                   Экспорт отчетов
                 </button>
-                <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => alert('🔄 Обновления\n\nТекущая версия: 1.0.0\nПоследнее обновление: Сегодня\n\nАвтообновления включены.')}
+                >
                   Обновления
                 </button>
               </div>
