@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Order, getOrderStatusText } from '@/data/mockOrders';
-import { useVoice } from '@/hooks/useVoice';
 
 interface DeliveryInterfaceProps {
   order: Order | null;
@@ -22,7 +21,6 @@ const DeliveryInterface = ({
 }: DeliveryInterfaceProps) => {
   const [selectedCell, setSelectedCell] = useState<string>('');
   const [currentStep, setCurrentStep] = useState<'cell' | 'scan' | 'check' | 'deliver'>('cell');
-  const { announceCell, announceProductCheck, announceRating } = useVoice();
 
   if (!order) {
     return (
@@ -38,19 +36,16 @@ const DeliveryInterface = ({
   const handleCellClick = (cellNumber: string) => {
     setSelectedCell(cellNumber);
     onCellClick(cellNumber);
-    announceCell(cellNumber);
     setCurrentStep('scan');
   };
 
   const handleScanProduct = () => {
     onScanProduct();
-    announceProductCheck();
     setCurrentStep('check');
   };
 
   const handleDeliverProduct = () => {
     onDeliverProduct();
-    announceRating();
     setCurrentStep('deliver');
   };
 
