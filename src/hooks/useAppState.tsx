@@ -22,6 +22,7 @@ export const useAppState = () => {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
+  const [showAudioTest, setShowAudioTest] = useState(false);
   const [scannedData, setScannedData] = useState<string>('');
 
   // Состояния процесса выдачи
@@ -77,6 +78,8 @@ export const useAppState = () => {
     setShowSettings,
     showSideMenu,
     setShowSideMenu,
+    showAudioTest,
+    setShowAudioTest,
     scannedData,
     setScannedData,
 
