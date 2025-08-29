@@ -1,6 +1,6 @@
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
-import { ReturnTab } from '@/components/ReturnTab';
+import ReturnsTab from '@/components/ReturnsTab';
 import { AudioSettings } from '@/components/AudioSettings';
 import { AudioManager } from '@/components/AudioManager';
 import { AppHeader } from '@/components/AppHeader';
@@ -113,13 +113,9 @@ const Index = () => {
 
           {/* Возврат */}
           {activeTab === 'return' && (
-            <ReturnTab
-              returnStep={returnStep}
-              returnReason={returnReason}
-              onReturnStart={handleReturnStart}
-              onReturnComplete={handleReturnComplete}
-              onReturnReasonSelect={handleReturnReasonSelect}
-              onReturnStepChange={handleReturnStepChange}
+            <ReturnsTab
+              playAudio={handleTestAudio}
+              customAudioFiles={customAudioFiles}
             />
           )}
         </div>
