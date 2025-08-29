@@ -4,7 +4,7 @@ import QRScanner from '@/components/QRScanner';
 import Icon from '@/components/ui/icon';
 
 const WBPVZApp = () => {
-  const [activeTab, setActiveTab] = useState('delivery');
+  const [activeTab, setActiveTab] = useState('acceptance');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -92,63 +92,89 @@ const WBPVZApp = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b px-4 py-3">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-              <Icon name="Package" size={20} className="text-white" />
+      {/* Header Navigation Bar */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center justify-between py-3">
+            {/* Left side - hamburger menu and search */}
+            <div className="flex items-center space-x-3">
+              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+                <Icon name="AlignJustify" size={20} />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+                <Icon name="MessageSquare" size={20} />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+                <Icon name="Search" size={20} />
+              </button>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">WB PVZ</h1>
-              <p className="text-xs text-gray-500">ПВЗ Московский</p>
-            </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <Icon name="Search" size={20} className="text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <Icon name="Bell" size={20} className="text-gray-600" />
-            </button>
-            <button 
-              className="p-2 hover:bg-gray-100 rounded-lg"
-              onClick={() => setShowSettings(true)}
-            >
-              <Icon name="Settings" size={20} className="text-gray-600" />
-            </button>
-            <button className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
-              Установить версию
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="bg-white border-b">
-        <div className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 relative flex items-center justify-center gap-2 py-4 px-4 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              <Icon name={tab.icon as any} size={18} />
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {tab.badge}
+            {/* Center - Main Navigation Tabs */}
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => setActiveTab('delivery')}
+                className={`relative py-3 px-4 text-sm font-medium transition-colors ${
+                  activeTab === 'delivery'
+                    ? 'text-purple-600'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <span>Выдача</span>
+                  <div className="w-5 h-5 bg-gray-600 text-white text-xs rounded-full flex items-center justify-center">
+                    1
+                  </div>
                 </div>
-              )}
-            </button>
-          ))}
+                {activeTab === 'delivery' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+                )}
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('acceptance')}
+                className={`relative py-3 px-4 text-sm font-medium transition-colors ${
+                  activeTab === 'acceptance'
+                    ? 'text-purple-600'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Приемка
+                {activeTab === 'acceptance' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+                )}
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('returns')}
+                className={`relative py-3 px-4 text-sm font-medium transition-colors ${
+                  activeTab === 'returns'
+                    ? 'text-purple-600'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Возврат
+                {activeTab === 'returns' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+                )}
+              </button>
+            </div>
+
+            {/* Right side - additional icons */}
+            <div className="flex items-center space-x-3">
+              <button 
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md"
+                onClick={() => setShowSettings(true)}
+              >
+                <Icon name="Grid3X3" size={20} />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+                <Icon name="RotateCcw" size={20} />
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+                <Icon name="MessageCircle" size={20} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -231,7 +257,7 @@ const WBPVZApp = () => {
           </div>
         )}
 
-        {activeTab === 'receiving' && (
+        {activeTab === 'acceptance' && (
           <div className="max-w-md mx-auto text-center">
             <div className="space-y-6">
               <Icon name="ArrowDown" size={48} className="text-purple-600 mx-auto" />
@@ -241,7 +267,7 @@ const WBPVZApp = () => {
           </div>
         )}
 
-        {activeTab === 'return' && (
+        {activeTab === 'returns' && (
           <div className="max-w-md mx-auto text-center">
             <div className="space-y-6">
               <Icon name="RotateCcw" size={48} className="text-purple-600 mx-auto" />
