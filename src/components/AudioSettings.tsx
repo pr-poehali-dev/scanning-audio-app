@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import { useAudio } from '@/hooks/useAudio';
 
 interface AudioFiles {
   delivery: File[];
@@ -19,6 +20,7 @@ interface AudioSettingsProps {
 export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: AudioSettingsProps) => {
   const [audioFiles, setAudioFiles] = useState<AudioFiles>(existingFiles);
   const [uploading, setUploading] = useState<string | null>(null);
+  const { updateAudioFiles } = useAudio();
 
   const deliveryRef = useRef<HTMLInputElement>(null);
   const receivingRef = useRef<HTMLInputElement>(null);
@@ -64,7 +66,34 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
     setAudioFiles(updatedFiles);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Конвертируем File objects в URL для системы
+    const convertedFiles: {[key: string]: string} = {};
+    let totalConverted = 0;
+    
+    // Обрабатываем все типы файлов
+    for (const [type, files] of Object.entries(audioFiles)) {
+      for (const file of files) {
+        const baseFileName = file.name.replace(/\.[^/.]+$/, '');
+        const audioUrl = URL.createObjectURL(file);
+        
+        // Сохраняем с префиксом типа
+        const prefixedFileName = `${type}-${baseFileName}`;
+        convertedFiles[prefixedFileName] = audioUrl;
+        
+        // ТАКЖЕ сохраняем БЕЗ префикса для глобального доступа
+        convertedFiles[baseFileName] = audioUrl;
+        
+        totalConverted++;
+      }
+    }
+    
+    if (totalConverted > 0) {
+      // Сохраняем через useAudio (конвертирует в base64)
+      await updateAudioFiles(convertedFiles);
+      console.log(`✅ Сохранено ${totalConverted} аудиофайлов через useAudio`);
+    }
+    
     onAudioFilesUpdate(audioFiles);
     onClose();
   };
