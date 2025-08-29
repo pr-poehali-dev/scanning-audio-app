@@ -195,6 +195,36 @@ const DeliveryInterface = ({
         <div className="mt-4 pt-4 border-t border-gray-200">
           <div className="space-y-2">
             <button
+              onClick={() => {
+                // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА ВСЕХ НЕПРАВИЛЬНЫХ ЯЧЕЕК
+                console.log('🧹 ПРИНУДИТЕЛЬНАЯ ОЧИСТКА ЯЧЕЕК');
+                localStorage.removeItem('cellAudios');
+                
+                // Также очищаем из основного хранилища все ключи с числами
+                const storage = localStorage.getItem('wb-audio-files');
+                if (storage) {
+                  const files = JSON.parse(storage);
+                  const cleanedFiles: {[key: string]: string} = {};
+                  
+                  Object.entries(files).forEach(([key, value]) => {
+                    // Оставляем только основные ключи, БЕЗ cell-номеров
+                    if (!key.match(/^\d+$/) && !key.startsWith('cell-') && !key.startsWith('ячейка-')) {
+                      cleanedFiles[key] = value;
+                    }
+                  });
+                  
+                  localStorage.setItem('wb-audio-files', JSON.stringify(cleanedFiles));
+                  console.log('🧹 Очищено. Оставлены только основные файлы:', Object.keys(cleanedFiles));
+                }
+                
+                alert('🧹 ВСЕ ЯЧЕЙКИ УДАЛЕНЫ!\n\nСчетчик ячеек сброшен. Перезагрузите страницу.');
+              }}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs"
+            >
+              🧹 ОЧИСТИТЬ ЯЧЕЙКИ
+            </button>
+            
+            <button
               onClick={async () => {
                 const storage1 = localStorage.getItem('wb-audio-files');
                 const storage2 = localStorage.getItem('cellAudios');

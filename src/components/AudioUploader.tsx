@@ -177,30 +177,38 @@ export const AudioUploader = ({
       // Извлекаем номер ячейки из названия файла - УЛУЧШЕННАЯ ЛОГИКА
       const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
       
-      // Ищем номер ячейки различными способами
+      // СТРОГАЯ ФИЛЬТРАЦИЯ: Ищем номер ячейки ТОЛЬКО по четким правилам
       let cellNumber = null;
       
-      // 1. Простое число в начале: "123.mp3" → "123" 
-      const startNumber = fileName.match(/^(\d+)$/);
-      if (startNumber) {
-        cellNumber = startNumber[1];
+      // 1. ТОЛЬКО если файл называется просто числом: "123.mp3" → "123"
+      const exactNumber = fileName.match(/^(\d{1,4})$/);
+      if (exactNumber) {
+        cellNumber = exactNumber[1];
+        console.log(`📱✅ ТОЧНОЕ совпадение: "${file.name}" → ячейка "${cellNumber}"`);
       }
       
-      // 2. "ячейка-123", "cell-456", "cell_789"
-      const cellPattern = fileName.match(/(?:ячейка|cell)[-_]?(\d+)/);
-      if (cellPattern) {
-        cellNumber = cellPattern[1];
-      }
-      
-      // 3. Только если ничего не найдено - берем первое число (но проверяем что оно разумное)
-      if (!cellNumber) {
-        const firstNumber = fileName.match(/(\d+)/)?.[0];
-        if (firstNumber && firstNumber.length <= 4) { // Разумная длина номера ячейки
-          cellNumber = firstNumber;
+      // 2. ТОЛЬКО с явными префиксами: "ячейка-123", "cell-456", "cell_789"  
+      else {
+        const cellPattern = fileName.match(/^(?:ячейка|cell)[-_]?(\d{1,4})$/);
+        if (cellPattern) {
+          cellNumber = cellPattern[1];
+          console.log(`📱✅ С префиксом: "${file.name}" → ячейка "${cellNumber}"`);
         }
       }
       
-      console.log(`📱 Файл "${file.name}" → ячейка "${cellNumber}"`);
+      // 3. ВСЕ ОСТАЛЬНОЕ ИГНОРИРУЕМ (никаких произвольных чисел!)
+      if (!cellNumber) {
+        console.log(`📱❌ ПРОПУЩЕН файл "${file.name}" - не соответствует формату ячеек`);
+      }
+      
+      // СТРОГАЯ ПРОВЕРКА: номер ячейки должен быть разумным (1-9999)
+      if (cellNumber) {
+        const num = parseInt(cellNumber);
+        if (num < 1 || num > 9999) {
+          console.log(`📱❌ ОТКЛОНЕН номер "${cellNumber}" - вне диапазона 1-9999`);
+          cellNumber = null;
+        }
+      }
       
       if (cellNumber) {
         try {
