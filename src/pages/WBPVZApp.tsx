@@ -181,6 +181,9 @@ const WBPVZApp = () => {
       }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+      console.log('📁 customAudioFiles:', customAudioFiles);
       await playAudio('discount');
       
       // Очищаем номер телефона

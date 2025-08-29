@@ -190,6 +190,40 @@ const DeliveryInterface = ({
         <p className="text-sm text-gray-600 mt-2">
           Для отметки брака: отсканируйте QR-код, указанный выше
         </p>
+        
+        {/* ОТЛАДКА ОЗВУЧКИ */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <button
+            onClick={async () => {
+              const storage = localStorage.getItem('wb-audio-files');
+              console.log('🔊 ТЕСТ ОЗВУЧКИ - ПРЯМО ИЗ ИНТЕРФЕЙСА');
+              console.log('📁 localStorage wb-audio-files:', storage);
+              
+              if (storage) {
+                const files = JSON.parse(storage);
+                console.log('📂 Файлы в storage:', Object.keys(files));
+                
+                // Тест воспроизведения первого файла
+                const firstKey = Object.keys(files)[0];
+                if (firstKey) {
+                  try {
+                    console.log('▶️ Тестируем файл:', firstKey);
+                    const audio = new Audio(files[firstKey]);
+                    await audio.play();
+                    alert(`✅ Озвучка работает!\nФайл: ${firstKey}`);
+                  } catch (error) {
+                    alert(`❌ Ошибка: ${error.message}`);
+                  }
+                }
+              } else {
+                alert('❌ Аудиофайлы не найдены!\nЗагрузите файлы через Настройки → Голосовая озвучка');
+              }
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+          >
+            🔊 ТЕСТ ОЗВУЧКИ
+          </button>
+        </div>
       </div>
     </div>
   );

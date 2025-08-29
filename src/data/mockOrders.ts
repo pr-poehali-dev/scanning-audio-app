@@ -38,7 +38,7 @@ export const mockOrders: Order[] = [
     customerName: 'Иван Петров',
     phone: '+7 (999) 123-45-67',
     status: 'ready_for_pickup',
-    cellNumber: 'A12',
+    cellNumber: '390',
     items: [
       {
         id: '1',
@@ -58,7 +58,7 @@ export const mockOrders: Order[] = [
     customerName: 'Анна Смирнова',
     phone: '+7 (985) 765-43-21',
     status: 'ready_for_pickup',
-    cellNumber: 'B05',
+    cellNumber: '395',
     items: [
       {
         id: '2',
@@ -87,7 +87,7 @@ export const mockOrders: Order[] = [
     customerName: 'Дмитрий Волков',
     phone: '+7 (912) 555-88-99',
     status: 'ready_for_pickup',
-    cellNumber: 'C07',
+    cellNumber: '790',
     items: [
       {
         id: '4',
@@ -107,7 +107,7 @@ export const mockOrders: Order[] = [
     customerName: 'Елена Козлова',
     phone: '+7 (903) 222-11-44',
     status: 'ready_for_pickup',
-    cellNumber: 'D13',
+    cellNumber: '1205',
     items: [
       {
         id: '5',
@@ -136,7 +136,7 @@ export const mockOrders: Order[] = [
     customerName: 'Максим Орлов',
     phone: '+7 (926) 777-33-66',
     status: 'ready_for_pickup',
-    cellNumber: 'E09',
+    cellNumber: '844',
     items: [
       {
         id: '7',
