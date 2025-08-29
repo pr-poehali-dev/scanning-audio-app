@@ -25,6 +25,12 @@ export const useAudio = () => {
       console.log(`📁 ДОСТУПНЫЕ ФАЙЛЫ:`, Object.keys(customAudioFiles));
       console.log(`💾 РАЗМЕР ХРАНИЛИЩА:`, Object.keys(customAudioFiles).length, 'файлов');
       
+      // ПРИНУДИТЕЛЬНАЯ ДИАГНОСТИКА
+      console.log(`🔍 ДЕТАЛЬНАЯ ДИАГНОСТИКА:`);
+      console.log(`- customAudioFiles:`, customAudioFiles);
+      console.log(`- localStorage 'wb-audio-files':`, localStorage.getItem('wb-audio-files'));
+      console.log(`- Ищем ключ:`, audioKey);
+      
       // Создаем список возможных ключей для поиска
       const possibleKeys = [
         audioKey, // Глобальное название (приоритет)

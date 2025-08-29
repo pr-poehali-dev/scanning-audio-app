@@ -409,14 +409,15 @@ export const AudioUploader = ({
             </p>
             
             {/* Диагностика */}
-            <div className="border-t border-blue-200 pt-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  const storage1 = localStorage.getItem('wb-audio-files');
-                  const storage2 = localStorage.getItem('cellAudios');
-                  const info = `
+            <div className="border-t border-blue-200 pt-3 space-y-2">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    const storage1 = localStorage.getItem('wb-audio-files');
+                    const storage2 = localStorage.getItem('cellAudios');
+                    const info = `
 🔍 ДИАГНОСТИКА СОХРАНЕНИЯ:
 
 📁 Основные файлы: ${storage1 ? 'найдены' : 'НЕ НАЙДЕНЫ'}
@@ -430,14 +431,45 @@ export const AudioUploader = ({
 📊 Детали:
 - Основные: ${storage1 ? Object.keys(JSON.parse(storage1)).length + ' файлов' : '0 файлов'}  
 - Ячейки: ${storage2 ? Object.keys(JSON.parse(storage2)).length + ' ячеек' : '0 ячеек'}
-                  `.trim();
-                  alert(info);
-                }}
-                className="text-xs"
-              >
-                <Icon name="Search" className="w-3 h-3 mr-1" />
-                Диагностика
-              </Button>
+                    `.trim();
+                    alert(info);
+                  }}
+                  className="text-xs"
+                >
+                  <Icon name="Search" className="w-3 h-3 mr-1" />
+                  Диагностика
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={async () => {
+                    const storage = localStorage.getItem('wb-audio-files');
+                    if (storage) {
+                      const files = JSON.parse(storage);
+                      const keys = Object.keys(files);
+                      if (keys.length > 0) {
+                        try {
+                          console.log('🧪 ТЕСТ ОЗВУЧКИ:', keys[0]);
+                          const audio = new Audio(files[keys[0]]);
+                          await audio.play();
+                          alert(`✅ Озвучка работает!\nТестирован файл: ${keys[0]}`);
+                        } catch (error) {
+                          alert(`❌ Ошибка воспроизведения!\nОшибка: ${error.message}`);
+                        }
+                      } else {
+                        alert('⚠️ Нет загруженных файлов для тестирования');
+                      }
+                    } else {
+                      alert('❌ Аудиофайлы не найдены в хранилище');
+                    }
+                  }}
+                  className="text-xs text-green-700"
+                >
+                  <Icon name="Play" className="w-3 h-3 mr-1" />
+                  Тест озвучки
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
