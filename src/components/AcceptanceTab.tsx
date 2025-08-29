@@ -26,6 +26,168 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   const [searchValue, setSearchValue] = useState('');
   const [scannedCode, setScannedCode] = useState('');
   const [acceptanceItems, setAcceptanceItems] = useState<AcceptanceItem[]>([]);
+  const [audioTranscriptions, setAudioTranscriptions] = useState<Record<string, string>>({});
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // 🎤 Функция расшифровки аудиофайлов (симуляция)
+  const transcribeAudio = async (audioKey: string, audioUrl: string): Promise<string> => {
+    console.log(`🎤 Расшифровка аудио: ${audioKey}`);
+    
+    // Симуляция расшифровки (в реальности здесь был бы API речевого распознавания)
+    const fakeTranscriptions: Record<string, string> = {
+      'acceptance-Товар отсканирован': 'Товар успешно отсканирован',
+      'acceptance-Принято в ПВЗ': 'Принято в пункт выдачи заказов', 
+      'acceptance-Товар поврежден': 'Обнаружено повреждение товара',
+      'acceptance-Ошибка приемки': 'Произошла ошибка при приемке',
+      'acceptance-Начинаю сканирование': 'Начинаю процесс сканирования штрихкода',
+      'acceptance-scan-success': 'Сканирование выполнено успешно',
+      'acceptance-bulk-success': 'Массовое принятие товаров завершено',
+      'scan-success': 'Штрихкод успешно распознан',
+      'accepted-success': 'Товар принят в работу',
+      'damaged-item': 'Товар имеет повреждения'
+    };
+    
+    // Имитируем задержку обработки
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const transcription = fakeTranscriptions[audioKey] || 
+                         `Автоматическая расшифровка для: ${audioKey}`;
+    
+    console.log(`✅ Расшифровка готова: "${transcription}"`);
+    return transcription;
+  };
+
+  // 🤖 Создание функций на основе расшифровки
+  const createFunctionFromTranscription = (audioKey: string, transcription: string) => {
+    const functionName = audioKey.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    const actionType = getActionTypeFromKey(audioKey);
+    
+    console.log(`🔧 === СОЗДАНИЕ ФУНКЦИИ ПРИЕМКИ ===`);
+    console.log(`📝 Аудиофайл: ${audioKey}`);
+    console.log(`🎤 Расшифровка: "${transcription}"`);
+    console.log(`⚙️ Тип действия: ${actionType}`);
+    console.log(`🔌 Имя функции: ${functionName}()`);
+    console.log(``);
+    console.log(`// 🎯 Функция для: ${transcription}`);
+    console.log(`const ${functionName} = () => {`);
+    console.log(`  console.log('🔊 ${transcription}');`);
+    console.log(`  playAudio('${audioKey}');`);
+    
+    if (actionType === 'scanning') {
+      console.log(`  setShowScanner(true);`);
+      console.log(`  // Запуск процесса сканирования`);
+    } else if (actionType === 'acceptance') {
+      console.log(`  // Обработка принятия товара`);
+      console.log(`  setCurrentStep('location');`);
+    } else if (actionType === 'damage') {
+      console.log(`  // Обработка поврежденного товара`);
+      console.log(`  markItemAsDamaged();`);
+    } else if (actionType === 'error') {
+      console.log(`  // Обработка ошибок приемки`);
+      console.log(`  handleAcceptanceError();`);
+    }
+    
+    console.log(`  return '${transcription}';`);
+    console.log(`};`);
+    console.log(``);
+    
+    return {
+      functionName,
+      code: generateFunctionCode(functionName, transcription, actionType),
+      actionType,
+      description: transcription
+    };
+  };
+
+  // 🎯 Определение типа действия по ключу аудио
+  const getActionTypeFromKey = (audioKey: string): string => {
+    if (audioKey.includes('scan') || audioKey.includes('Сканирование')) return 'scanning';
+    if (audioKey.includes('Принято') || audioKey.includes('accepted')) return 'acceptance';
+    if (audioKey.includes('поврежден') || audioKey.includes('damaged')) return 'damage';
+    if (audioKey.includes('Ошибка') || audioKey.includes('error')) return 'error';
+    if (audioKey.includes('bulk') || audioKey.includes('Все товары')) return 'bulk_operation';
+    return 'general';
+  };
+
+  // 💾 Генерация кода функции
+  const generateFunctionCode = (functionName: string, transcription: string, actionType: string): string => {
+    return `
+// 🎯 Автосгенерированная функция: ${transcription}
+const ${functionName} = async () => {
+  console.log('🔊 ${transcription}');
+  
+  // Проиграть соответствующий звук
+  playAudio('${functionName}');
+  
+  ${getActionCode(actionType)}
+  
+  return {
+    success: true,
+    message: '${transcription}',
+    timestamp: new Date().toISOString()
+  };
+};
+`;
+  };
+
+  // ⚡ Получение кода действия по типу
+  const getActionCode = (actionType: string): string => {
+    switch (actionType) {
+      case 'scanning':
+        return `  // Запуск сканирования\n  setShowScanner(true);\n  setIsAnalyzing(true);`;
+      case 'acceptance':
+        return `  // Принятие товара\n  if (acceptanceItems.length > 0) {\n    changeItemStatus(acceptanceItems[0].id, 'accepted');\n  }\n  setCurrentStep('location');`;
+      case 'damage':
+        return `  // Обработка повреждения\n  if (acceptanceItems.length > 0) {\n    changeItemStatus(acceptanceItems[0].id, 'damaged');\n  }\n  // Уведомление о повреждении`;
+      case 'error':
+        return `  // Обработка ошибки\n  console.error('Ошибка в процессе приемки');\n  setCurrentStep('scan');`;
+      case 'bulk_operation':
+        return `  // Массовая операция\n  handleBulkAccept();\n  console.log('Массовая операция выполнена');`;
+      default:
+        return `  // Общее действие\n  console.log('Выполнено действие: ${actionType}');`;
+    }
+  };
+
+  // 🔍 Анализ всех загруженных аудиофайлов
+  const analyzeAllAudioFiles = async () => {
+    setIsAnalyzing(true);
+    console.log('🎤 === НАЧАЛО АНАЛИЗА АУДИОФАЙЛОВ ===');
+    console.log(`📁 Найдено ${Object.keys(customAudioFiles).length} аудиофайлов`);
+    
+    const acceptanceAudioFiles = Object.entries(customAudioFiles)
+      .filter(([key]) => key.toLowerCase().includes('acceptance') || 
+                         key.toLowerCase().includes('приемка') ||
+                         key.toLowerCase().includes('scan') ||
+                         key.toLowerCase().includes('товар'));
+    
+    console.log(`🎯 Файлов для приемки: ${acceptanceAudioFiles.length}`);
+    
+    const generatedFunctions = [];
+    
+    for (const [audioKey, audioUrl] of acceptanceAudioFiles) {
+      try {
+        console.log(`\n🔄 Обрабатываю: ${audioKey}`);
+        const transcription = await transcribeAudio(audioKey, audioUrl);
+        const functionInfo = createFunctionFromTranscription(audioKey, transcription);
+        
+        setAudioTranscriptions(prev => ({...prev, [audioKey]: transcription}));
+        generatedFunctions.push(functionInfo);
+        
+      } catch (error) {
+        console.error(`❌ Ошибка обработки ${audioKey}:`, error);
+      }
+    }
+    
+    console.log('\n🎉 === АНАЛИЗ ЗАВЕРШЕН ===');
+    console.log(`✅ Создано функций: ${generatedFunctions.length}`);
+    console.log('📋 Список созданных функций:');
+    generatedFunctions.forEach((func, index) => {
+      console.log(`  ${index + 1}. ${func.functionName}() - ${func.description}`);
+    });
+    
+    setIsAnalyzing(false);
+    return generatedFunctions;
+  };
 
   // Расширенная функция для проигрывания аудио с умным алгоритмом
   const playAcceptanceAudio = (action: string, itemData?: any) => {
@@ -231,11 +393,41 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       {/* Хедер с кнопкой назад */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" className="mr-4">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Вернуться к приемке
         </Button>
+        
+        {/* Быстрые тесты озвучки */}
+        <div className="flex gap-2">
+          <Button 
+            size="sm"
+            onClick={() => playAcceptanceAudio('item_scanned')}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs"
+            title="Тест звука сканирования"
+          >
+            🔍 Тест сканирования
+          </Button>
+          
+          <Button 
+            size="sm"
+            onClick={() => playAcceptanceAudio('accepted')}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs"
+            title="Тест звука принятия"
+          >
+            ✅ Тест принятия
+          </Button>
+          
+          <Button 
+            size="sm"
+            onClick={() => playAcceptanceAudio('damaged')}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 text-xs"
+            title="Тест звука повреждения"
+          >
+            ⚠️ Тест повреждения
+          </Button>
+        </div>
       </div>
 
       {/* Степпер */}
@@ -407,19 +599,143 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
               <p className="text-gray-600 mb-4">Товар принят и размещен</p>
             </div>
             
-            <Button 
-              onClick={() => {
-                setCurrentStep('scan');
-                setScannedCode('');
-                setSearchValue('');
-              }}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
-            >
-              📦 Принять еще товар
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={() => {
+                  setCurrentStep('scan');
+                  setScannedCode('');
+                  setSearchValue('');
+                }}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
+              >
+                📦 Принять еще товар
+              </Button>
+              
+              <Button 
+                onClick={analyzeAllAudioFiles}
+                disabled={isAnalyzing}
+                variant="outline"
+                className="px-6 py-3"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mr-2" />
+                    Анализирую...
+                  </>
+                ) : (
+                  <>
+                    🎤 Расшифровать аудио
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* 🎤 ПАНЕЛЬ РЕЗУЛЬТАТОВ АНАЛИЗА */}
+      {Object.keys(audioTranscriptions).length > 0 && (
+        <div className="bg-white rounded-lg p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            🎤 Результаты расшифровки аудио
+            <span className="ml-2 text-sm bg-purple-100 text-purple-600 px-2 py-1 rounded-full">
+              {Object.keys(audioTranscriptions).length} файлов
+            </span>
+          </h3>
+          
+          <div className="grid gap-3">
+            {Object.entries(audioTranscriptions).map(([audioKey, transcription]) => {
+              const actionType = getActionTypeFromKey(audioKey);
+              const actionEmoji = {
+                'scanning': '🔍',
+                'acceptance': '✅', 
+                'damage': '⚠️',
+                'error': '❌',
+                'bulk_operation': '📦',
+                'general': '🔊'
+              }[actionType] || '🔊';
+              
+              return (
+                <div key={audioKey} className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <span className="text-lg mr-2">{actionEmoji}</span>
+                        <span className="font-medium text-gray-800">{audioKey}</span>
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                          {actionType}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 mb-3">"<em>{transcription}</em>"</p>
+                      
+                      {/* Кнопки действий для каждой функции */}
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm"
+                          onClick={() => playAcceptanceAudio(actionType)}
+                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1"
+                        >
+                          🔊 Тест звука
+                        </Button>
+                        
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            console.log(generateFunctionCode(
+                              audioKey.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase(),
+                              transcription,
+                              actionType
+                            ));
+                          }}
+                          variant="outline"
+                          className="text-xs px-3 py-1"
+                        >
+                          📋 Показать код
+                        </Button>
+                        
+                        {actionType === 'acceptance' && (
+                          <Button 
+                            size="sm"
+                            onClick={() => {
+                              if (acceptanceItems.length > 0) {
+                                changeItemStatus(acceptanceItems[0].id, 'accepted');
+                              }
+                              playAcceptanceAudio('accepted');
+                            }}
+                            className="bg-purple-500 hover:bg-purple-600 text-white text-xs px-3 py-1"
+                          >
+                            ⚡ Выполнить
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Кнопка для показа всего сгенерированного кода */}
+          <div className="mt-6 pt-4 border-t">
+            <Button 
+              onClick={() => {
+                console.log('\n🎯 === ВЕСЬ СГЕНЕРИРОВАННЫЙ КОД ФУНКЦИЙ ===');
+                Object.entries(audioTranscriptions).forEach(([audioKey, transcription]) => {
+                  const functionName = audioKey.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                  const actionType = getActionTypeFromKey(audioKey);
+                  const code = generateFunctionCode(functionName, transcription, actionType);
+                  console.log(code);
+                });
+                console.log('\n✅ Код функций выведен в консоль!');
+              }}
+              variant="outline"
+              className="w-full py-2"
+            >
+              📄 Показать весь код функций в консоли
+            </Button>
+          </div>
+        </div>
+      )}
 
 
       {/* QR Сканер */}
