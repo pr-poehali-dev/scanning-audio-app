@@ -15,6 +15,8 @@ const WBPVZApp = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [scannedData, setScannedData] = useState<string>('');
+  const [deliveryStep, setDeliveryStep] = useState<'initial' | 'client-scanned' | 'product-scanned' | 'completed'>('initial');
+  const [isProductScanned, setIsProductScanned] = useState(false);
   const [expandedMenuItems, setExpandedMenuItems] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem('wb-pvz-expanded-menu');
     return saved ? JSON.parse(saved) : { settings: false };
@@ -74,24 +76,47 @@ const WBPVZApp = () => {
     setScannedData(data);
     setIsScanning(true);
     
-    let audioKey = 'scan-success';
-    
-    if (data.includes('check_product') || data.includes('проверь')) {
-      audioKey = 'check-product';
-    } else if (data.includes('discount') || data.includes('скидка')) {
-      audioKey = 'discount';
-    } else if (data.includes('rate') || data.includes('оцените')) {
-      audioKey = 'rate-service';
-    } else if (data.includes('client') || data.includes('клиент')) {
-      audioKey = 'client-found';
+    if (activeTab === 'delivery') {
+      // Логика для выдачи
+      if (deliveryStep === 'initial') {
+        // Первое сканирование - QR клиента/курьера
+        setDeliveryStep('client-scanned');
+        
+        // Озвучиваем номер ячейки и про скидку
+        const cellNumber = Math.floor(Math.random() * 900) + 100; // моковый номер ячейки
+        await playAudio(`cell-${cellNumber}`);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // пауза
+        await playAudio('discount');
+        
+      } else if (deliveryStep === 'client-scanned') {
+        // Второе сканирование - товар со склада
+        setDeliveryStep('product-scanned');
+        setIsProductScanned(true);
+        
+        // Озвучиваем "Проверьте товар под камерой"
+        await playAudio('check-product');
+      }
+    } else {
+      // Старая логика для других вкладок
+      let audioKey = 'scan-success';
+      
+      if (data.includes('check_product') || data.includes('проверь')) {
+        audioKey = 'check-product';
+      } else if (data.includes('discount') || data.includes('скидка')) {
+        audioKey = 'discount';
+      } else if (data.includes('rate') || data.includes('оцените')) {
+        audioKey = 'rate-service';
+      } else if (data.includes('client') || data.includes('клиент')) {
+        audioKey = 'client-found';
+      }
+      
+      await playAudio(audioKey);
     }
-    
-    await playAudio(audioKey);
     
     setTimeout(() => {
       setIsScanning(false);
     }, 2000);
-  }, [playAudio]);
+  }, [playAudio, activeTab, deliveryStep]);
 
   const handlePhoneSubmit = useCallback(async () => {
     if (phoneNumber.length === 4) {
@@ -99,6 +124,40 @@ const WBPVZApp = () => {
       setPhoneNumber('');
     }
   }, [phoneNumber, playAudio]);
+
+  // Функции для процесса выдачи
+  const handleCellClick = useCallback(async (cellNumber: string) => {
+    // Озвучиваем номер ячейки при клике
+    await playAudio(`cell-${cellNumber}`);
+  }, [playAudio]);
+
+  const handleScanProduct = useCallback(() => {
+    // Открываем сканер для товара
+    setShowQRScanner(true);
+  }, []);
+
+  const handleDeliverProduct = useCallback(async () => {
+    // Финальная выдача товара с озвучкой "Оцените наш ПВЗ"
+    setDeliveryStep('completed');
+    await playAudio('rate-service');
+    
+    // Сброс состояния через некоторое время
+    setTimeout(() => {
+      setDeliveryStep('initial');
+      setIsProductScanned(false);
+      setScannedData('');
+    }, 3000);
+  }, [playAudio]);
+
+  // Сброс состояния выдачи при смене вкладки
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    if (tab !== 'delivery') {
+      setDeliveryStep('initial');
+      setIsProductScanned(false);
+      setScannedData('');
+    }
+  }, []);
 
   const updateAudioSetting = useCallback((key: string, value: any) => {
     setAudioSettings(prev => {
@@ -226,7 +285,7 @@ const WBPVZApp = () => {
         onMenuOpen={() => setShowSideMenu(true)}
         onSettingsOpen={() => setShowSettings(true)}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
       />
 
       <div className="flex-1 p-6">
@@ -238,6 +297,11 @@ const WBPVZApp = () => {
           scannedData={scannedData}
           onQRScan={handleQRScan}
           onPhoneSubmit={handlePhoneSubmit}
+          deliveryStep={deliveryStep}
+          isProductScanned={isProductScanned}
+          onCellClick={handleCellClick}
+          onScanProduct={handleScanProduct}
+          onDeliverProduct={handleDeliverProduct}
         />
       </div>
 

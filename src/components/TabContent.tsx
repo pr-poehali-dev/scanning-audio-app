@@ -1,4 +1,5 @@
 import Icon from '@/components/ui/icon';
+import DeliveryInterface from './DeliveryInterface';
 
 interface TabContentProps {
   activeTab: string;
@@ -8,6 +9,11 @@ interface TabContentProps {
   scannedData: string;
   onQRScan: () => void;
   onPhoneSubmit: () => void;
+  deliveryStep: 'initial' | 'client-scanned' | 'product-scanned' | 'completed';
+  isProductScanned: boolean;
+  onCellClick: (cellNumber: string) => void;
+  onScanProduct: () => void;
+  onDeliverProduct: () => void;
 }
 
 const TabContent = ({
@@ -17,9 +23,29 @@ const TabContent = ({
   isScanning,
   scannedData,
   onQRScan,
-  onPhoneSubmit
+  onPhoneSubmit,
+  deliveryStep,
+  isProductScanned,
+  onCellClick,
+  onScanProduct,
+  onDeliverProduct
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
+    // Если клиент отсканирован, показываем интерфейс выдачи
+    if (deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed') {
+      return (
+        <DeliveryInterface
+          cellNumbers={['390', '390', '790']}
+          onCellClick={onCellClick}
+          onScanProduct={onScanProduct}
+          onDeliverProduct={onDeliverProduct}
+          isProductScanned={isProductScanned}
+          scannedData={scannedData}
+        />
+      );
+    }
+
+    // Изначальное состояние - сканирование клиента
     return (
       <div className="max-w-md mx-auto text-center space-y-8">
         {/* QR Scanner */}
@@ -29,13 +55,14 @@ const TabContent = ({
           </h2>
           
           <div 
-            className={`relative w-48 h-48 mx-auto cursor-pointer transition-all duration-300 ${
-              isScanning ? 'animate-pulse' : 'hover:scale-105'
+            className={`relative w-48 h-48 mx-auto transition-all duration-300 ${
+              isScanning ? 'animate-pulse' : ''
             }`}
             onClick={onQRScan}
+            style={{ cursor: 'pointer' }}
           >
             <img 
-              src="https://cdn.poehali.dev/files/d3679227-0f5e-4ab8-89c8-87de6d7eb8cb.png"
+              src="https://cdn.poehali.dev/files/f9ab2ff9-989f-470e-8af1-67520cb6feec.png"
               alt="QR Scanner"
               className="w-full h-full object-contain"
             />
