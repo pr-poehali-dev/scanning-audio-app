@@ -84,6 +84,19 @@ const DeliveryInterface = ({
               <div className="text-xs text-gray-500 mt-1">
                 На ячейке: {order.items.length}
               </div>
+              
+              {/* Кнопка тестирования озвучки ячейки */}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation(); // Не срабатывает клик по ячейке
+                  console.log('🎵 ТЕСТ ОЗВУЧКИ ЯЧЕЙКИ:', order.cellNumber);
+                  onCellClick(order.cellNumber); // Принудительный вызов озвучки
+                }}
+                className="mt-3 px-3 py-1 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded-full transition-colors"
+                title="Протестировать озвучку этой ячейки"
+              >
+                🔊 Тест озвучки
+              </button>
             </div>
             
             {selectedCell === order.cellNumber && (

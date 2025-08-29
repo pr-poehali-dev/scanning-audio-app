@@ -56,47 +56,84 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           const randomCellNumber = Math.floor(Math.random() * 482) + 1;
           order.cellNumber = randomCellNumber.toString();
           
-          // Умное озвучивание ячейки с правильным ожиданием
-          const cellAudioOptions = [
-            order.cellNumber,                    // 123, 45, 7
-            `cell-${order.cellNumber}`,         // cell-123
-            `ячейка-${order.cellNumber}`,       // ячейка-123
-            `delivery-${order.cellNumber}`,     // delivery-123
-            `${order.cellNumber}`,              // 123
-            `ячейка${order.cellNumber}`,        // ячейка123
-            `cell${order.cellNumber}`,          // cell123
-            `номер-${order.cellNumber}`         // номер-123
+          // УПРОЩЕННАЯ И НАДЕЖНАЯ озвучка ячейки
+          console.log(`🏠 === НАДЕЖНАЯ ОЗВУЧКА ЯЧЕЙКИ ${order.cellNumber} ===`);
+          
+          // ПРОСТОЙ поиск: сначала универсальная озвучка, потом конкретная
+          const cellSearchOrder = [
+            'cell-number',                      // Универсальная озвучка ячеек (приоритет!)
+            order.cellNumber,                   // Конкретный номер (123)
+            `cell-${order.cellNumber}`,        // cell-123
+            `ячейка-${order.cellNumber}`,      // ячейка-123
           ];
           
           let cellAudioPlayed = false;
-          console.log(`🔍 ТЕСТ: Поиск аудио для ячейки ${order.cellNumber} среди:`, cellAudioOptions);
-          console.log(`📦 ТЕСТ: Всего доступно аудио файлов:`, Object.keys(customAudioFiles).length);
-          console.log(`📋 ТЕСТ: Список всех аудио:`, Object.keys(customAudioFiles));
+          console.log(`🔍 Поиск аудио в порядке приоритета:`, cellSearchOrder);
+          console.log(`📦 Доступно файлов всего:`, Object.keys(customAudioFiles).length);
           
-          for (const cellAudioName of cellAudioOptions) {
-            console.log(`🔍 ТЕСТ: Проверяю файл "${cellAudioName}"`);
-            if (customAudioFiles[cellAudioName]) {
-              console.log(`✅ НАЙДЕНО аудио для ячейки: "${cellAudioName}"`);
+          for (const audioKey of cellSearchOrder) {
+            console.log(`🔍 Проверяю: "${audioKey}"`);
+            
+            if (customAudioFiles[audioKey]) {
+              console.log(`✅ НАЙДЕН ФАЙЛ: "${audioKey}"`);
+              console.log(`🔗 URL: ${customAudioFiles[audioKey].substring(0, 50)}...`);
+              
               try {
-                await playAudio(cellAudioName);
+                // ДВОЙНАЯ ЗАЩИТА: пробуем 2 способа воспроизведения
+                
+                // Способ 1: Через встроенную функцию playAudio (рекомендуется)
+                try {
+                  await playAudio(audioKey);
+                  console.log(`🎵 СПОСОБ 1 УСПЕШЕН: playAudio("${audioKey}")`);
+                  cellAudioPlayed = true;
+                  break;
+                } catch (playAudioError) {
+                  console.warn(`⚠️ Способ 1 не сработал:`, playAudioError);
+                }
+                
+                // Способ 2: Прямое воспроизведение (резерв)
+                const audio = new Audio(customAudioFiles[audioKey]);
+                audio.volume = 0.8;
+                
+                const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
+                if (savedSpeed) {
+                  audio.playbackRate = parseFloat(savedSpeed);
+                }
+                
+                await audio.play();
+                console.log(`🎵 СПОСОБ 2 УСПЕШЕН: прямое воспроизведение "${audioKey}"`);
                 cellAudioPlayed = true;
                 break;
+                
               } catch (error) {
-                console.log(`❌ Ошибка воспроизведения аудио ячейки:`, error);
+                console.error(`❌ ОБА СПОСОБА НЕУДАЧНЫ для "${audioKey}":`, error);
+                // Продолжаем поиск других файлов
+                continue;
               }
             } else {
-              console.log(`❌ ТЕСТ: Файл "${cellAudioName}" не найден`);
+              console.log(`❌ НЕ НАЙДЕН: "${audioKey}"`);
             }
           }
           
-          // Ожидание ТОЛЬКО если аудио было воспроизведено
           if (cellAudioPlayed) {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-          }
-          
-          if (!cellAudioPlayed) {
-            console.log(`❌ Аудио для ячейки ${order.cellNumber} не найдено`);
-            console.log('📁 Доступные аудиофайлы:', Object.keys(customAudioFiles));
+            console.log(`✅ ЯЧЕЙКА ${order.cellNumber} УСПЕШНО ОЗВУЧЕНА`);
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Ждем окончания
+          } else {
+            console.warn(`⚠️ ЯЧЕЙКА ${order.cellNumber} НЕ ОЗВУЧЕНА - ФАЙЛ НЕ НАЙДЕН!`);
+            console.log('📁 Доступные ключи:', Object.keys(customAudioFiles).slice(0, 20));
+            console.log('');
+            console.log('🎯 === ИНСТРУКЦИЯ ПО ИСПРАВЛЕНИЮ ===');
+            console.log('📤 Загрузите один из файлов в настройках:');
+            console.log('  1. "cell-number" - универсальная озвучка для ВСЕХ ячеек (рекомендуется)');
+            console.log(`  2. "${order.cellNumber}" - озвучка только для ячейки ${order.cellNumber}`);
+            console.log(`  3. "cell-${order.cellNumber}" - альтернативный формат`);
+            console.log('⚙️ Перейдите: Настройки → Озвучка → Загрузить файл');
+            console.log('');
+            
+            // Показываем уведомление пользователю
+            if (typeof window !== 'undefined' && window.navigator?.vibrate) {
+              window.navigator.vibrate([200, 100, 200]); // Сигнал о проблеме
+            }
           }
           
           // Умное озвучивание скидки с правильным ожиданием
