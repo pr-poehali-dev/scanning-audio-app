@@ -28,6 +28,71 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   const [acceptanceItems, setAcceptanceItems] = useState<AcceptanceItem[]>([]);
   const [audioTranscriptions, setAudioTranscriptions] = useState<Record<string, string>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [assignedCell, setAssignedCell] = useState<string>('');
+
+  // 🔊 Озвучка ячейки в приемке (такая же как в выдаче)
+  const playCellAudio = async (cellNumber: string) => {
+    console.log(`🔊 === ОЗВУЧКА ЯЧЕЙКИ В ПРИЕМКЕ: ${cellNumber} ===`);
+    
+    const cellSearchOrder = [
+      'cell-number',        // Универсальный файл для всех ячеек
+      cellNumber,           // Точный номер ячейки
+      `cell-${cellNumber}`, // С префиксом cell
+      `ячейка-${cellNumber}`, // Русский вариант
+      `ячейка_${cellNumber}`, // Русский с подчеркиванием
+      `acceptance-cell-${cellNumber}`, // Специально для приемки
+      `acceptance-ячейка-${cellNumber}` // Русский для приемки
+    ];
+    
+    let cellAudioPlayed = false;
+    console.log(`🔍 Поиск аудио для ячейки в порядке приоритета:`, cellSearchOrder);
+    
+    for (const audioKey of cellSearchOrder) {
+      console.log(`🔍 Проверяю файл: "${audioKey}"`);
+      
+      if (customAudioFiles[audioKey]) {
+        console.log(`✅ НАЙДЕН ФАЙЛ: "${audioKey}"`);
+        
+        try {
+          const audio = new Audio(customAudioFiles[audioKey]);
+          audio.volume = 1.0;
+          
+          const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
+          if (savedSpeed) {
+            audio.playbackRate = parseFloat(savedSpeed);
+          }
+          
+          const playPromise = new Promise((resolve, reject) => {
+            audio.onended = resolve;
+            audio.onerror = reject;
+            audio.oncanplaythrough = () => {
+              audio.play().then(resolve).catch(reject);
+            };
+          });
+          
+          await playPromise;
+          console.log(`🎵 ✅ ЯЧЕЙКА ${cellNumber} ОЗВУЧЕНА В ПРИЕМКЕ: "${audioKey}"`);
+          cellAudioPlayed = true;
+          break;
+          
+        } catch (error) {
+          console.error(`❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ "${audioKey}":`, error);
+          continue;
+        }
+      } else {
+        console.log(`❌ НЕ НАЙДЕН: "${audioKey}"`);
+      }
+    }
+    
+    if (!cellAudioPlayed) {
+      console.warn(`⚠️ ЯЧЕЙКА ${cellNumber} НЕ ОЗВУЧЕНА - ФАЙЛ НЕ НАЙДЕН!`);
+      console.log('📤 Загрузите один из файлов:');
+      console.log('  1. "cell-number" - универсальная озвучка для ВСЕХ ячеек');
+      console.log(`  2. "${cellNumber}" - озвучка только для ячейки ${cellNumber}`);
+    }
+    
+    return cellAudioPlayed;
+  };
 
   // 🎤 Функция расшифровки аудиофайлов (симуляция)
   const transcribeAudio = async (audioKey: string, audioUrl: string): Promise<string> => {
@@ -393,41 +458,11 @@ const ${functionName} = async () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       {/* Хедер с кнопкой назад */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center mb-6">
         <Button variant="ghost" className="mr-4">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Вернуться к приемке
         </Button>
-        
-        {/* Быстрые тесты озвучки */}
-        <div className="flex gap-2">
-          <Button 
-            size="sm"
-            onClick={() => playAcceptanceAudio('item_scanned')}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs"
-            title="Тест звука сканирования"
-          >
-            🔍 Тест сканирования
-          </Button>
-          
-          <Button 
-            size="sm"
-            onClick={() => playAcceptanceAudio('accepted')}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 text-xs"
-            title="Тест звука принятия"
-          >
-            ✅ Тест принятия
-          </Button>
-          
-          <Button 
-            size="sm"
-            onClick={() => playAcceptanceAudio('damaged')}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 text-xs"
-            title="Тест звука повреждения"
-          >
-            ⚠️ Тест повреждения
-          </Button>
-        </div>
       </div>
 
       {/* Степпер */}
@@ -521,6 +556,8 @@ const ${functionName} = async () => {
             <div className="flex gap-4 justify-center">
               <Button 
                 onClick={() => {
+                  const randomCell = (Math.floor(Math.random() * 500) + 1).toString();
+                  setAssignedCell(randomCell);
                   setCurrentStep('location');
                   playAcceptanceAudio('accepted');
                 }}
@@ -564,14 +601,29 @@ const ${functionName} = async () => {
         {currentStep === 'location' && (
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-8">
-              Разместите товар
+              Разместите товар в ячейку
             </h1>
             
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
               <Package className="w-16 h-16 text-blue-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Размещение товара</h3>
-              <p className="text-gray-600 mb-4">Поместите товар на стеллаж</p>
-              <p className="text-gray-800 font-medium">Ячейка: {Math.floor(Math.random() * 500) + 1}</p>
+              <p className="text-gray-600 mb-4">Поместите товар в назначенную ячейку</p>
+              
+              {/* ЯЧЕЙКА С ОЗВУЧКОЙ */}
+              <div 
+                onClick={() => {
+                  if (assignedCell) {
+                    console.log('🔊 КЛИК ПО ЯЧЕЙКЕ В ПРИЕМКЕ - озвучка ячейки:', assignedCell);
+                    playCellAudio(assignedCell);
+                  }
+                }}
+                className="cursor-pointer hover:scale-105 transition-transform bg-white rounded-lg p-6 border-2 border-blue-300 mx-auto max-w-xs mb-4"
+                title="Нажмите для озвучки номера ячейки"
+              >
+                <div className="text-sm text-gray-500 mb-2">Ячейка назначения</div>
+                <div className="text-4xl font-bold text-blue-600 mb-2">{assignedCell || (Math.floor(Math.random() * 500) + 1)}</div>
+                <div className="text-xs text-gray-500">Нажмите для озвучки номера</div>
+              </div>
             </div>
             
             <Button 
@@ -581,7 +633,7 @@ const ${functionName} = async () => {
               }}
               className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
             >
-              📦 Товар размещен
+              📦 Товар размещен в ячейку
             </Button>
           </div>
         )}

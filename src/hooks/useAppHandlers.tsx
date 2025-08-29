@@ -78,36 +78,33 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
               console.log(`✅ НАЙДЕН ФАЙЛ: "${audioKey}"`);
               console.log(`🔗 URL: ${customAudioFiles[audioKey].substring(0, 50)}...`);
               
+              // ИСПРАВЛЕННАЯ ЛОГИКА: простое и надежное воспроизведение
               try {
-                // ДВОЙНАЯ ЗАЩИТА: пробуем 2 способа воспроизведения
-                
-                // Способ 1: Через встроенную функцию playAudio (рекомендуется)
-                try {
-                  await playAudio(audioKey);
-                  console.log(`🎵 СПОСОБ 1 УСПЕШЕН: playAudio("${audioKey}")`);
-                  cellAudioPlayed = true;
-                  break;
-                } catch (playAudioError) {
-                  console.warn(`⚠️ Способ 1 не сработал:`, playAudioError);
-                }
-                
-                // Способ 2: Прямое воспроизведение (резерв)
                 const audio = new Audio(customAudioFiles[audioKey]);
-                audio.volume = 0.8;
+                audio.volume = 1.0; // Максимальная громкость
                 
                 const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
                 if (savedSpeed) {
                   audio.playbackRate = parseFloat(savedSpeed);
                 }
                 
-                await audio.play();
-                console.log(`🎵 СПОСОБ 2 УСПЕШЕН: прямое воспроизведение "${audioKey}"`);
+                // Промис для ожидания завершения
+                const playPromise = new Promise((resolve, reject) => {
+                  audio.onended = resolve;
+                  audio.onerror = reject;
+                  audio.oncanplaythrough = () => {
+                    audio.play().then(resolve).catch(reject);
+                  };
+                });
+                
+                await playPromise;
+                console.log(`🎵 ✅ ЯЧЕЙКА ${order.cellNumber} УСПЕШНО ОЗВУЧЕНА: "${audioKey}"`);
                 cellAudioPlayed = true;
-                break;
+                break; // Прерываем цикл после успешного воспроизведения
                 
               } catch (error) {
-                console.error(`❌ ОБА СПОСОБА НЕУДАЧНЫ для "${audioKey}":`, error);
-                // Продолжаем поиск других файлов
+                console.error(`❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ "${audioKey}":`, error);
+                // Пробуем следующий файл в списке
                 continue;
               }
             } else {
