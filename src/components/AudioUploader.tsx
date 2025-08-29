@@ -2,17 +2,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { AudioFileList } from './audio/AudioFileList';
-import { FolderUploadSection } from './audio/FolderUploadSection';
-import { CellAudioSection } from './audio/CellAudioSection';
-import { AudioDiagnostics } from './audio/AudioDiagnostics';
-
-interface AudioFile {
-  key: string;
-  name: string;
-  uploaded: boolean;
-  url?: string;
-}
 
 interface AudioUploaderProps {
   onAudioFilesUpdate: (files: { [key: string]: string }) => Promise<void>;
@@ -22,6 +11,13 @@ interface AudioUploaderProps {
   existingFiles: { [key: string]: string };
 }
 
+interface AudioStage {
+  key: string;
+  name: string;
+  description: string;
+  category: 'delivery' | 'receiving' | 'returns' | 'general';
+}
+
 export const AudioUploader = ({ 
   onAudioFilesUpdate, 
   onClose, 
@@ -29,338 +25,314 @@ export const AudioUploader = ({
   clearAllAudio,
   existingFiles 
 }: AudioUploaderProps) => {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([
-    { key: 'cell-number', name: 'Ячейка номер', uploaded: false },
-    { key: 'check-discount-wallet', name: 'Товары со скидкой проверьте ВБ кошелек', uploaded: false },
-    { key: 'check-product-camera', name: 'Проверьте товар под камерой', uploaded: false },
-    { key: 'rate-pickup-point', name: 'Оцените пункт выдачи', uploaded: false },
-    { key: 'receiving-start', name: 'Начало приемки', uploaded: false },
-    { key: 'receiving-complete', name: 'Приемка завершена', uploaded: false },
-    { key: 'return-start', name: 'Начало возврата', uploaded: false },
-    { key: 'return-complete', name: 'Возврат завершен', uploaded: false },
-  ]);
+  
+  // Определяем все этапы озвучки
+  const audioStages: AudioStage[] = [
+    // ВЫДАЧА
+    { key: 'check-discount-wallet', name: '💰 Скидки и кошелек', description: 'Проверьте ВБ кошелек, товары со скидкой', category: 'delivery' },
+    { key: 'check-product-camera', name: '📷 Проверка товара', description: 'Проверьте товар под камерой', category: 'delivery' },
+    { key: 'rate-pickup-point', name: '⭐ Оценка ПВЗ', description: 'Оцените пункт выдачи', category: 'delivery' },
+    
+    // ПРИЕМКА
+    { key: 'receiving-start', name: '📦 Начало приемки', description: 'Начинаем приемку товаров', category: 'receiving' },
+    { key: 'receiving-complete', name: '✅ Приемка завершена', description: 'Приемка успешно завершена', category: 'receiving' },
+    
+    // ВОЗВРАТЫ
+    { key: 'return-start', name: '↩️ Начало возврата', description: 'Начинаем процедуру возврата', category: 'returns' },
+    { key: 'return-complete', name: '✅ Возврат завершен', description: 'Возврат успешно завершен', category: 'returns' },
+  ];
 
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [cellUploadProgress, setCellUploadProgress] = useState(0);
-  const [isCellUploading, setIsCellUploading] = useState(false);
+  const [loadedFiles, setLoadedFiles] = useState<Set<string>>(new Set());
+  const [cellAudioFile, setCellAudioFile] = useState<File | null>(null);
+  const [cellAudioCount, setCellAudioCount] = useState(0);
 
-  // Обновляем состояние при загрузке существующих файлов
   useEffect(() => {
-    setAudioFiles(prev => prev.map(item => ({
-      ...item,
-      uploaded: !!existingFiles[item.key],
-      url: existingFiles[item.key]
-    })));
+    // Обновляем состояние загруженных файлов
+    setLoadedFiles(new Set(Object.keys(existingFiles)));
+    
+    // Проверяем количество загруженных ячеек
+    const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
+    setCellAudioCount(Object.keys(cellAudios).length);
   }, [existingFiles]);
 
-  const matchAudioFileByName = (fileName: string): AudioFile | null => {
-    const cleanFileName = fileName.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
-    
-    // Прямое совпадение
-    let match = audioFiles.find(item => item.key.toLowerCase() === cleanFileName);
-    if (match) return match;
-    
-    // Поиск по ключевым словам
-    const keywordMatches: {[key: string]: string[]} = {
-      'cell-number': ['ячейка', 'cell', 'номер', 'number'],
-      'check-discount-wallet': ['скидка', 'discount', 'кошелек', 'wallet', 'вб'],
-      'check-product-camera': ['камера', 'camera', 'товар', 'product', 'проверьте'],
-      'rate-pickup-point': ['оцените', 'rate', 'пункт', 'pickup', 'выдачи'],
-      'receiving-start': ['приемка', 'receiving', 'начало', 'start'],
-      'receiving-complete': ['приемка', 'receiving', 'завершена', 'complete'],
-      'return-start': ['возврат', 'return', 'начало', 'start'],
-      'return-complete': ['возврат', 'return', 'завершен', 'complete']
-    };
-    
-    for (const [key, keywords] of Object.entries(keywordMatches)) {
-      if (keywords.some(keyword => cleanFileName.includes(keyword))) {
-        match = audioFiles.find(item => item.key === key);
-        if (match) return match;
-      }
-    }
-    
-    return null;
-  };
-
-  const handleFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    const audioFilesList = Array.from(files).filter(file => file.type.startsWith('audio/'));
-    const totalFiles = audioFilesList.length;
-    let processedFiles = 0;
-    const updatedFiles: { [key: string]: string } = {};
-
-    if (totalFiles === 0) {
-      alert('В выбранной папке не найдено аудиофайлов');
-      setIsUploading(false);
+  const handleFileUpload = async (key: string, file: File) => {
+    if (!file.type.startsWith('audio/')) {
+      alert('❌ Выберите аудиофайл (mp3, wav, ogg, m4a)');
       return;
     }
 
-    // Конвертируем файлы в base64 асинхронно
-    for (const file of audioFilesList) {
-      const matchingAudioFile = matchAudioFileByName(file.name);
-
-      if (matchingAudioFile) {
-        try {
-          // Конвертируем файл в base64 для постоянного хранения
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-
-          updatedFiles[matchingAudioFile.key] = base64;
-
-          setAudioFiles(prev => prev.map(item => 
-            item.key === matchingAudioFile.key
-              ? { ...item, uploaded: true, url: base64 }
-              : item
-          ));
-        } catch (error) {
-          console.error('Ошибка конвертации файла:', file.name, error);
-        }
-      }
-
-      processedFiles++;
-      setUploadProgress((processedFiles / totalFiles) * 100);
-    }
-
-    setTimeout(async () => {
-      setIsUploading(false);
-      setUploadProgress(0);
-      
-      try {
-        await onAudioFilesUpdate(updatedFiles);
-        console.log('🔊 ФАЙЛЫ КОНВЕРТИРОВАНЫ В BASE64 И СОХРАНЕНЫ:', updatedFiles);
-        
-        // Проверяем что действительно сохранилось
-        const saved = localStorage.getItem('wb-audio-files');
-        console.log('📁 В localStorage wb-audio-files:', saved ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
-        
-        const matchedCount = Object.keys(updatedFiles).length;
-        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!\n\n🔊 Теперь озвучка должна работать!`);
-      } catch (error) {
-        console.error('Ошибка при сохранении:', error);
-        alert('❌ Ошибка при сохранении файлов. Проверьте консоль.');
-      }
-    }, 500);
-  };
-
-  const handleCellFolderFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    setIsCellUploading(true);
-    setCellUploadProgress(0);
-
-    const audioFilesList = Array.from(files).filter(file => file.type.startsWith('audio/'));
-    const totalFiles = audioFilesList.length;
-    let processedFiles = 0;
-
-    if (totalFiles === 0) {
-      alert('В папке с ячейками не найдено аудиофайлов');
-      setIsCellUploading(false);
-      return;
-    }
-
-    // Создаем объект для хранения озвучки ячеек по номерам
-    const cellAudios: { [key: string]: string } = {};
-
-    // Конвертируем файлы ячеек в base64 асинхронно
-    for (const file of audioFilesList) {
-      // Извлекаем номер ячейки из названия файла - УЛУЧШЕННАЯ ЛОГИКА
-      const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
-      
-      // СТРОГАЯ ФИЛЬТРАЦИЯ: Ищем номер ячейки ТОЛЬКО по четким правилам
-      let cellNumber = null;
-      
-      // 1. ТОЛЬКО если файл называется просто числом: "123.mp3" → "123"
-      const exactNumber = fileName.match(/^(\d{1,4})$/);
-      if (exactNumber) {
-        cellNumber = exactNumber[1];
-        console.log(`📱✅ ТОЧНОЕ совпадение: "${file.name}" → ячейка "${cellNumber}"`);
-      }
-      
-      // 2. ТОЛЬКО с явными префиксами: "ячейка-123", "cell-456", "cell_789"  
-      else {
-        const cellPattern = fileName.match(/^(?:ячейка|cell)[-_]?(\d{1,4})$/);
-        if (cellPattern) {
-          cellNumber = cellPattern[1];
-          console.log(`📱✅ С префиксом: "${file.name}" → ячейка "${cellNumber}"`);
-        }
-      }
-      
-      // 3. ВСЕ ОСТАЛЬНОЕ ИГНОРИРУЕМ (никаких произвольных чисел!)
-      if (!cellNumber) {
-        console.log(`📱❌ ПРОПУЩЕН файл "${file.name}" - не соответствует формату ячеек`);
-      }
-      
-      // СТРОГАЯ ПРОВЕРКА: номер ячейки должен быть разумным (1-9999)
-      if (cellNumber) {
-        const num = parseInt(cellNumber);
-        if (num < 1 || num > 9999) {
-          console.log(`📱❌ ОТКЛОНЕН номер "${cellNumber}" - вне диапазона 1-9999`);
-          cellNumber = null;
-        }
-      }
-      
-      if (cellNumber) {
-        try {
-          // Конвертируем файл в base64 для постоянного хранения
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-
-          cellAudios[cellNumber] = base64;
-        } catch (error) {
-          console.error('Ошибка конвертации ячейки:', file.name, error);
-        }
-      }
-
-      processedFiles++;
-      setCellUploadProgress((processedFiles / totalFiles) * 100);
-    }
-
-    setTimeout(async () => {
-      setIsCellUploading(false);
-      setCellUploadProgress(0);
-      
-      // Конвертируем ячейки в правильный формат для основной системы аудио
-      const cellFilesForMainSystem: { [key: string]: string } = {};
-      
-      Object.entries(cellAudios).forEach(([cellNumber, base64]) => {
-        // Добавляем все варианты ключей для ячеек
-        cellFilesForMainSystem[cellNumber] = base64; // Просто номер: "12"
-        cellFilesForMainSystem[`cell-${cellNumber}`] = base64; // С префиксом: "cell-12"  
-        cellFilesForMainSystem[`ячейка-${cellNumber}`] = base64; // Русский префикс: "ячейка-12"
+    try {
+      // Конвертируем в base64 для постоянного сохранения
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
+
+      // Обновляем файлы
+      await onAudioFilesUpdate({ [key]: base64 });
       
-      try {
-        // Сохраняем в основную систему аудио
-        await onAudioFilesUpdate(cellFilesForMainSystem);
-        
-        // Также сохраняем отдельно для обратной совместимости
-        localStorage.setItem('cellAudios', JSON.stringify(cellAudios));
-        
-        console.log('📱 ЯЧЕЙКИ КОНВЕРТИРОВАНЫ В BASE64 И СОХРАНЕНЫ:', cellAudios);
-        
-        const cellCount = Object.keys(cellAudios).length;
-        alert(`✅ Успешно загружено озвучки для ${cellCount} ячеек\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!\n\n🔊 Теперь озвучка ячеек должна работать!`);
-      } catch (error) {
-        console.error('Ошибка при сохранении ячеек:', error);
-        alert('❌ Ошибка при сохранении ячеек. Проверьте консоль.');
-      }
-    }, 500);
+      setLoadedFiles(prev => new Set([...prev, key]));
+      
+      console.log(`✅ Файл "${key}" успешно загружен и сохранен`);
+      alert(`✅ Аудио загружено!\n"${audioStages.find(s => s.key === key)?.name}"`);
+      
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
+      alert('❌ Ошибка загрузки файла');
+    }
+  };
+
+  const handleCellAudioUpload = async () => {
+    if (!cellAudioFile) return;
+
+    if (!cellAudioFile.type.startsWith('audio/')) {
+      alert('❌ Выберите аудиофайл для озвучки номеров ячеек');
+      return;
+    }
+
+    try {
+      // Конвертируем в base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(cellAudioFile);
+      });
+
+      // Сохраняем как общий файл для всех ячеек
+      await onAudioFilesUpdate({ 'cell-number': base64 });
+      
+      // Также сохраняем отдельно
+      const cellData = { 'general': base64 };
+      localStorage.setItem('cellAudios', JSON.stringify(cellData));
+      
+      setCellAudioCount(1);
+      setCellAudioFile(null);
+      
+      console.log('✅ Общая озвучка ячеек загружена');
+      alert('✅ Озвучка номеров ячеек загружена!\nБудет использоваться для всех ячеек');
+      
+    } catch (error) {
+      console.error('Ошибка загрузки озвучки ячеек:', error);
+      alert('❌ Ошибка загрузки озвучки ячеек');
+    }
   };
 
   const handleRemoveFile = (key: string) => {
-    setAudioFiles(prev => prev.map(item => 
-      item.key === key 
-        ? { ...item, uploaded: false, url: undefined }
-        : item
-    ));
     removeAudioFile(key);
+    setLoadedFiles(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(key);
+      return newSet;
+    });
+  };
+
+  const handlePlayFile = (key: string) => {
+    const file = existingFiles[key];
+    if (file) {
+      try {
+        const audio = new Audio(file);
+        audio.volume = 0.8;
+        audio.play();
+      } catch (error) {
+        alert('❌ Ошибка воспроизведения');
+      }
+    }
   };
 
   const handleClearAll = () => {
-    if (confirm('Вы уверены, что хотите удалить все аудиофайлы?')) {
-      setAudioFiles(prev => prev.map(item => ({
-        ...item,
-        uploaded: false,
-        url: undefined
-      })));
+    if (confirm('🗑️ Удалить ВСЮ озвучку?\n\n- Все файлы этапов\n- Озвучка ячеек\n- Все настройки')) {
       clearAllAudio();
-    }
-  };
-
-  const handlePlayFile = (url: string) => {
-    const audio = new Audio(url);
-    audio.play().catch(console.error);
-  };
-
-  const handleClearCells = () => {
-    if (confirm('Удалить все озвучки ячеек?')) {
       localStorage.removeItem('cellAudios');
-      window.location.reload();
+      setLoadedFiles(new Set());
+      setCellAudioCount(0);
+      alert('🧹 Вся озвучка удалена');
     }
   };
 
-  const uploadedCount = audioFiles.filter(item => item.uploaded).length;
-  
-  // Получаем информацию о загруженных ячейках
-  const cellAudios = JSON.parse(localStorage.getItem('cellAudios') || '{}');
-  const cellCount = Object.keys(cellAudios).length;
+  const getCategoryName = (category: string) => {
+    const names = {
+      'delivery': '📤 ВЫДАЧА',
+      'receiving': '📥 ПРИЕМКА', 
+      'returns': '↩️ ВОЗВРАТЫ',
+      'general': '⚙️ ОБЩЕЕ'
+    };
+    return names[category] || category;
+  };
+
+  const groupedStages = audioStages.reduce((acc, stage) => {
+    if (!acc[stage.category]) acc[stage.category] = [];
+    acc[stage.category].push(stage);
+    return acc;
+  }, {} as Record<string, AudioStage[]>);
+
+  const totalLoaded = loadedFiles.size + cellAudioCount;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Icon name="Volume2" />
-            Настройка озвучки
+            Настройка озвучки ({totalLoaded} файлов)
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <Icon name="X" className="w-5 h-5" />
-          </Button>
+          <div className="flex gap-2">
+            {totalLoaded > 0 && (
+              <Button variant="outline" size="sm" onClick={handleClearAll} className="text-red-600">
+                <Icon name="Trash" className="w-4 h-4 mr-1" />
+                Очистить всё
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <Icon name="X" className="w-5 h-5" />
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="text-sm text-gray-600">
-                Загружено файлов: {uploadedCount} из {audioFiles.length}
+          
+          {/* ОЗВУЧКА ЯЧЕЕК */}
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-medium text-blue-800 flex items-center gap-2">
+                  <Icon name="Hash" />
+                  📱 Озвучка номеров ячеек
+                </h3>
+                <p className="text-blue-600 text-sm mt-1">
+                  Один файл для озвучки всех номеров ячеек (будет использоваться системный синтез речи)
+                </p>
               </div>
-              {cellCount > 0 && (
-                <div className="text-sm text-blue-600">
-                  📱 Ячейки: {cellCount} шт.
+              {cellAudioCount > 0 && (
+                <div className="text-blue-600 font-medium">
+                  ✅ Загружено
                 </div>
               )}
             </div>
-            {uploadedCount > 0 && (
+            
+            <div className="flex gap-3 items-center">
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => setCellAudioFile(e.target.files?.[0] || null)}
+                className="flex-1"
+              />
               <Button 
-                onClick={handleClearAll}
-                variant="outline"
-                size="sm"
-                className="text-red-600 hover:text-red-700"
+                onClick={handleCellAudioUpload}
+                disabled={!cellAudioFile}
+                className="bg-blue-600 hover:bg-blue-700"
               >
-                <Icon name="Trash" className="w-4 h-4 mr-1" />
-                Очистить все
+                {cellAudioCount > 0 ? 'Заменить' : 'Загрузить'}
               </Button>
-            )}
+              {cellAudioCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm" 
+                  onClick={() => handlePlayFile('cell-number')}
+                >
+                  <Icon name="Play" className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
-          <FolderUploadSection
-            audioFiles={audioFiles}
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-            onFolderFiles={handleFolderFiles}
-            onFolderUpload={() => {}}
-          />
+          {/* ЭТАПЫ ПО КАТЕГОРИЯМ */}
+          {Object.entries(groupedStages).map(([category, stages]) => (
+            <div key={category} className="space-y-3">
+              <h3 className="text-lg font-medium text-gray-800 border-b pb-2">
+                {getCategoryName(category)}
+              </h3>
+              
+              <div className="grid gap-4">
+                {stages.map((stage) => {
+                  const isLoaded = loadedFiles.has(stage.key);
+                  
+                  return (
+                    <div key={stage.key} className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-3 h-3 rounded-full ${isLoaded ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <div>
+                              <h4 className="font-medium text-gray-800">{stage.name}</h4>
+                              <p className="text-sm text-gray-600">{stage.description}</p>
+                              <p className="text-xs text-gray-500 mt-1">Ключ: {stage.key}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(stage.key, file);
+                            }}
+                            className="w-40 text-xs"
+                          />
+                          
+                          {isLoaded && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handlePlayFile(stage.key)}
+                              >
+                                <Icon name="Play" className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRemoveFile(stage.key)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Icon name="Trash" className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
-          <CellAudioSection
-            isCellUploading={isCellUploading}
-            cellUploadProgress={cellUploadProgress}
-            cellCount={cellCount}
-            onCellFolderFiles={handleCellFolderFiles}
-            onClearCells={handleClearCells}
-          />
+          {/* ИНФОРМАЦИЯ */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-medium text-green-800 mb-2">💾 Автоматическое сохранение</h4>
+            <div className="text-green-700 text-sm space-y-1">
+              <p>✅ Все файлы конвертируются в base64 и сохраняются постоянно в браузере</p>
+              <p>✅ Работают после перезагрузки страницы и закрытия браузера</p>
+              <p>✅ Загруженные файлы: {totalLoaded} из {audioStages.length + 1}</p>
+            </div>
+          </div>
 
-          <AudioFileList
-            audioFiles={audioFiles}
-            onPlayFile={handlePlayFile}
-            onRemoveFile={handleRemoveFile}
-          />
-
-          <AudioDiagnostics />
+          {/* ТЕСТ ОЗВУЧКИ */}
+          {totalLoaded > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={async () => {
+                    // Тест любого загруженного файла
+                    const testKeys = Array.from(loadedFiles);
+                    if (testKeys.length > 0) {
+                      handlePlayFile(testKeys[0]);
+                      alert(`🔊 Тестируется: ${audioStages.find(s => s.key === testKeys[0])?.name}`);
+                    }
+                  }}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  <Icon name="Play" className="w-4 h-4 mr-2" />
+                  🧪 Тест озвучки
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
