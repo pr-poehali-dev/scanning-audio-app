@@ -21,9 +21,25 @@ export const useAudio = () => {
 
   const playAudio = useCallback(async (audioKey: string) => {
     try {
-      console.log(`🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ: "${audioKey}"`);
-      console.log(`📁 ДОСТУПНЫЕ ФАЙЛЫ:`, Object.keys(customAudioFiles));
-      console.log(`💾 РАЗМЕР ХРАНИЛИЩА:`, Object.keys(customAudioFiles).length, 'файлов');
+      console.log(`🔊 === ПОПЫТКА ВОСПРОИЗВЕСТИ ===`);
+      console.log(`🎯 КЛЮЧ: "${audioKey}"`);
+      
+      // СПЕЦИАЛЬНАЯ ДИАГНОСТИКА ДЛЯ ЯЧЕЕК
+      if (audioKey.includes('cell-') || audioKey.includes('ячейка') || /^\d+$/.test(audioKey)) {
+        console.log(`🏠 === ДИАГНОСТИКА ЯЧЕЙКИ ===`);
+        console.log(`📍 Запрошена ячейка: "${audioKey}"`);
+        console.log(`📊 Загружено ячеек: ${Object.keys(customAudioFiles).filter(k => k.includes('cell-') || /^\d+$/.test(k)).length}`);
+        
+        const cellKeys = Object.keys(customAudioFiles).filter(k => k.includes('cell-') || /^\d+$/.test(k));
+        console.log(`📋 Доступные ячейки:`, cellKeys);
+        
+        // КРИТИЧНО: Откуда взялся номер ячейки?
+        console.log(`❓ ОТКУДА ЭТОТ НОМЕР? Проверьте стек вызовов ниже:`);
+        console.trace();
+      }
+      
+      console.log(`📁 ВСЕГО ФАЙЛОВ:`, Object.keys(customAudioFiles).length);
+      console.log(`💾 ПЕРВЫЕ 10 КЛЮЧЕЙ:`, Object.keys(customAudioFiles).slice(0, 10));
       
       // ПРИНУДИТЕЛЬНАЯ ДИАГНОСТИКА
       console.log(`🔍 === ДЕТАЛЬНАЯ ДИАГНОСТИКА ===`);
@@ -193,14 +209,21 @@ export const useAudio = () => {
           });
         }
       } else {
+        // СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ ЯЧЕЕК  
+        if (audioKey.includes('cell-') || audioKey.includes('ячейка') || /^cell-\d+$/.test(audioKey)) {
+          console.warn(`🏠 ОЗВУЧКА ДЛЯ ЯЧЕЙКИ "${audioKey}" НЕ НАЙДЕНА`);
+          console.log(`💡 У вас есть ${Object.keys(customAudioFiles).filter(k => k.includes('cell-') || /^\d+$/.test(k)).length} озвучек ячеек, но не для этой`);
+          console.log(`📥 Загрузите аудиофайл для ячейки в: Настройки → Озвучка ячеек`);
+          
+          // НЕ показываем критичную ошибку - просто тихо завершаем
+          return;
+        }
+        
         console.log(`⚠️ ФАЙЛ НЕ НАЙДЕН ДЛЯ "${audioKey}"`);
         console.log(`🔍 ПРОВЕРЕННЫЕ КЛЮЧИ:`, possibleKeys);
-        console.log(`📋 ДОСТУПНЫЕ ФАЙЛЫ:`, Object.keys(customAudioFiles));
+        console.log(`📋 ДОСТУПНЫЕ ФАЙЛЫ (первые 10):`, Object.keys(customAudioFiles).slice(0, 10));
+        console.log(`❌ ЗВУК НЕ ВОСПРОИЗВЕДЕН - загрузите аудиофайл для "${audioKey}" в настройках`);
       }
-      
-      // ВСТРОЕННЫЙ ЗВУК ОТКЛЮЧЕН - только пользовательские файлы
-      console.log(`📁 Доступные файлы в customAudioFiles:`, Object.keys(customAudioFiles));
-      console.log(`❌ ЗВУК НЕ ВОСПРОИЗВЕДЕН - загрузите аудиофайл для "${audioKey}" в настройках`);
       return;
       
     } catch (error) {
