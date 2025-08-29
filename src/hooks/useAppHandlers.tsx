@@ -77,13 +77,16 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
               try {
                 await playAudio(cellAudioName);
                 cellAudioPlayed = true;
-                // Даем время аудио полностью воспроизвестись
-                await new Promise(resolve => setTimeout(resolve, 2000));
                 break;
               } catch (error) {
                 console.log(`❌ Ошибка воспроизведения аудио ячейки:`, error);
               }
             }
+          }
+          
+          // Ожидание ТОЛЬКО если аудио было воспроизведено
+          if (cellAudioPlayed) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
           
           if (!cellAudioPlayed) {
