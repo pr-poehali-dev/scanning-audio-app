@@ -108,8 +108,9 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     return audioPlayed;
   };
 
-  // Обработка сканирования
+  // ФИКТИВНОЕ сканирование для приемки
   const handleQRScan = (data: string) => {
+    console.log('📦 === ФИКТИВНОЕ СКАНИРОВАНИЕ ПРИЕМКИ ===');
     console.log('🔍 Отсканирован код для приемки:', data);
     setScannedCode(data);
     setShowScanner(false);
@@ -120,16 +121,33 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     // Переходим к следующему шагу
     setCurrentStep('confirm');
     
+    // Генерируем случайные данные товара
+    const productNames = [
+      'Смартфон Samsung Galaxy',
+      'Наушники Apple AirPods',
+      'Куртка зимняя Nike',
+      'Кроссовки Adidas',
+      'Рюкзак школьный',
+      'Планшет iPad',
+      'Книга "Мастер и Маргарита"',
+      'Игрушка мягкая медведь'
+    ];
+    
+    const randomProduct = productNames[Math.floor(Math.random() * productNames.length)];
+    const randomQuantity = Math.floor(Math.random() * 3) + 1;
+    
     const newItem: AcceptanceItem = {
       id: Date.now().toString(),
       barcode: data,
-      productName: `Товар ${data.slice(-6)}`,
-      quantity: 1,
-      status: 'accepted',
+      productName: randomProduct,
+      quantity: randomQuantity,
+      status: 'pending',
       timestamp: new Date().toLocaleString('ru-RU')
     };
 
     setAcceptanceItems(prev => [newItem, ...prev]);
+    
+    console.log(`✅ Товар добавлен: ${randomProduct} (${randomQuantity} шт.)`);
   };
 
   // Функция для изменения статуса товара
@@ -241,42 +259,166 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
         </div>
 
         {/* Контент в зависимости от шага */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-8">
-            Отсканируйте стикер коробки
-          </h1>
+        {currentStep === 'scan' && (
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-8">
+              Отсканируйте стикер коробки
+            </h1>
 
-          {/* QR код */}
-          <QRCodeDisplay />
+            {/* QR код с ФИКТИВНЫМ СКАНИРОВАНИЕМ */}
+            <div 
+              onClick={() => {
+                // ФИКТИВНОЕ сканирование при клике на QR-код
+                const fakeBarcode = `${Date.now().toString().slice(-8)}`;
+                console.log('🔍 КЛИК ПО QR-КОДУ - запуск фиктивного сканирования');
+                setTimeout(() => {
+                  handleQRScan(fakeBarcode);
+                }, 500);
+              }}
+              className="cursor-pointer hover:scale-105 transition-transform"
+            >
+              <QRCodeDisplay />
+            </div>
 
-          {/* Разделитель */}
-          <div className="text-gray-500 mb-6">или</div>
+            {/* Разделитель */}
+            <div className="text-gray-500 mb-6">или</div>
 
-          {/* Поле поиска */}
-          <div className="max-w-md mx-auto">
-            <div className="relative">
-              <Input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="89585787658"
-                className="w-full pl-4 pr-12 py-3 text-lg border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
-              />
+            {/* Поле поиска */}
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="89585787658"
+                  className="w-full pl-4 pr-12 py-3 text-lg border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                />
+                <Button 
+                  size="sm"
+                  className="absolute right-2 top-2 bg-purple-500 hover:bg-purple-600"
+                  onClick={() => {
+                    if (searchValue) {
+                      handleQRScan(searchValue);
+                      setSearchValue('');
+                    }
+                  }}
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Шаг 2: Подтверждение товара */}
+        {currentStep === 'confirm' && scannedCode && (
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-8">
+              Подтвердите товар
+            </h1>
+            
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Товар найден!</h3>
+              <p className="text-gray-600 mb-4">Штрихкод: {scannedCode}</p>
+              {acceptanceItems.length > 0 && (
+                <p className="text-gray-800 font-medium">{acceptanceItems[0].productName}</p>
+              )}
+            </div>
+            
+            <div className="flex gap-4 justify-center">
               <Button 
-                size="sm"
-                className="absolute right-2 top-2 bg-purple-500 hover:bg-purple-600"
                 onClick={() => {
-                  if (searchValue) {
-                    handleQRScan(searchValue);
-                    setSearchValue('');
-                  }
+                  setCurrentStep('location');
+                  playAcceptanceAudio('accepted');
                 }}
+                className="bg-green-500 hover:bg-green-600 text-white px-8 py-3"
               >
-                <Search className="w-4 h-4" />
+                ✅ Принять товар
+              </Button>
+              
+              <Button 
+                onClick={() => {
+                  if (acceptanceItems.length > 0) {
+                    changeItemStatus(acceptanceItems[0].id, 'damaged');
+                  }
+                  setCurrentStep('location');
+                  playAcceptanceAudio('damaged');
+                }}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3"
+              >
+                ⚠️ Повреждено
+              </Button>
+              
+              <Button 
+                onClick={() => {
+                  if (acceptanceItems.length > 0) {
+                    changeItemStatus(acceptanceItems[0].id, 'rejected');
+                  }
+                  setCurrentStep('scan');
+                  playAcceptanceAudio('rejected');
+                  setScannedCode('');
+                }}
+                variant="outline"
+                className="px-8 py-3"
+              >
+                ❌ Отклонить
               </Button>
             </div>
           </div>
-        </div>
+        )}
+        
+        {/* Шаг 3: Размещение */}
+        {currentStep === 'location' && (
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-8">
+              Разместите товар
+            </h1>
+            
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+              <Package className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Размещение товара</h3>
+              <p className="text-gray-600 mb-4">Поместите товар на стеллаж</p>
+              <p className="text-gray-800 font-medium">Ячейка: {Math.floor(Math.random() * 500) + 1}</p>
+            </div>
+            
+            <Button 
+              onClick={() => {
+                setCurrentStep('complete');
+                playAcceptanceAudio('bulk_accepted');
+              }}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
+            >
+              📦 Товар размещен
+            </Button>
+          </div>
+        )}
+        
+        {/* Шаг 4: Завершение */}
+        {currentStep === 'complete' && (
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-8">
+              Приемка завершена
+            </h1>
+            
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Успешно!</h3>
+              <p className="text-gray-600 mb-4">Товар принят и размещен</p>
+            </div>
+            
+            <Button 
+              onClick={() => {
+                setCurrentStep('scan');
+                setScannedCode('');
+                setSearchValue('');
+              }}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
+            >
+              📦 Принять еще товар
+            </Button>
+          </div>
+        )}
       </div>
 
 

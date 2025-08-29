@@ -33,9 +33,15 @@ export const AudioUploader = ({
     { key: 'check-product-camera', name: '📷 Проверка товара', description: 'Проверьте товар под камерой', category: 'delivery' },
     { key: 'rate-pickup-point', name: '⭐ Оценка ПВЗ', description: 'Оцените пункт выдачи', category: 'delivery' },
     
-    // ПРИЕМКА
-    { key: 'receiving-start', name: '📦 Начало приемки', description: 'Начинаем приемку товаров', category: 'receiving' },
-    { key: 'receiving-complete', name: '✅ Приемка завершена', description: 'Приемка успешно завершена', category: 'receiving' },
+    // ПРИЕМКА - РАСШИРЕННЫЙ СПИСОК
+    { key: 'acceptance-Товар отсканирован', name: '📱 Товар отсканирован', description: 'Озвучка при успешном сканировании товара', category: 'receiving' },
+    { key: 'acceptance-Принято в ПВЗ', name: '✅ Товар принят', description: 'Подтверждение принятия товара', category: 'receiving' },
+    { key: 'acceptance-Товар поврежден', name: '⚠️ Товар поврежден', description: 'Уведомление о повреждении товара', category: 'receiving' },
+    { key: 'acceptance-Ошибка приемки', name: '❌ Ошибка приемки', description: 'Сообщение об ошибке в процессе приемки', category: 'receiving' },
+    { key: 'acceptance-Размещение товара', name: '📦 Размещение товара', description: 'Инструкция по размещению товара', category: 'receiving' },
+    { key: 'acceptance-Приемка завершена', name: '🎉 Приемка завершена', description: 'Подтверждение завершения приемки', category: 'receiving' },
+    { key: 'acceptance-scan-success', name: '🔍 Сканирование успешно', description: 'Подтверждение успешного сканирования', category: 'receiving' },
+    { key: 'acceptance-товар найден', name: '🎯 Товар найден', description: 'Подтверждение нахождения товара в системе', category: 'receiving' },
     
     // ВОЗВРАТЫ
     { key: 'return-start', name: '↩️ Начало возврата', description: 'Начинаем процедуру возврата', category: 'returns' },
@@ -70,13 +76,37 @@ export const AudioUploader = ({
         reader.readAsDataURL(file);
       });
 
-      // Обновляем файлы
-      await onAudioFilesUpdate({ [key]: base64 });
+      console.log('🔄 === КРИТИЧЕСКАЯ ОТЛАДКА ЗАГРУЗКИ ===');
+      console.log(`📁 Загружаю файл: ${key}`);
+      console.log(`📊 Размер base64: ${(base64.length / 1024).toFixed(2)} КБ`);
+      console.log(`🎯 Ключ для сохранения: "${key}"`);
+      
+      // КРИТИЧНО: Обновляем файлы с детальным логированием
+      try {
+        await onAudioFilesUpdate({ [key]: base64 });
+        console.log(`✅ onAudioFilesUpdate УСПЕШНО для ${key}`);
+      } catch (updateError) {
+        console.error(`❌ ОШИБКА onAudioFilesUpdate для ${key}:`, updateError);
+        throw updateError;
+      }
       
       setLoadedFiles(prev => new Set([...prev, key]));
       
+      // ПРОВЕРЯЕМ ЧТО РЕАЛЬНО СОХРАНИЛОСЬ
+      setTimeout(() => {
+        const savedCheck = localStorage.getItem('wb-audio-files');
+        if (savedCheck) {
+          const parsed = JSON.parse(savedCheck);
+          const hasKey = parsed[key];
+          console.log(`🔍 ПРОВЕРКА СОХРАНЕНИЯ ${key}: ${hasKey ? '✅ НАЙДЕН' : '❌ НЕ НАЙДЕН'}`);
+          console.log(`📊 Всего в localStorage: ${Object.keys(parsed).length} файлов`);
+        } else {
+          console.error('❌ КРИТИЧНО: localStorage пуст!');
+        }
+      }, 100);
+      
       console.log(`✅ Файл "${key}" успешно загружен и сохранен`);
-      alert(`✅ Аудио загружено!\n"${audioStages.find(s => s.key === key)?.name}"`);
+      alert(`✅ Аудио загружено и АВТОСОХРАНЕНО!\n"${audioStages.find(s => s.key === key)?.name}"`);
       
     } catch (error) {
       console.error('Ошибка загрузки файла:', error);
@@ -101,18 +131,42 @@ export const AudioUploader = ({
         reader.readAsDataURL(cellAudioFile);
       });
 
-      // Сохраняем как общий файл для всех ячеек
-      await onAudioFilesUpdate({ 'cell-number': base64 });
+      console.log('🏠 === КРИТИЧЕСКАЯ ОТЛАДКА ЯЧЕЕК ===');
+      console.log(`📁 Загружаю общую озвучку ячеек`);
+      console.log(`📊 Размер base64: ${(base64.length / 1024).toFixed(2)} КБ`);
       
-      // Также сохраняем отдельно
+      // КРИТИЧНО: Сохраняем как общий файл для всех ячеек
+      try {
+        await onAudioFilesUpdate({ 'cell-number': base64 });
+        console.log('✅ onAudioFilesUpdate УСПЕШНО для cell-number');
+      } catch (updateError) {
+        console.error('❌ ОШИБКА onAudioFilesUpdate для cell-number:', updateError);
+        throw updateError;
+      }
+      
+      // Также сохраняем отдельно для резерва
       const cellData = { 'general': base64 };
       localStorage.setItem('cellAudios', JSON.stringify(cellData));
+      console.log('💾 Дополнительно сохранено в cellAudios');
       
       setCellAudioCount(1);
       setCellAudioFile(null);
       
-      console.log('✅ Общая озвучка ячеек загружена');
-      alert('✅ Озвучка номеров ячеек загружена!\nБудет использоваться для всех ячеек');
+      // ПРОВЕРЯЕМ ЧТО РЕАЛЬНО СОХРАНИЛОСЬ
+      setTimeout(() => {
+        const savedCheck = localStorage.getItem('wb-audio-files');
+        if (savedCheck) {
+          const parsed = JSON.parse(savedCheck);
+          const hasCellNumber = parsed['cell-number'];
+          console.log(`🔍 ПРОВЕРКА СОХРАНЕНИЯ cell-number: ${hasCellNumber ? '✅ НАЙДЕН' : '❌ НЕ НАЙДЕН'}`);
+        }
+        
+        const cellCheck = localStorage.getItem('cellAudios');
+        console.log(`🔍 ПРОВЕРКА cellAudios: ${cellCheck ? '✅ НАЙДЕН' : '❌ НЕ НАЙДЕН'}`);
+      }, 100);
+      
+      console.log('✅ Общая озвучка ячеек загружена и АВТОСОХРАНЕНА');
+      alert('✅ Озвучка номеров ячеек АВТОСОХРАНЕНА!\nБудет использоваться для всех ячеек');
       
     } catch (error) {
       console.error('Ошибка загрузки озвучки ячеек:', error);
