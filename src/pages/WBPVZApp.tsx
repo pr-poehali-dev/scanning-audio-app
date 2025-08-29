@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAudio } from '@/hooks/useAudio';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
@@ -32,6 +32,21 @@ const WBPVZApp = () => {
   });
   
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
+
+  // Восстанавливаем информацию о загруженных аудиофайлах при запуске
+  useEffect(() => {
+    const savedAudioFiles = localStorage.getItem('wb-pvz-uploaded-audio-files');
+    if (savedAudioFiles) {
+      try {
+        const fileNames = JSON.parse(savedAudioFiles);
+        console.log(`🔄 Найдено ${fileNames.length} сохраненных аудиофайлов в localStorage`);
+        // Здесь могли бы восстановить файлы, но URL объекты не переживают перезагрузку
+        // Показываем пользователю информацию о том, что файлы нужно загрузить заново
+      } catch (e) {
+        console.warn('Ошибка восстановления списка аудиофайлов:', e);
+      }
+    }
+  }, []);
 
   const handleQRScan = useCallback(() => {
     setShowQRScanner(true);
@@ -102,23 +117,49 @@ const WBPVZApp = () => {
     if (!files) return;
 
     const audioFiles: { [key: string]: string } = { ...customAudioFiles };
+    let newFilesCount = 0;
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       console.log('Обрабатываю файл:', file.name, 'Тип:', file.type);
       
       if (file.type.startsWith('audio/')) {
-        const fileName = `${tabType}-${file.name.replace(/\.[^/.]+$/, '')}`;
+        const baseFileName = file.name.replace(/\.[^/.]+$/, '');
         const audioUrl = URL.createObjectURL(file);
-        audioFiles[fileName] = audioUrl;
-        console.log('Добавлен аудиофайл:', fileName);
+        
+        // Сохраняем файл с префиксом вкладки
+        const prefixedFileName = `${tabType}-${baseFileName}`;
+        audioFiles[prefixedFileName] = audioUrl;
+        
+        // ТАКЖЕ сохраняем файл БЕЗ префикса для глобального доступа
+        audioFiles[baseFileName] = audioUrl;
+        
+        console.log(`✅ Добавлен аудиофайл:`, {
+          withPrefix: prefixedFileName,
+          global: baseFileName,
+          url: audioUrl
+        });
+        
+        newFilesCount++;
       }
     }
 
-    if (Object.keys(audioFiles).length > Object.keys(customAudioFiles).length) {
+    if (newFilesCount > 0) {
       updateAudioFiles(audioFiles);
-      const newFilesCount = Object.keys(audioFiles).length - Object.keys(customAudioFiles).length;
-      alert(`Для вкладки "${getTabName(tabType)}" загружено ${newFilesCount} аудиофайлов`);
+      
+      // Сохраняем аудио файлы в localStorage для всей платформы
+      try {
+        const audioFilesToStore = { ...audioFiles };
+        // Удаляем URL объекты из localStorage (они не сериализуются)
+        // Сохраняем только названия файлов для восстановления при перезагрузке
+        const fileNames = Object.keys(audioFiles).filter(key => !key.includes('blob:'));
+        localStorage.setItem('wb-pvz-uploaded-audio-files', JSON.stringify(fileNames));
+        console.log(`💾 Сохранено ${fileNames.length} названий аудиофайлов в localStorage`);
+      } catch (e) {
+        console.warn('Не удалось сохранить список аудиофайлов в localStorage:', e);
+      }
+      
+      alert(`Для вкладки "${getTabName(tabType)}" загружено ${newFilesCount} аудиофайлов.\n\n✅ Файлы теперь доступны для всей платформы!`);
     } else {
       alert('Аудиофайлы не найдены. Проверьте что выбрали файлы с расширением .mp3, .wav, .ogg или другими аудио форматами');
     }
@@ -126,7 +167,7 @@ const WBPVZApp = () => {
     if (event.target) {
       event.target.value = '';
     }
-  }, [updateAudioFiles, customAudioFiles]);
+  }, [updateAudioFiles, customAudioFiles, getTabName]);
 
   const getTabName = (tabId: string) => {
     const names: { [key: string]: string } = {
