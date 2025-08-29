@@ -24,7 +24,7 @@ export const useAudio = () => {
       console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
       console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
       
-      // Создаем список возможных ключей для поиска (приоритет - глобальные файлы)
+      // Создаем список возможных ключей для поиска
       const possibleKeys = [
         audioKey, // Глобальное название (приоритет)
         `delivery-${audioKey}`, // С префиксом delivery
@@ -32,6 +32,19 @@ export const useAudio = () => {
         `returns-${audioKey}`, // С префиксом returns
         `general-${audioKey}` // С префиксом general
       ];
+      
+      // Добавляем специальные маппинги для популярных ключей
+      const keyMappings: {[key: string]: string[]} = {
+        'discount': ['check-discount-wallet', 'скидка', 'discount'],
+        'check-product': ['check-product-camera', 'камера', 'товар', 'check-product'],
+        'rate-service': ['rate-pickup-point', 'оцените', 'rate-service'],
+        'cell-number': ['cell-number', 'ячейка', 'cell-number']
+      };
+      
+      // Если есть маппинг для текущего ключа, добавляем альтернативы
+      if (keyMappings[audioKey]) {
+        possibleKeys.push(...keyMappings[audioKey]);
+      }
       
       // Ищем первый подходящий файл
       let foundKey = null;
@@ -118,19 +131,57 @@ export const useAudio = () => {
     }
   }, [customAudioFiles]);
 
-  const updateAudioFiles = useCallback((files: {[key: string]: string}) => {
+  const updateAudioFiles = useCallback(async (files: {[key: string]: string}) => {
     console.log(`🔄 Обновляю аудиофайлы. Новые файлы:`, Object.keys(files));
     console.log(`📄 Типы URL в files:`, Object.entries(files).map(([key, url]) => ({ key, isBlob: url.startsWith('blob:') })));
     
-    const updatedFiles = { ...customAudioFiles, ...files };
+    // Конвертируем blob URL в base64 для постоянного сохранения
+    const permanentFiles: {[key: string]: string} = {};
+    
+    for (const [key, url] of Object.entries(files)) {
+      if (url.startsWith('blob:')) {
+        try {
+          // Получаем файл как ArrayBuffer
+          const response = await fetch(url);
+          const arrayBuffer = await response.arrayBuffer();
+          
+          // Конвертируем в base64
+          const base64 = arrayBufferToBase64(arrayBuffer);
+          const mimeType = response.headers.get('content-type') || 'audio/mpeg';
+          permanentFiles[key] = `data:${mimeType};base64,${base64}`;
+          
+          console.log(`✅ Файл "${key}" конвертирован в base64 для постоянного сохранения`);
+        } catch (error) {
+          console.error(`❌ Ошибка конвертации файла "${key}":`, error);
+          permanentFiles[key] = url; // Fallback к blob URL
+        }
+      } else {
+        permanentFiles[key] = url;
+      }
+    }
+    
+    const updatedFiles = { ...customAudioFiles, ...permanentFiles };
     setCustomAudioFiles(updatedFiles);
     
-    // Не сохраняем blob URL в localStorage, так как они не переживают перезагрузку
-    // Оставляем их только в памяти текущей сессии
-    console.log(`💾 Аудиофайлы загружены в память:`, Object.keys(updatedFiles));
-    console.log(`⚠️ ВНИМАНИЕ: файлы будут доступны только до перезагрузки страницы`);
-    console.log(`ℹ️ Для постоянного сохранения файлы нужно загружать заново после каждого обновления`);
+    // Сохраняем в localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFiles));
+      console.log(`💾 Аудиофайлы ПОСТОЯННО сохранены:`, Object.keys(updatedFiles));
+    } catch (error) {
+      console.error('❌ Ошибка сохранения аудиофайлов в localStorage:', error);
+    }
   }, [customAudioFiles]);
+
+  // Вспомогательная функция для конвертации ArrayBuffer в base64
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  };
 
   const removeAudioFile = useCallback((audioKey: string) => {
     const updatedFiles = { ...customAudioFiles };

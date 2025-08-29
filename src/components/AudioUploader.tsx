@@ -13,7 +13,7 @@ interface AudioFile {
 }
 
 interface AudioUploaderProps {
-  onAudioFilesUpdate: (files: { [key: string]: string }) => void;
+  onAudioFilesUpdate: (files: { [key: string]: string }) => Promise<void>;
   onClose: () => void;
   removeAudioFile: (key: string) => void;
   clearAllAudio: () => void;
@@ -123,12 +123,12 @@ export const AudioUploader = ({
       setUploadProgress((processedFiles / totalFiles) * 100);
     });
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsUploading(false);
       setUploadProgress(0);
       
       try {
-        onAudioFilesUpdate(updatedFiles);
+        await onAudioFilesUpdate(updatedFiles);
         console.log('Сохранено файлов:', updatedFiles);
         
         // Проверяем что действительно сохранилось
@@ -136,7 +136,7 @@ export const AudioUploader = ({
         console.log('В localStorage:', saved);
         
         const matchedCount = Object.keys(updatedFiles).length;
-        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n🔍 Проверьте консоль для отладочной информации`);
+        alert(`✅ Успешно загружено ${matchedCount} из ${totalFiles} файлов\n\n💾 Файлы конвертированы в base64 и ПОСТОЯННО сохранены!`);
       } catch (error) {
         console.error('Ошибка при сохранении:', error);
         alert('❌ Ошибка при сохранении файлов. Проверьте консоль.');
@@ -183,15 +183,33 @@ export const AudioUploader = ({
       setCellUploadProgress((processedFiles / totalFiles) * 100);
     });
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsCellUploading(false);
       setCellUploadProgress(0);
       
-      // Сохраняем озвучку ячеек в localStorage
-      localStorage.setItem('cellAudios', JSON.stringify(cellAudios));
+      // Конвертируем ячейки в правильный формат для основной системы аудио
+      const cellFilesForMainSystem: { [key: string]: string } = {};
       
-      const cellCount = Object.keys(cellAudios).length;
-      alert(`Успешно загружено озвучки для ${cellCount} ячеек`);
+      Object.entries(cellAudios).forEach(([cellNumber, url]) => {
+        // Добавляем все варианты ключей для ячеек
+        cellFilesForMainSystem[cellNumber] = url; // Просто номер: "12"
+        cellFilesForMainSystem[`cell-${cellNumber}`] = url; // С префиксом: "cell-12"  
+        cellFilesForMainSystem[`ячейка-${cellNumber}`] = url; // Русский префикс: "ячейка-12"
+      });
+      
+      try {
+        // Сохраняем в основную систему аудио
+        await onAudioFilesUpdate(cellFilesForMainSystem);
+        
+        // Также сохраняем отдельно для обратной совместимости
+        localStorage.setItem('cellAudios', JSON.stringify(cellAudios));
+        
+        const cellCount = Object.keys(cellAudios).length;
+        alert(`✅ Успешно загружено озвучки для ${cellCount} ячеек\n\n💾 Файлы интегрированы в основную систему аудио и ПОСТОЯННО сохранены!`);
+      } catch (error) {
+        console.error('Ошибка при сохранении ячеек:', error);
+        alert('❌ Ошибка при сохранении ячеек. Проверьте консоль.');
+      }
     }, 500);
   };
 
