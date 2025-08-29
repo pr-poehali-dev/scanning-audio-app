@@ -31,6 +31,20 @@ export const useAudio = () => {
       console.log(`- localStorage 'wb-audio-files':`, localStorage.getItem('wb-audio-files'));
       console.log(`- Ищем ключ:`, audioKey);
       
+      // ПРЯМОЕ СОВПАДЕНИЕ - ВЫСШИЙ ПРИОРИТЕТ
+      if (customAudioFiles[audioKey]) {
+        console.log(`🎵 ПРЯМОЕ СОВПАДЕНИЕ: "${audioKey}"`);
+        try {
+          const audio = new Audio(customAudioFiles[audioKey]);
+          audio.volume = 0.8;
+          await audio.play();
+          console.log(`✅ УСПЕШНО ВОСПРОИЗВЕДЕН: ${audioKey}`);
+          return;
+        } catch (error) {
+          console.error(`❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ "${audioKey}":`, error);
+        }
+      }
+
       // Создаем список возможных ключей для поиска
       const possibleKeys = [
         audioKey, // Глобальное название (приоритет)

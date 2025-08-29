@@ -274,37 +274,51 @@ const DeliveryInterface = ({
             <button
               onClick={async () => {
                 const storage = localStorage.getItem('wb-audio-files');
-                console.log('🔊 ТЕСТ ОЗВУЧКИ - ПРЯМО ИЗ ИНТЕРФЕЙСА');
+                console.log('🔊 ПРЯМОЕ ТЕСТИРОВАНИЕ ВСЕХ ФАЙЛОВ');
                 
                 if (storage) {
                   const files = JSON.parse(storage);
                   const keys = Object.keys(files);
-                  console.log('📂 Найденные ключи:', keys);
+                  console.log('📂 ВСЕ ключи в storage:', keys);
                   
-                  // Пробуем разные ключи
-                  const testKeys = ['discount', 'check-discount-wallet', 'cell-number', keys[0]];
+                  let worked = false;
+                  let report = '🔊 РЕЗУЛЬТАТ ТЕСТОВ:\n\n';
                   
-                  for (const key of testKeys) {
-                    if (files[key]) {
-                      try {
-                        console.log(`▶️ Тестируем: ${key}`);
-                        const audio = new Audio(files[key]);
-                        await audio.play();
-                        alert(`✅ Озвучка РАБОТАЕТ!\nФайл: ${key}`);
-                        return;
-                      } catch (error) {
-                        console.log(`❌ Ошибка с ${key}:`, error);
-                      }
+                  // Тестируем каждый файл
+                  for (const key of keys) {
+                    try {
+                      console.log(`▶️ Тестируем файл: ${key}`);
+                      const audio = new Audio(files[key]);
+                      audio.volume = 0.5; // Тихо для теста
+                      await audio.play();
+                      
+                      report += `✅ ${key} - РАБОТАЕТ\n`;
+                      worked = true;
+                      
+                      // Останавливаем через 1 сек для следующего теста
+                      setTimeout(() => audio.pause(), 1000);
+                      await new Promise(resolve => setTimeout(resolve, 1500));
+                      
+                    } catch (error) {
+                      report += `❌ ${key} - ОШИБКА: ${error.message}\n`;
+                      console.log(`❌ Ошибка с ${key}:`, error);
                     }
                   }
-                  alert('❌ НИ ОДИН файл не воспроизводится!');
+                  
+                  if (worked) {
+                    report += `\n🎉 ФАЙЛЫ ЗАГРУЖЕНЫ ПРАВИЛЬНО!\nПроблема может быть в маппинге ключей.`;
+                  } else {
+                    report += `\n❌ НИ ОДИН файл не работает - проблема с форматом или сохранением`;
+                  }
+                  
+                  alert(report);
                 } else {
-                  alert('❌ Аудиофайлы НЕ НАЙДЕНЫ в localStorage!');
+                  alert('❌ ФАЙЛЫ НЕ НАЙДЕНЫ!\n\nЗагрузите аудио через:\nНастройки → Голосовая озвучка');
                 }
               }}
               className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
             >
-              🔊 ТЕСТ
+              🔊 ПОЛНЫЙ ТЕСТ
             </button>
           </div>
         </div>
