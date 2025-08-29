@@ -193,36 +193,90 @@ const DeliveryInterface = ({
         
         {/* ОТЛАДКА ОЗВУЧКИ */}
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <button
-            onClick={async () => {
-              const storage = localStorage.getItem('wb-audio-files');
-              console.log('🔊 ТЕСТ ОЗВУЧКИ - ПРЯМО ИЗ ИНТЕРФЕЙСА');
-              console.log('📁 localStorage wb-audio-files:', storage);
-              
-              if (storage) {
-                const files = JSON.parse(storage);
-                console.log('📂 Файлы в storage:', Object.keys(files));
+          <div className="space-y-2">
+            <button
+              onClick={async () => {
+                const storage1 = localStorage.getItem('wb-audio-files');
+                const storage2 = localStorage.getItem('cellAudios');
                 
-                // Тест воспроизведения первого файла
-                const firstKey = Object.keys(files)[0];
-                if (firstKey) {
-                  try {
-                    console.log('▶️ Тестируем файл:', firstKey);
-                    const audio = new Audio(files[firstKey]);
-                    await audio.play();
-                    alert(`✅ Озвучка работает!\nФайл: ${firstKey}`);
-                  } catch (error) {
-                    alert(`❌ Ошибка: ${error.message}`);
+                console.log('🔊 ПОЛНАЯ ДИАГНОСТИКА АУДИО');
+                console.log('📁 wb-audio-files:', storage1 ? 'ЕСТЬ' : 'НЕТ');
+                console.log('📱 cellAudios:', storage2 ? 'ЕСТЬ' : 'НЕТ');
+                
+                let report = '🔍 ДИАГНОСТИКА ОЗВУЧКИ:\n\n';
+                
+                if (storage1) {
+                  const files = JSON.parse(storage1);
+                  const keys = Object.keys(files);
+                  report += `📁 Основные файлы: ${keys.length} шт.\n`;
+                  report += `📋 Список: ${keys.join(', ')}\n\n`;
+                  
+                  // Проверяем размер файлов
+                  const firstFile = files[keys[0]];
+                  if (firstFile) {
+                    report += `📏 Размер первого файла: ${(firstFile.length / 1024).toFixed(1)} KB\n`;
+                    report += `💾 Тип: ${firstFile.startsWith('data:audio/') ? 'base64 аудио' : 'неизвестный'}\n\n`;
                   }
+                } else {
+                  report += '❌ Основные файлы НЕ НАЙДЕНЫ!\n\n';
                 }
-              } else {
-                alert('❌ Аудиофайлы не найдены!\nЗагрузите файлы через Настройки → Голосовая озвучка');
-              }
-            }}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
-          >
-            🔊 ТЕСТ ОЗВУЧКИ
-          </button>
+                
+                if (storage2) {
+                  const cells = JSON.parse(storage2);
+                  const cellKeys = Object.keys(cells);
+                  report += `📱 Ячейки: ${cellKeys.length} шт.\n`;
+                  if (cellKeys.length > 10) {
+                    report += `📋 Первые 10: ${cellKeys.slice(0, 10).join(', ')}...\n`;
+                  } else {
+                    report += `📋 Список: ${cellKeys.join(', ')}\n`;
+                  }
+                } else {
+                  report += '❌ Ячейки НЕ НАЙДЕНЫ!\n';
+                }
+                
+                alert(report);
+              }}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+            >
+              🔍 ДИАГНОСТИКА
+            </button>
+            
+            <button
+              onClick={async () => {
+                const storage = localStorage.getItem('wb-audio-files');
+                console.log('🔊 ТЕСТ ОЗВУЧКИ - ПРЯМО ИЗ ИНТЕРФЕЙСА');
+                
+                if (storage) {
+                  const files = JSON.parse(storage);
+                  const keys = Object.keys(files);
+                  console.log('📂 Найденные ключи:', keys);
+                  
+                  // Пробуем разные ключи
+                  const testKeys = ['discount', 'check-discount-wallet', 'cell-number', keys[0]];
+                  
+                  for (const key of testKeys) {
+                    if (files[key]) {
+                      try {
+                        console.log(`▶️ Тестируем: ${key}`);
+                        const audio = new Audio(files[key]);
+                        await audio.play();
+                        alert(`✅ Озвучка РАБОТАЕТ!\nФайл: ${key}`);
+                        return;
+                      } catch (error) {
+                        console.log(`❌ Ошибка с ${key}:`, error);
+                      }
+                    }
+                  }
+                  alert('❌ НИ ОДИН файл не воспроизводится!');
+                } else {
+                  alert('❌ Аудиофайлы НЕ НАЙДЕНЫ в localStorage!');
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+            >
+              🔊 ТЕСТ
+            </button>
+          </div>
         </div>
       </div>
     </div>

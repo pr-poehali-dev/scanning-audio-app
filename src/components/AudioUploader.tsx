@@ -174,9 +174,33 @@ export const AudioUploader = ({
 
     // Конвертируем файлы ячеек в base64 асинхронно
     for (const file of audioFilesList) {
-      // Извлекаем номер ячейки из названия файла
+      // Извлекаем номер ячейки из названия файла - УЛУЧШЕННАЯ ЛОГИКА
       const fileName = file.name.toLowerCase().replace(/\.(mp3|wav|ogg|m4a|aac)$/, '');
-      const cellNumber = fileName.match(/\d+/)?.[0]; // Ищем первое число в названии
+      
+      // Ищем номер ячейки различными способами
+      let cellNumber = null;
+      
+      // 1. Простое число в начале: "123.mp3" → "123" 
+      const startNumber = fileName.match(/^(\d+)$/);
+      if (startNumber) {
+        cellNumber = startNumber[1];
+      }
+      
+      // 2. "ячейка-123", "cell-456", "cell_789"
+      const cellPattern = fileName.match(/(?:ячейка|cell)[-_]?(\d+)/);
+      if (cellPattern) {
+        cellNumber = cellPattern[1];
+      }
+      
+      // 3. Только если ничего не найдено - берем первое число (но проверяем что оно разумное)
+      if (!cellNumber) {
+        const firstNumber = fileName.match(/(\d+)/)?.[0];
+        if (firstNumber && firstNumber.length <= 4) { // Разумная длина номера ячейки
+          cellNumber = firstNumber;
+        }
+      }
+      
+      console.log(`📱 Файл "${file.name}" → ячейка "${cellNumber}"`);
       
       if (cellNumber) {
         try {

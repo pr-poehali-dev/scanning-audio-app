@@ -42,10 +42,11 @@ export const useAudio = () => {
       
       // Добавляем специальные маппинги для всех ключей
       const keyMappings: {[key: string]: string[]} = {
-        // Основные системные ключи → загруженные файлы
-        'discount': ['check-discount-wallet', 'скидка'],
-        'check-product': ['check-product-camera', 'камера', 'товар'],
-        'rate-service': ['rate-pickup-point', 'оцените'],
+        // КРИТИЧНО: Основные системные ключи → загруженные файлы
+        'discount': ['check-discount-wallet', 'скидка', 'discount'],
+        'check-product': ['check-product-camera', 'камера', 'товар', 'check-product'],
+        'check-product-camera': ['check-product', 'камера', 'товар'],
+        'rate-service': ['rate-pickup-point', 'оцените', 'rate-service'],
         'cell-number': ['cell-number', 'ячейка'],
         
         // И обратно - загруженные файлы → системные ключи  
