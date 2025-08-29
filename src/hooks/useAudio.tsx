@@ -21,8 +21,9 @@ export const useAudio = () => {
 
   const playAudio = useCallback(async (audioKey: string) => {
     try {
-      console.log(`🔊 Попытка воспроизвести: "${audioKey}"`);
-      console.log(`📁 Доступные файлы:`, Object.keys(customAudioFiles));
+      console.log(`🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ: "${audioKey}"`);
+      console.log(`📁 ДОСТУПНЫЕ ФАЙЛЫ:`, Object.keys(customAudioFiles));
+      console.log(`💾 РАЗМЕР ХРАНИЛИЩА:`, Object.keys(customAudioFiles).length, 'файлов');
       
       // Создаем список возможных ключей для поиска
       const possibleKeys = [
@@ -33,18 +34,32 @@ export const useAudio = () => {
         `general-${audioKey}` // С префиксом general
       ];
       
-      // Добавляем специальные маппинги для популярных ключей
+      // Добавляем специальные маппинги для всех ключей
       const keyMappings: {[key: string]: string[]} = {
-        'discount': ['check-discount-wallet', 'скидка', 'discount'],
-        'check-product': ['check-product-camera', 'камера', 'товар', 'check-product'],
-        'rate-service': ['rate-pickup-point', 'оцените', 'rate-service'],
-        'cell-number': ['cell-number', 'ячейка', 'cell-number']
+        // Основные системные ключи → загруженные файлы
+        'discount': ['check-discount-wallet', 'скидка'],
+        'check-product': ['check-product-camera', 'камера', 'товар'],
+        'rate-service': ['rate-pickup-point', 'оцените'],
+        'cell-number': ['cell-number', 'ячейка'],
+        
+        // И обратно - загруженные файлы → системные ключи  
+        'check-discount-wallet': ['discount', 'скидка'],
+        'check-product-camera': ['check-product', 'камера', 'товар'],
+        'rate-pickup-point': ['rate-service', 'оцените'],
+        
+        // Дополнительные варианты
+        'receiving-start': ['приемка', 'начало'],
+        'receiving-complete': ['приемка', 'завершена'],
+        'return-start': ['возврат', 'начало'],
+        'return-complete': ['возврат', 'завершен']
       };
       
-      // Если есть маппинг для текущего ключа, добавляем альтернативы
+      // Добавляем альтернативы для текущего ключа
       if (keyMappings[audioKey]) {
         possibleKeys.push(...keyMappings[audioKey]);
       }
+      
+      console.log(`🔍 ПРОВЕРЯЮ КЛЮЧИ:`, possibleKeys);
       
       // Ищем первый подходящий файл
       let foundKey = null;
@@ -59,7 +74,8 @@ export const useAudio = () => {
       }
       
       if (audioUrl && foundKey) {
-        console.log(`🎵 Найден пользовательский файл "${foundKey}" для "${audioKey}"`);
+        console.log(`🎵 НАЙДЕН ФАЙЛ "${foundKey}" ДЛЯ "${audioKey}"`);
+        console.log(`🔗 URL:`, audioUrl.substring(0, 50) + '...');
         try {
           const audio = new Audio(audioUrl);
           audio.volume = 0.8;
@@ -70,14 +86,22 @@ export const useAudio = () => {
             audio.playbackRate = parseFloat(savedSpeed);
           }
           
+          console.log(`▶️ НАЧИНАЮ ВОСПРОИЗВЕДЕНИЕ...`);
           await audio.play();
-          console.log(`✅ Успешно воспроизведен пользовательский звук: ${foundKey}`);
+          console.log(`✅ ЗВУК УСПЕШНО ВОСПРОИЗВЕДЕН: ${foundKey}`);
           return; // Если пользовательский файл есть, не играем тестовый звук
         } catch (audioError) {
-          console.error(`❌ Ошибка воспроизведения пользовательского файла "${foundKey}":`, audioError);
+          console.error(`❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ "${foundKey}":`, audioError);
+          console.error(`❌ ДЕТАЛИ ОШИБКИ:`, {
+            name: audioError.name,
+            message: audioError.message,
+            audioUrl: audioUrl.substring(0, 100)
+          });
         }
       } else {
-        console.log(`⚠️ Пользовательский файл не найден для "${audioKey}". Проверены ключи:`, possibleKeys);
+        console.log(`⚠️ ФАЙЛ НЕ НАЙДЕН ДЛЯ "${audioKey}"`);
+        console.log(`🔍 ПРОВЕРЕННЫЕ КЛЮЧИ:`, possibleKeys);
+        console.log(`📋 ДОСТУПНЫЕ ФАЙЛЫ:`, Object.keys(customAudioFiles));
       }
       
       // ВСТРОЕННЫЙ ЗВУК ОТКЛЮЧЕН - только пользовательские файлы
