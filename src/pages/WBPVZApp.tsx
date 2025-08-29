@@ -11,6 +11,15 @@ const WBPVZApp = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [scannedData, setScannedData] = useState<string>('');
+  const [expandedMenuItems, setExpandedMenuItems] = useState<{ [key: string]: boolean }>(() => {
+    const saved = localStorage.getItem('wb-pvz-expanded-menu');
+    return saved ? JSON.parse(saved) : { settings: false };
+  });
+  const [pvzInfo, setPvzInfo] = useState({
+    id: localStorage.getItem('wb-pvz-id') || '',
+    address: localStorage.getItem('wb-pvz-address') || '',
+    employeeId: localStorage.getItem('wb-pvz-employee-id') || ''
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
 
@@ -22,6 +31,23 @@ const WBPVZApp = () => {
 
   const handleQRScan = useCallback(() => {
     setShowQRScanner(true);
+  }, []);
+
+  const toggleMenuItem = useCallback((item: string) => {
+    const newExpanded = {
+      ...expandedMenuItems,
+      [item]: !expandedMenuItems[item]
+    };
+    setExpandedMenuItems(newExpanded);
+    localStorage.setItem('wb-pvz-expanded-menu', JSON.stringify(newExpanded));
+  }, [expandedMenuItems]);
+
+  const updatePvzInfo = useCallback((field: string, value: string) => {
+    setPvzInfo(prev => {
+      const updated = { ...prev, [field]: value };
+      localStorage.setItem(`wb-pvz-${field.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
+      return updated;
+    });
   }, []);
 
   const handleQRScanResult = useCallback(async (data: string) => {
@@ -385,14 +411,41 @@ const WBPVZApp = () => {
           <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <div className="text-sm text-gray-600 space-y-1">
-                <div>ID ПВЗ:</div>
-                <div>Адрес:</div>
-                <div>ID сотрудника:</div>
+              <div className="text-sm text-gray-600 space-y-2 flex-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs">ID ПВЗ:</span>
+                  <input 
+                    type="text" 
+                    value={pvzInfo.id}
+                    onChange={(e) => updatePvzInfo('id', e.target.value)}
+                    placeholder="Введите ID"
+                    className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs">Адрес:</span>
+                  <input 
+                    type="text" 
+                    value={pvzInfo.address}
+                    onChange={(e) => updatePvzInfo('address', e.target.value)}
+                    placeholder="Введите адрес"
+                    className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs">ID сотрудника:</span>
+                  <input 
+                    type="text" 
+                    value={pvzInfo.employeeId}
+                    onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
+                    placeholder="Введите ID"
+                    className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
+                  />
+                </div>
               </div>
               <button 
                 onClick={() => setShowSideMenu(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg ml-2"
               >
                 <Icon name="X" size={20} className="text-gray-600" />
               </button>
@@ -414,37 +467,95 @@ const WBPVZApp = () => {
             <div className="flex-1 overflow-y-auto">
               <div className="py-2">
                 {/* Как работать с программой */}
-                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                <button 
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  onClick={() => toggleMenuItem('program')}
+                >
                   <div className="flex items-center space-x-3">
                     <Icon name="BookOpen" size={18} className="text-red-500" />
                     <span className="text-sm text-gray-700">Как работать с программой</span>
                   </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                  <Icon 
+                    name={expandedMenuItems.program ? "ChevronUp" : "ChevronDown"} 
+                    size={16} 
+                    className="text-gray-400" 
+                  />
                 </button>
+                {expandedMenuItems.program && (
+                  <div className="bg-gray-50 py-2">
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Руководство пользователя
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Частые вопросы
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Обучающие видео
+                    </button>
+                  </div>
+                )}
 
                 {/* Наклейки для работы с товаром */}
-                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                <button 
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  onClick={() => toggleMenuItem('labels')}
+                >
                   <div className="flex items-center space-x-3">
                     <Icon name="Tag" size={18} className="text-gray-600" />
                     <span className="text-sm text-gray-700">Наклейки для работы с товаром</span>
                   </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                  <Icon 
+                    name={expandedMenuItems.labels ? "ChevronUp" : "ChevronDown"} 
+                    size={16} 
+                    className="text-gray-400" 
+                  />
                 </button>
+                {expandedMenuItems.labels && (
+                  <div className="bg-gray-50 py-2">
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Печать этикеток
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Настройка принтера
+                    </button>
+                  </div>
+                )}
 
                 {/* Настройки */}
-                <button 
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-                  onClick={() => {
-                    setShowSideMenu(false);
-                    setShowSettings(true);
-                  }}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon name="Settings" size={18} className="text-gray-600" />
-                    <span className="text-sm text-gray-700">Настройки</span>
-                  </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
-                </button>
+                <div className={`${expandedMenuItems.settings ? 'bg-purple-100' : ''}`}>
+                  <button 
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-purple-50"
+                    onClick={() => toggleMenuItem('settings')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Icon name="Settings" size={18} className="text-purple-600" />
+                      <span className="text-sm text-gray-700">Настройки</span>
+                    </div>
+                    <Icon 
+                      name={expandedMenuItems.settings ? "ChevronUp" : "ChevronDown"} 
+                      size={16} 
+                      className="text-gray-400" 
+                    />
+                  </button>
+                  {expandedMenuItems.settings && (
+                    <div className="bg-purple-50 py-2">
+                      <button className="w-full flex items-center space-x-3 px-12 py-2 text-left text-sm text-gray-600 hover:bg-purple-100">
+                        <Icon name="Sliders" size={16} />
+                        <span>Основные</span>
+                      </button>
+                      <button 
+                        className="w-full flex items-center space-x-3 px-12 py-2 text-left text-sm text-gray-600 hover:bg-purple-100"
+                        onClick={() => {
+                          setShowSideMenu(false);
+                          setShowSettings(true);
+                        }}
+                      >
+                        <Icon name="Volume2" size={16} />
+                        <span>Голосовая озвучка</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Оставить отзыв */}
                 <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
@@ -455,28 +566,76 @@ const WBPVZApp = () => {
                 </button>
 
                 {/* Полезные ссылки */}
-                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                <button 
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  onClick={() => toggleMenuItem('links')}
+                >
                   <div className="flex items-center space-x-3">
                     <Icon name="ExternalLink" size={18} className="text-gray-600" />
                     <span className="text-sm text-gray-700">Полезные ссылки</span>
                   </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                  <Icon 
+                    name={expandedMenuItems.links ? "ChevronUp" : "ChevronDown"} 
+                    size={16} 
+                    className="text-gray-400" 
+                  />
                 </button>
+                {expandedMenuItems.links && (
+                  <div className="bg-gray-50 py-2">
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Портал партнеров
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      База знаний
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Техподдержка
+                    </button>
+                  </div>
+                )}
 
                 {/* Дополнительный функционал */}
-                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                <button 
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  onClick={() => toggleMenuItem('additional')}
+                >
                   <div className="flex items-center space-x-3">
                     <Icon name="MoreHorizontal" size={18} className="text-gray-600" />
                     <span className="text-sm text-gray-700">Дополнительный функционал</span>
                   </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                  <Icon 
+                    name={expandedMenuItems.additional ? "ChevronUp" : "ChevronDown"} 
+                    size={16} 
+                    className="text-gray-400" 
+                  />
                 </button>
+                {expandedMenuItems.additional && (
+                  <div className="bg-gray-50 py-2">
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Режим офлайн
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Экспорт отчетов
+                    </button>
+                    <button className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100">
+                      Обновления
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Footer - Exit */}
             <div className="border-t p-4">
-              <button className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg">
+              <button 
+                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
+                onClick={() => {
+                  if (confirm('Вы действительно хотите выйти?')) {
+                    localStorage.clear();
+                    window.location.reload();
+                  }
+                }}
+              >
                 <Icon name="LogOut" size={18} className="text-gray-600" />
                 <span className="text-sm text-gray-700">Выйти</span>
               </button>
