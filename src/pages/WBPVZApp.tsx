@@ -9,6 +9,7 @@ const WBPVZApp = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSideMenu, setShowSideMenu] = useState(false);
   const [scannedData, setScannedData] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
@@ -98,7 +99,10 @@ const WBPVZApp = () => {
           <div className="flex items-center justify-between py-3">
             {/* Left side - hamburger menu and search */}
             <div className="flex items-center space-x-3">
-              <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
+              <button 
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md"
+                onClick={() => setShowSideMenu(true)}
+              >
                 <Icon name="AlignJustify" size={20} />
               </button>
               <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
@@ -375,6 +379,112 @@ const WBPVZApp = () => {
         </div>
       )}
       
+      {/* Side Menu */}
+      {showSideMenu && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+          <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>ID ПВЗ:</div>
+                <div>Адрес:</div>
+                <div>ID сотрудника:</div>
+              </div>
+              <button 
+                onClick={() => setShowSideMenu(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <Icon name="X" size={20} className="text-gray-600" />
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="p-4 border-b">
+              <div className="relative">
+                <Icon name="Search" size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Поиск по ШК"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="py-2">
+                {/* Как работать с программой */}
+                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <Icon name="BookOpen" size={18} className="text-red-500" />
+                    <span className="text-sm text-gray-700">Как работать с программой</span>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+
+                {/* Наклейки для работы с товаром */}
+                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <Icon name="Tag" size={18} className="text-gray-600" />
+                    <span className="text-sm text-gray-700">Наклейки для работы с товаром</span>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+
+                {/* Настройки */}
+                <button 
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                  onClick={() => {
+                    setShowSideMenu(false);
+                    setShowSettings(true);
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon name="Settings" size={18} className="text-gray-600" />
+                    <span className="text-sm text-gray-700">Настройки</span>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+
+                {/* Оставить отзыв */}
+                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <Icon name="Star" size={18} className="text-gray-600" />
+                    <span className="text-sm text-gray-700">Оставить отзыв</span>
+                  </div>
+                </button>
+
+                {/* Полезные ссылки */}
+                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <Icon name="ExternalLink" size={18} className="text-gray-600" />
+                    <span className="text-sm text-gray-700">Полезные ссылки</span>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+
+                {/* Дополнительный функционал */}
+                <button className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50">
+                  <div className="flex items-center space-x-3">
+                    <Icon name="MoreHorizontal" size={18} className="text-gray-600" />
+                    <span className="text-sm text-gray-700">Дополнительный функционал</span>
+                  </div>
+                  <Icon name="ChevronDown" size={16} className="text-gray-400" />
+                </button>
+              </div>
+            </div>
+
+            {/* Footer - Exit */}
+            <div className="border-t p-4">
+              <button className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg">
+                <Icon name="LogOut" size={18} className="text-gray-600" />
+                <span className="text-sm text-gray-700">Выйти</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* QR Scanner Modal */}
       <QRScanner
         isOpen={showQRScanner}
