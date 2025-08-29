@@ -26,10 +26,15 @@ export const useAudio = () => {
       console.log(`💾 РАЗМЕР ХРАНИЛИЩА:`, Object.keys(customAudioFiles).length, 'файлов');
       
       // ПРИНУДИТЕЛЬНАЯ ДИАГНОСТИКА
-      console.log(`🔍 ДЕТАЛЬНАЯ ДИАГНОСТИКА:`);
-      console.log(`- customAudioFiles:`, customAudioFiles);
-      console.log(`- localStorage 'wb-audio-files':`, localStorage.getItem('wb-audio-files'));
-      console.log(`- Ищем ключ:`, audioKey);
+      console.log(`🔍 === ДЕТАЛЬНАЯ ДИАГНОСТИКА ===`);
+      console.log(`🎯 ИЩЕМ КЛЮЧ: "${audioKey}"`);
+      console.log(`📋 ВСЕ ДОСТУПНЫЕ КЛЮЧИ (${Object.keys(customAudioFiles).length} шт.):`);
+      Object.keys(customAudioFiles).forEach((key, index) => {
+        const isExact = key === audioKey;
+        const includes = key.includes(audioKey) || audioKey.includes(key);
+        console.log(`  ${index + 1}. "${key}" ${isExact ? '🎯 ТОЧНОЕ!' : includes ? '🔍 ПОХОЖЕЕ!' : ''}`);
+      });
+      console.log(`💾 СОДЕРЖИМОЕ localStorage:`, localStorage.getItem('wb-audio-files')?.substring(0, 200) + '...');
       
       // ПРЯМОЕ СОВПАДЕНИЕ - ВЫСШИЙ ПРИОРИТЕТ
       if (customAudioFiles[audioKey]) {
