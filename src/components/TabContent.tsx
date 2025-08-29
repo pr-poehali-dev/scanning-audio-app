@@ -1,5 +1,7 @@
 import Icon from '@/components/ui/icon';
 import DeliveryInterface from './DeliveryInterface';
+import AcceptanceTab from './AcceptanceTab';
+import ReturnsTab from './ReturnsTab';
 import { findOrderByPhone } from '@/data/mockOrders';
 
 interface TabContentProps {
@@ -16,6 +18,8 @@ interface TabContentProps {
   onScanProduct: () => void;
   onDeliverProduct: () => void;
   currentOrder?: any;
+  playAudio?: (audioName: string) => void;
+  customAudioFiles?: Record<string, string>;
 }
 
 const TabContent = ({
@@ -31,7 +35,9 @@ const TabContent = ({
   onCellClick,
   onScanProduct,
   onDeliverProduct,
-  currentOrder
+  currentOrder,
+  playAudio,
+  customAudioFiles
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи  
@@ -124,118 +130,19 @@ const TabContent = ({
 
   if (activeTab === 'acceptance') {
     return (
-      <div className="max-w-md mx-auto text-center space-y-8">
-        {/* QR Scanner для приемки */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-gray-700">
-            Фиктивное сканирование товара для приемки
-          </h2>
-          
-          <div 
-            className={`relative w-48 h-48 mx-auto transition-all duration-300 ${
-              isScanning ? 'animate-pulse' : ''
-            }`}
-            onClick={() => {
-              console.log('📦 ПРИЕМКА: Фиктивное сканирование товара');
-              // Фиктивное сканирование для приемки - БЕЗ камеры
-              if (!isScanning) {
-                onQRScan(); // Запускаем анимацию
-                setTimeout(() => {
-                  console.log('✅ ПРИЕМКА: Товар успешно принят на склад');
-                }, 2000);
-              }
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            <img 
-              src="https://cdn.poehali.dev/files/f9ab2ff9-989f-470e-8af1-67520cb6feec.png"
-              alt="QR Scanner приемка"
-              className="w-full h-full object-contain"
-            />
-            {isScanning && (
-              <div className="absolute inset-0 bg-green-100 bg-opacity-80 rounded-xl flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-green-600 text-sm font-medium">Сканирование товара...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Инструкции */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="ArrowDown" size={20} className="text-green-600" />
-            <h3 className="text-green-900 font-medium">Приемка товаров</h3>
-          </div>
-          <p className="text-green-700 text-sm text-left">
-            • Отсканируйте QR-код товара<br/>
-            • Проверьте соответствие товара<br/>
-            • Разместите в соответствующую ячейку<br/>
-            • Подтвердите размещение
-          </p>
-        </div>
-      </div>
+      <AcceptanceTab 
+        playAudio={playAudio || (() => {})} 
+        customAudioFiles={customAudioFiles || {}} 
+      />
     );
   }
 
   if (activeTab === 'returns') {
     return (
-      <div className="max-w-md mx-auto text-center space-y-8">
-        {/* QR Scanner для возвратов */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-gray-700">
-            Фиктивное сканирование товара для возврата
-          </h2>
-          
-          <div 
-            className={`relative w-48 h-48 mx-auto transition-all duration-300 ${
-              isScanning ? 'animate-pulse' : ''
-            }`}
-            onClick={() => {
-              console.log('↩️ ВОЗВРАТ: Фиктивное сканирование товара');
-              // Фиктивное сканирование для возврата - БЕЗ камеры
-              if (!isScanning) {
-                onQRScan(); // Запускаем анимацию
-                setTimeout(() => {
-                  console.log('✅ ВОЗВРАТ: Товар успешно возвращен');
-                }, 2000);
-              }
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            <img 
-              src="https://cdn.poehali.dev/files/f9ab2ff9-989f-470e-8af1-67520cb6feec.png"
-              alt="QR Scanner возврат"
-              className="w-full h-full object-contain"
-            />
-            {isScanning && (
-              <div className="absolute inset-0 bg-red-100 bg-opacity-80 rounded-xl flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-red-600 text-sm font-medium">Обработка возврата...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Инструкции */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Icon name="RotateCcw" size={20} className="text-red-600" />
-            <h3 className="text-red-900 font-medium">Возврат товаров</h3>
-          </div>
-          <p className="text-red-700 text-sm text-left">
-            • Отсканируйте QR-код возвращаемого товара<br/>
-            • Проверьте состояние товара<br/>
-            • Укажите причину возврата<br/>
-            • Разместите в зону возвратов<br/>
-            • Подтвердите возврат в системе
-          </p>
-        </div>
-      </div>
+      <ReturnsTab 
+        playAudio={playAudio || (() => {})} 
+        customAudioFiles={customAudioFiles || {}} 
+      />
     );
   }
 
