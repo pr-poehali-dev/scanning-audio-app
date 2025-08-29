@@ -164,11 +164,55 @@ const AudioTestPanel = ({
                 {totalAvailable} / {totalPossible}
               </span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 mb-3">
               {totalAvailable === 0 
                 ? '⚠️ Аудиофайлы не загружены. Загрузите файлы в настройках для каждой вкладки.'
                 : `✅ Загружено ${Math.round(totalAvailable / totalPossible * 100)}% аудиофайлов`
               }
+            </div>
+            
+            {/* Кнопки диагностики автосохранения */}
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  console.log('🔍 === ДИАГНОСТИКА АВТОСОХРАНЕНИЯ ===');
+                  const saved = localStorage.getItem('wb-audio-files');
+                  const timestamp = localStorage.getItem('wb-audio-files-timestamp');
+                  const count = localStorage.getItem('wb-audio-files-count');
+                  
+                  if (saved) {
+                    const parsed = JSON.parse(saved);
+                    const cellFiles = Object.keys(parsed).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
+                    console.log(`💾 В localStorage: ${Object.keys(parsed).length} файлов`);
+                    console.log(`🏠 Файлов ячеек: ${cellFiles.length}`, cellFiles);
+                    console.log(`⏰ Сохранено: ${timestamp}`);
+                    console.log(`📊 Ожидалось: ${count} файлов`);
+                    alert(`✅ Найдено ${Object.keys(parsed).length} сохраненных файлов\n🏠 Ячеек: ${cellFiles.length}\n⏰ ${new Date(timestamp || '').toLocaleString('ru-RU')}`);
+                  } else {
+                    console.log('❌ Сохраненные файлы не найдены');
+                    alert('❌ Автосохранение пустое! Загрузите файлы заново.');
+                  }
+                }}
+              >
+                🔍 Проверить автосохранение
+              </Button>
+              
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  const cellFiles = Object.keys(customAudioFiles).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
+                  console.log('🏠 === ДИАГНОСТИКА ЯЧЕЕК ===');
+                  console.log(`📊 Всего файлов: ${Object.keys(customAudioFiles).length}`);
+                  console.log(`🏠 Файлов ячеек: ${cellFiles.length}`);
+                  console.log('📋 Ячейки:', cellFiles);
+                  alert(`🏠 Файлов ячеек: ${cellFiles.length}\n📋 Ячейки: ${cellFiles.join(', ')}`);
+                }}
+              >
+                🏠 Проверить ячейки
+              </Button>
             </div>
           </div>
 

@@ -6,16 +6,43 @@ export const useAudio = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [customAudioFiles, setCustomAudioFiles] = useState<{[key: string]: string}>({});
 
-  // Загрузка сохраненных файлов при инициализации
+  // Загрузка сохраненных файлов при инициализации с улучшенным логированием
   useEffect(() => {
     try {
+      console.log('🔄 === ЗАГРУЗКА СОХРАНЕННЫХ АУДИОФАЙЛОВ ===');
       const savedFiles = localStorage.getItem(STORAGE_KEY);
+      const timestamp = localStorage.getItem(`${STORAGE_KEY}-timestamp`);
+      const count = localStorage.getItem(`${STORAGE_KEY}-count`);
+      
       if (savedFiles) {
         const parsedFiles = JSON.parse(savedFiles);
         setCustomAudioFiles(parsedFiles);
+        
+        const cellFiles = Object.keys(parsedFiles).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
+        
+        console.log('✅ АВТОЗАГРУЗКА УСПЕШНА!');
+        console.log(`💾 Загружено ${Object.keys(parsedFiles).length} файлов`);
+        console.log(`🏠 Загружено ${cellFiles.length} файлов ячеек:`, cellFiles);
+        console.log(`⏰ Последнее сохранение:`, timestamp || 'неизвестно');
+        console.log(`📊 Ожидалось файлов:`, count || 'неизвестно');
+        
+        if (cellFiles.length === 0) {
+          console.warn('⚠️ ФАЙЛЫ ЯЧЕЕК НЕ НАЙДЕНЫ! Проверьте загрузку в настройках.');
+        }
+      } else {
+        console.log('ℹ️ Сохраненные файлы не найдены - первый запуск');
       }
     } catch (error) {
-      console.error('Ошибка загрузки аудиофайлов из localStorage:', error);
+      console.error('❌ КРИТИЧЕСКАЯ ОШИБКА загрузки аудиофайлов:', error);
+      console.log('🔧 Попытка очистки поврежденных данных...');
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(`${STORAGE_KEY}-timestamp`);
+        localStorage.removeItem(`${STORAGE_KEY}-count`);
+        console.log('✅ Поврежденные данные очищены');
+      } catch (clearError) {
+        console.error('❌ Не удалось очистить поврежденные данные:', clearError);
+      }
     }
   }, []);
 
@@ -304,12 +331,43 @@ export const useAudio = () => {
     const updatedFiles = { ...customAudioFiles, ...permanentFiles };
     setCustomAudioFiles(updatedFiles);
     
-    // Сохраняем в localStorage
+    // Расширенное сохранение в localStorage с проверками
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFiles));
-      console.log(`💾 Аудиофайлы ПОСТОЯННО сохранены:`, Object.keys(updatedFiles));
+      const jsonData = JSON.stringify(updatedFiles);
+      const sizeInMB = (jsonData.length / (1024 * 1024)).toFixed(2);
+      
+      localStorage.setItem(STORAGE_KEY, jsonData);
+      localStorage.setItem(`${STORAGE_KEY}-timestamp`, new Date().toISOString());
+      localStorage.setItem(`${STORAGE_KEY}-count`, Object.keys(updatedFiles).length.toString());
+      
+      const cellFiles = Object.keys(updatedFiles).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
+      
+      console.log('✅ === АВТОСОХРАНЕНИЕ ЗАВЕРШЕНО ===');
+      console.log(`💾 Сохранено ${Object.keys(updatedFiles).length} файлов (${sizeInMB} МБ)`);
+      console.log(`🏠 Файлов ячеек: ${cellFiles.length}`, cellFiles);
+      console.log(`⏰ Время сохранения:`, new Date().toLocaleString('ru-RU'));
+      
+      // Проверяем что действительно сохранилось
+      const verification = localStorage.getItem(STORAGE_KEY);
+      if (verification && JSON.parse(verification)) {
+        console.log('✅ ПРОВЕРКА ПРОЙДЕНА: Файлы успешно записаны в localStorage');
+      } else {
+        console.error('❌ ПРОВЕРКА ПРОВАЛЕНА: Файлы не найдены после сохранения!');
+      }
+      
     } catch (error) {
-      console.error('❌ Ошибка сохранения аудиофайлов в localStorage:', error);
+      console.error('❌ КРИТИЧЕСКАЯ ОШИБКА СОХРАНЕНИЯ:', error);
+      
+      // Попытка экстренного сохранения без base64
+      try {
+        const emergencyFiles = Object.fromEntries(
+          Object.entries(updatedFiles).filter(([_, url]) => !url.startsWith('data:'))
+        );
+        localStorage.setItem(STORAGE_KEY + '-emergency', JSON.stringify(emergencyFiles));
+        console.log('🚨 ЭКСТРЕННОЕ СОХРАНЕНИЕ:', Object.keys(emergencyFiles).length, 'файлов');
+      } catch (emergencyError) {
+        console.error('❌ Даже экстренное сохранение провалилось:', emergencyError);
+      }
     }
   }, [customAudioFiles]);
 
