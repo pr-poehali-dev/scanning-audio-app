@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Order, getOrderStatusText } from '@/data/mockOrders';
 
@@ -9,6 +9,7 @@ interface DeliveryInterfaceProps {
   onDeliverProduct: () => void;
   isProductScanned: boolean;
   scannedData: string;
+  deliveryStep?: string; // Добавляем глобальный шаг
 }
 
 const DeliveryInterface = ({
@@ -17,10 +18,12 @@ const DeliveryInterface = ({
   onScanProduct,
   onDeliverProduct,
   isProductScanned,
-  scannedData
+  scannedData,
+  deliveryStep = 'client-scanned'
 }: DeliveryInterfaceProps) => {
   const [selectedCell, setSelectedCell] = useState<string>(order?.cellNumber || '');
-  const [currentStep, setCurrentStep] = useState<'cell' | 'scan' | 'check' | 'deliver'>('scan');
+  
+  // Убираем локальный currentStep, используем deliveryStep напрямую
 
   if (!order) {
     return (
@@ -36,17 +39,14 @@ const DeliveryInterface = ({
   const handleCellClick = (cellNumber: string) => {
     setSelectedCell(cellNumber);
     onCellClick(cellNumber);
-    setCurrentStep('scan');
   };
 
   const handleScanProduct = () => {
     onScanProduct();
-    setCurrentStep('check');
   };
 
   const handleDeliverProduct = () => {
     onDeliverProduct();
-    setCurrentStep('deliver');
   };
 
   return (
@@ -171,7 +171,7 @@ const DeliveryInterface = ({
         </div>
 
       {/* Сообщение о выдаче */}
-      {currentStep === 'deliver' && (
+      {deliveryStep === 'completed' && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
           <Icon name="CheckCircle" size={48} className="text-green-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-green-900 mb-2">Товар выдан!</h3>

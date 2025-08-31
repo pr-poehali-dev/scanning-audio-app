@@ -44,19 +44,35 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
   // Обработчик сканирования товара
   const handleScanProduct = useCallback(async () => {
     // Эмуляция сканирования товара
+    setDeliveryStep('product-scanned');
     setIsProductScanned(true);
     if (currentOrder) {
       setScannedData(currentOrder.items.map((item: any) => item.barcode).join(','));
     }
     
     // Озвучиваем "Проверьте товар под камерой"
-    await playAudio('check-product');
-  }, [currentOrder, playAudio, setIsProductScanned, setScannedData]);
+    try {
+      await playAudio('check-product-camera');
+    } catch (error) {
+      try {
+        await playAudio('check-product');
+      } catch (error2) {
+        console.log('⚠️ Аудио проверки товара не найдено');
+      }
+    }
+  }, [currentOrder, playAudio, setDeliveryStep, setIsProductScanned, setScannedData]);
 
   // Обработчик выдачи товара
   const handleDeliverProduct = useCallback(async () => {
+    // Устанавливаем состояние завершения
+    setDeliveryStep('completed');
+    
     // Финальная выдача товара с озвучкой "Оцените наш ПВЗ"
-    await playAudio('rate-service');
+    try {
+      await playAudio('rate-service');
+    } catch (error) {
+      console.log('⚠️ Аудио оценки не найдено');
+    }
     
     // Сброс состояния через некоторое время
     setTimeout(() => {
@@ -64,7 +80,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       setCurrentOrder(null);
       setIsProductScanned(false);
       setScannedData('');
-    }, 3000);
+    }, 5000); // Увеличиваем время для показа сообщения
   }, [playAudio, setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData]);
 
   // Обработчик смены вкладки

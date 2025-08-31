@@ -50,6 +50,7 @@ const TabContent = ({
           onDeliverProduct={onDeliverProduct}
           isProductScanned={isProductScanned}
           scannedData={scannedData}
+          deliveryStep={deliveryStep}
         />
       );
     }
