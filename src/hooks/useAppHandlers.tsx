@@ -78,26 +78,9 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
               console.log(`✅ НАЙДЕН ФАЙЛ: "${audioKey}"`);
               console.log(`🔗 URL: ${customAudioFiles[audioKey].substring(0, 50)}...`);
               
-              // ИСПРАВЛЕННАЯ ЛОГИКА: простое и надежное воспроизведение
+              // ИСПОЛЬЗУЕМ ФУНКЦИЮ playAudio вместо прямого Audio API
               try {
-                const audio = new Audio(customAudioFiles[audioKey]);
-                audio.volume = 1.0; // Максимальная громкость
-                
-                const savedSpeed = localStorage.getItem('wb-pvz-audio-speed');
-                if (savedSpeed) {
-                  audio.playbackRate = parseFloat(savedSpeed);
-                }
-                
-                // Промис для ожидания завершения
-                const playPromise = new Promise((resolve, reject) => {
-                  audio.onended = resolve;
-                  audio.onerror = reject;
-                  audio.oncanplaythrough = () => {
-                    audio.play().then(resolve).catch(reject);
-                  };
-                });
-                
-                await playPromise;
+                await playAudio(audioKey);
                 console.log(`🎵 ✅ ЯЧЕЙКА ${order.cellNumber} УСПЕШНО ОЗВУЧЕНА: "${audioKey}"`);
                 cellAudioPlayed = true;
                 break; // Прерываем цикл после успешного воспроизведения
@@ -273,17 +256,45 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
           
-          // Озвучиваем номер ячейки и про скидку
-          console.log('🔊 Озвучиваем ячейку:', order.cellNumber);
+          // ИСПРАВЛЕННАЯ ОЗВУЧКА ЯЧЕЙКИ: используем ту же логику что в handleCellClick
+          console.log(`🔊 Озвучиваем ячейку: ${order.cellNumber}`);
+          
+          const cellAudioKeys = [
+            'cell-number',        // Универсальная озвучка (приоритет!)
+            order.cellNumber,     // Конкретный номер
+            `cell-${order.cellNumber}`, // cell-123
+            `ячейка-${order.cellNumber}` // ячейка-123
+          ];
+          
+          let cellAudioPlayed = false;
+          for (const key of cellAudioKeys) {
+            try {
+              await playAudio(key);
+              console.log(`✅ ОЗВУЧКА ЯЧЕЙКИ НАЙДЕНА: ${key}`);
+              cellAudioPlayed = true;
+              break;
+            } catch (error) {
+              console.log(`⚠️ Не найден ключ: ${key}`);
+            }
+          }
+          
+          if (!cellAudioPlayed) {
+            console.warn(`❌ ОЗВУЧКА ДЛЯ ЯЧЕЙКИ "${order.cellNumber}" НЕ НАЙДЕНА!`);
+          }
           
           await new Promise(resolve => setTimeout(resolve, 1000));
           
+          // Озвучиваем скидку
           console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
-          console.log('📁 customAudioFiles:', customAudioFiles);
-          await playAudio('discount');
+          try {
+            await playAudio('discount');
+          } catch (error) {
+            console.log('⚠️ Аудио скидки не найдено');
+          }
           
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await playAudio(`cell-${order.cellNumber}`);
+          // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
+          setIsScanning(false);
+          
         } else {
           console.log('❌ Заказ не найден. Пробуем тестовые номера...');
           
@@ -293,10 +304,34 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
             setCurrentOrder(testOrder);
             setDeliveryStep('client-scanned');
             
-            await playAudio(`cell-${testOrder.cellNumber}`);
+            // Озвучиваем ячейку правильно
+            const cellAudioKeys = [
+              'cell-number',
+              testOrder.cellNumber,
+              `cell-${testOrder.cellNumber}`,
+              `ячейка-${testOrder.cellNumber}`
+            ];
+            
+            for (const key of cellAudioKeys) {
+              try {
+                await playAudio(key);
+                break;
+              } catch (error) {
+                continue;
+              }
+            }
+            
             await new Promise(resolve => setTimeout(resolve, 1000));
-            await playAudio('discount');
+            
+            try {
+              await playAudio('discount');
+            } catch (error) {
+              console.log('⚠️ Аудио скидки не найдено');
+            }
           }
+          
+          // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
+          setIsScanning(false);
         }
         
       } else if (deliveryStep === 'client-scanned') {
@@ -306,17 +341,38 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
         setIsProductScanned(true);
         
         // Озвучиваем "Проверьте товар под камерой"
-        await playAudio('check-product-camera');
+        try {
+          await playAudio('check-product-camera');
+        } catch (error) {
+          try {
+            await playAudio('check-product');
+          } catch (error2) {
+            console.log('⚠️ Аудио проверки товара не найдено');
+          }
+        }
+        
+        // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        setIsScanning(false);
       }
     } else if (activeTab === 'receiving') {
       // Логика для приемки
       console.log('📦 ПРИЕМКА: Товар отсканирован');
-      await playAudio('receiving-start');
+      try {
+        await playAudio('receiving-start');
+      } catch (error) {
+        console.log('⚠️ Аудио приемки не найдено');
+      }
+      setIsScanning(false);
       
     } else if (activeTab === 'returns') {
       // Логика для возвратов
       console.log('↩️ ВОЗВРАТ: Товар отсканирован');
-      await playAudio('return-start');
+      try {
+        await playAudio('return-start');
+      } catch (error) {
+        console.log('⚠️ Аудио возврата не найдено');
+      }
+      setIsScanning(false);
       
     } else {
       // Старая логика для других вкладок
@@ -332,12 +388,13 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
         audioKey = 'client-found';
       }
       
-      await playAudio(audioKey);
-    }
-    
-    setTimeout(() => {
+      try {
+        await playAudio(audioKey);
+      } catch (error) {
+        console.log('⚠️ Аудио не найдено');
+      }
       setIsScanning(false);
-    }, 2000);
+    }
   }, [playAudio, activeTab, deliveryStep, customAudioFiles, setScannedData, setIsScanning, setCurrentOrder, setDeliveryStep, setIsProductScanned]);
 
   // Обработчик ввода номера телефона
@@ -378,11 +435,10 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     
     // Пробуем разные варианты названий файлов
     const cellAudioKeys = [
+      'cell-number',        // Универсальная озвучка (приоритет!)
       cellNumber,           // 123
       `cell-${cellNumber}`, // cell-123  
-      `ячейка-${cellNumber}`, // ячейка-123
-      `${cellNumber}.mp3`,    // 123.mp3
-      `${cellNumber}.wav`     // 123.wav
+      `ячейка-${cellNumber}` // ячейка-123
     ];
     
     console.log(`🎯 Пробуем ключи для ячейки:`, cellAudioKeys);
