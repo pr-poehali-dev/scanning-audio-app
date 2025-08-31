@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
+import DeliveryProductList from './delivery/DeliveryProductList';
 
 interface Product {
   id: string;
@@ -97,74 +98,24 @@ export const DeliveryTab = ({
       )}
 
       {currentStep === 'manager-scan' && (
-        <div className="flex h-screen">
-          {/* Левая часть - информация о ячейке */}
-          <div className="w-1/2 flex flex-col items-center justify-center bg-gray-50 p-8">
-            <div className="text-center mb-8">
-              <div className="text-sm text-gray-600 mb-2">
-                Отсканируйте товары перед примеркой: 0 из {itemsCount}
-              </div>
-              
-              <div className="bg-gray-200 rounded-lg p-8 mb-6">
-                <div className="text-sm text-gray-600 mb-2">Ячейка:</div>
-                <div className="text-6xl font-bold text-gray-800">{cellNumber}</div>
-              </div>
-              
-              {/* QR Scanner */}
-              <div className="relative border-4 border-dashed border-purple-300 rounded-lg p-6">
-                <img 
-                  src="https://cdn.poehali.dev/files/e5b9f145-0416-4038-a4f2-54bf7de46618.png"
-                  alt="QR Scanner"
-                  className="w-32 h-32 mx-auto object-contain cursor-pointer"
-                  onClick={onManagerScan}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Правая часть - список товаров */}
-          <div className="w-1/2 p-6 bg-white">
-            <div className="mb-4">
-              <div className="text-gray-600 text-sm mb-4">Список товаров для сканирования:</div>
-            </div>
-            
-            <div className="space-y-4">
-              {mockProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <img 
-                    src={`https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`}
-                    alt="Product"
-                    className="w-20 h-20 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-800">{product.id} {product.article}</div>
-                    <div className="text-sm text-gray-600">{product.name}</div>
-                    <div className="text-xs text-gray-500">
-                      Размер: {product.size} Цвет: {product.color}
-                    </div>
-                    <div className="text-xs text-gray-400">Баркод: {product.barcode}</div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Button size="sm" variant="outline" className="text-xs">
-                      Не сканировать
-                    </Button>
-                    {index === 0 && (
-                      <Button size="sm" variant="outline" className="text-xs text-purple-600">
-                        Смотреть все
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-6">
-              <Button className="w-full bg-purple-500 hover:bg-purple-600">
-                Пропустить все
-              </Button>
-            </div>
-          </div>
-        </div>
+        <DeliveryProductList
+          cellNumber={cellNumber}
+          itemsCount={itemsCount}
+          scannedCount={0}
+          products={mockProducts.map(p => ({
+            ...p,
+            image: `https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`,
+            scanned: false
+          }))}
+          onScanProduct={(productId) => {
+            console.log('Пропущен товар:', productId);
+            onManagerScan();
+          }}
+          onSkipAll={() => {
+            console.log('Все товары пропущены');
+            onManagerScan();
+          }}
+        />
       )}
 
       {currentStep === 'check' && (

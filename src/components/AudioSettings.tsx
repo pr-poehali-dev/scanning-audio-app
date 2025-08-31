@@ -85,18 +85,28 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
         // ТАКЖЕ сохраняем БЕЗ префикса для глобального доступа
         convertedFiles[baseFileName] = audioUrl;
         
-        // 🔒 Специальная обработка файлов для защищенного сохранения
-        const isProtectedFile = type === 'cells' || type === 'receiving' || type === 'delivery' || 
-            /^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка') ||
-            baseFileName.includes('коробка') || baseFileName.includes('товар') || baseFileName.includes('приемка') ||
-            baseFileName.includes('box-scanned') || baseFileName.includes('item-for-pvz') || baseFileName.includes('bulk-accepted');
-        
-        console.log(`🔍 ПРОВЕРКА ЗАЩИЩЕННОГО ФАЙЛА: ${baseFileName} (тип: ${type}) - защищенный: ${isProtectedFile}`);
-        
-        if (isProtectedFile) {
+        // 🔒 ПРИНУДИТЕЛЬНОЕ СОХРАНЕНИЕ ФАЙЛОВ ЯЧЕЕК И ПРОЦЕССОВ
+        if (type === 'cells') {
+          // ВСЕ файлы из раздела "ячейки" сохраняются принудительно
           cellFiles[baseFileName] = audioUrl;
           cellFiles[prefixedFileName] = audioUrl;
-          console.log(`🔒 ЗАЩИЩЕННЫЙ ФАЙЛ ДОБАВЛЕН: ${baseFileName} → ${prefixedFileName} (тип: ${type})`);
+          console.log(`🏠 ЯЧЕЙКА ПРИНУДИТЕЛЬНО ЗАЩИЩЕНА: ${baseFileName} (тип: ${type})`);
+        }
+        
+        if (type === 'receiving' || type === 'delivery') {
+          // ВСЕ файлы процессов сохраняются принудительно
+          cellFiles[baseFileName] = audioUrl;
+          cellFiles[prefixedFileName] = audioUrl;
+          console.log(`🔄 ПРОЦЕСС ПРИНУДИТЕЛЬНО ЗАЩИЩЕН: ${baseFileName} (тип: ${type})`);
+        }
+        
+        // Дополнительная проверка по ключевым словам
+        if (/^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка') ||
+            baseFileName.includes('коробка') || baseFileName.includes('товар') || baseFileName.includes('приемка') ||
+            baseFileName.includes('box-scanned') || baseFileName.includes('item-for-pvz') || baseFileName.includes('bulk-accepted')) {
+          cellFiles[baseFileName] = audioUrl;
+          cellFiles[prefixedFileName] = audioUrl;
+          console.log(`🔑 КЛЮЧЕВОЕ СЛОВО ЗАЩИЩЕНО: ${baseFileName}`);
         }
         
         totalConverted++;
