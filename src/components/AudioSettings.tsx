@@ -128,30 +128,47 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
       console.log('⚠️ Нет файлов для защищенного сохранения');
     }
 
-    // 🔒 ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА: Сохраняем файлы ячеек из всех разделов
+    // 🏗️ БЕТОНИРОВАНИЕ ОЗВУЧКИ ЯЧЕЕК - НИКУДА НЕ ПРОПАДЕТ!
     try {
-      const allCellFiles = {};
+      const cementedFiles = {};
+      
+      // Собираем ВСЕ файлы которые могут быть ячейками
       Object.keys(convertedFiles).forEach(key => {
-        // Проверяем все возможные варианты файлов ячеек
+        // Супер широкие критерии для ячеек
         if (/^\d+$/.test(key) || key.includes('cell-') || key.includes('ячейка') || 
-            key.includes('receiving-') || key.includes('delivery-') || key.includes('cells-')) {
-          allCellFiles[key] = convertedFiles[key];
-          console.log(`🔒 ДОПОЛНИТЕЛЬНО СОХРАНЕН: ${key}`);
+            key.includes('receiving-') || key.includes('delivery-') || key.includes('cells-') ||
+            key.includes('A') || key.includes('B') || key.includes('C') || key.includes('D') ||
+            /[A-Z]\d+/.test(key) || /\d+[A-Z]/.test(key)) {
+          cementedFiles[key] = convertedFiles[key];
+          console.log(`🏗️ ЗАБЕТОНИРОВАН ФАЙЛ: ${key}`);
         }
       });
       
-      if (Object.keys(allCellFiles).length > 0) {
-        // Объединяем с уже сохраненными защищенными файлами
-        const existingProtected = JSON.parse(localStorage.getItem('wb-pvz-cell-audio-settings-permanent') || '{}');
-        const mergedFiles = { ...existingProtected, ...allCellFiles };
-        
-        localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(mergedFiles));
-        localStorage.setItem('wb-pvz-cell-audio-lock', 'LOCKED');
-        console.log(`🔒 ДОПОЛНИТЕЛЬНО ЗАЩИЩЕНО: ${Object.keys(allCellFiles).length} файлов ячеек`);
-        console.log('🔒 Всего в защищенном хранилище:', Object.keys(mergedFiles));
-      }
+      // Загружаем уже сохраненные
+      const existingCemented = JSON.parse(localStorage.getItem('wb-pvz-cell-audio-settings-permanent') || '{}');
+      const ultimateFiles = { ...existingCemented, ...cementedFiles };
+      
+      // Тройная защита в разных ключах
+      localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(ultimateFiles));
+      localStorage.setItem('wb-pvz-cell-audio-backup', JSON.stringify(ultimateFiles));
+      localStorage.setItem('wb-pvz-cell-audio-cement', JSON.stringify(ultimateFiles));
+      localStorage.setItem('wb-pvz-cell-audio-lock', 'CEMENTED');
+      
+      console.log(`🏗️ ЗАБЕТОНИРОВАНО: ${Object.keys(cementedFiles).length} новых файлов`);
+      console.log(`🏗️ ВСЕГО В БЕТОНЕ: ${Object.keys(ultimateFiles).length} файлов`);
+      console.log('🏗️ ФАЙЛЫ В БЕТОНЕ:', Object.keys(ultimateFiles));
+      
+      // Дополнительная проверка через 1 секунду
+      setTimeout(() => {
+        const check = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
+        if (!check) {
+          localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(ultimateFiles));
+          console.log('🏗️ ВОССТАНОВЛЕНО ИЗ РЕЗЕРВА!');
+        }
+      }, 1000);
+      
     } catch (error) {
-      console.error('❌ Ошибка дополнительного защищенного сохранения:', error);
+      console.error('❌ Ошибка бетонирования:', error);
     }
     
     if (totalConverted > 0) {

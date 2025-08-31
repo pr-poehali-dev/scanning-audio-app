@@ -128,11 +128,11 @@ const AcceptanceSteps = ({
         </div>
       )}
       
-      {/* Шаг 2: Принятие товаров из коробки */}
+      {/* Шаг 2: Поодному сканирование товаров */}
       {currentStep === 'items' && (
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-8">
-            📦 Принимаем товары из коробки
+            📱 Сканируйте каждый товар поодному
           </h1>
           
           {boxBarcode && (
@@ -178,42 +178,46 @@ const AcceptanceSteps = ({
           )}
           
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold text-blue-800 mb-3">📋 Информация о товарах</h3>
-              <p className="text-blue-700 mb-4">В этой коробке находятся товары, которые будут автоматически приняты системой после сканирования стикера коробки.</p>
-              <p className="text-sm text-blue-600">Нажмите кнопку ниже для подтверждения принятия всех товаров из коробки.</p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold text-yellow-800 mb-3">📱 Сканирование товаров</h3>
+              <p className="text-yellow-700 mb-2">Сканируйте каждый товар из коробки поодному.</p>
+              <p className="text-sm text-yellow-600">Каждый товар будет размещен в отдельную ячейку.</p>
             </div>
             
-            <Button
-              onClick={() => {
-                // ФИКТИВНОЕ принятие ВСЕХ товаров из коробки одним действием
-                console.log('📦 ПРИНЯТИЕ ВСЕХ ТОВАРОВ ИЗ КОРОБКИ');
-                const itemsToAccept = [
-                  { barcode: `${boxBarcode}-ITEM-1`, name: 'Товар 1' },
-                  { barcode: `${boxBarcode}-ITEM-2`, name: 'Товар 2' },
-                  { barcode: `${boxBarcode}-ITEM-3`, name: 'Товар 3' }
-                ];
-                
-                itemsToAccept.forEach((item, index) => {
-                  setTimeout(() => {
-                    const fakeItemBarcode = item.barcode;
-                    handleQRScan(fakeItemBarcode);
-                  }, (index + 1) * 800); // Интервал между принятием товаров
-                });
-              }}
-              className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 w-full"
-            >
-              📦 Принять все товары из коробки
-            </Button>
-            
-            {acceptanceItems.length > 0 && (
-              <Button
-                onClick={() => setCurrentStep('location')}
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 w-full"
+            {/* QR Scanner for items */}
+            <div className="bg-white border-2 border-purple-200 rounded-xl p-6">
+              <div className="w-48 h-48 mx-auto bg-gray-100 border-4 border-purple-300 rounded-xl p-4 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                   onClick={() => {
+                     // Фиктивное сканирование товара
+                     const fakeItemBarcode = `ITEM-${Date.now().toString().slice(-6)}`;
+                     console.log('📱 ФИКТИВНОЕ СКАНИРОВАНИЕ ТОВАРА');
+                     handleQRScan(fakeItemBarcode);
+                   }}
               >
-                ➡️ Перейти к размещению
+                <div className="text-center">
+                  <div className="text-4xl mb-2">📱</div>
+                  <div className="text-sm text-gray-600">Тапните для сканирования товара</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Button
+                onClick={() => setShowScanner(true)}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 w-full"
+              >
+                📱 Открыть сканер для товара
               </Button>
-            )}
+              
+              {acceptanceItems.length >= 3 && (
+                <Button
+                  onClick={() => setCurrentStep('close-box')}
+                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 w-full"
+                >
+                  📦 Закрыть коробку (все товары разложены)
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -250,6 +254,47 @@ const AcceptanceSteps = ({
         </div>
       )}
       
+      {/* Шаг 3.5: Закрытие коробки */}
+      {currentStep === 'close-box' && (
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-8">
+            📦 Коробка готова к закрытию
+          </h1>
+          
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">🎉 Все товары разложены!</h3>
+            <div className="space-y-2 mb-4">
+              <p className="text-gray-600"><strong>Коробка:</strong> {boxBarcode}</p>
+              <p className="text-gray-600"><strong>Товаров обработано:</strong> {acceptanceItems.length}</p>
+            </div>
+            
+            <div className="bg-white border rounded-lg p-4 mb-4">
+              <h4 className="font-semibold mb-2">📋 Размещенные товары:</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                {acceptanceItems.map((item, index) => (
+                  <div key={item.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <span>{item.productName}</span>
+                    <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-bold">
+                      Ячейка {item.cellNumber}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={() => {
+              setCurrentStep('complete');
+              playAcceptanceAudio('box-closed');
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-8 py-3"
+          >
+            📦 Закрыть пустую коробку
+          </Button>
+        </div>
+      )}
+      
       {/* Шаг 4: Завершение */}
       {currentStep === 'complete' && (
         <div className="text-center">
@@ -259,10 +304,23 @@ const AcceptanceSteps = ({
           
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">✅ Успешно!</h3>
-            <p className="text-gray-600 mb-2">📦 <strong>Коробка {boxBarcode} принята и размещена</strong></p>
-            <p className="text-gray-600 mb-2">🏠 Ячейка: 123</p>
-            <p className="text-gray-600">📋 Принято товаров: {acceptanceItems.length}</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">✅ Приемка завершена!</h3>
+            <p className="text-gray-600 mb-4">📦 <strong>Коробка {boxBarcode} обработана</strong></p>
+            
+            <div className="bg-white border rounded-lg p-4">
+              <h4 className="font-semibold text-gray-800 mb-2">📋 Товары размещены в ячейки:</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                {acceptanceItems.map((item, index) => (
+                  <div key={item.id} className="text-center p-2 bg-purple-50 rounded border">
+                    <div className="font-bold text-purple-800">Ячейка {item.cellNumber}</div>
+                    <div className="text-xs text-gray-600">{item.productName}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-center text-gray-600 mt-3">
+                <strong>Всего товаров: {acceptanceItems.length}</strong>
+              </p>
+            </div>
           </div>
           
           <div className="flex gap-4 justify-center">

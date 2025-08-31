@@ -92,8 +92,15 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
         return;
       }
       
-      // Генерируем случайный номер ячейки
-      const cellNumber = Math.floor(Math.random() * 482) + 1;
+      // Генерируем УНИКАЛЬНЫЙ номер ячейки (не повторяется)
+      const usedCells = acceptanceItems.map(item => item.cellNumber).filter(Boolean);
+      let cellNumber;
+      do {
+        cellNumber = Math.floor(Math.random() * 482) + 1;
+      } while (usedCells.includes(cellNumber));
+      
+      console.log(`🔄 Уже использованные ячейки:`, usedCells);
+      console.log(`✨ Новая свободная ячейка: ${cellNumber}`);
       
       // Создаем новый товар с номером ячейки
       const newItem: AcceptanceItem = {

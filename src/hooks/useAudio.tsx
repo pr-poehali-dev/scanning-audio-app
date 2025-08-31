@@ -17,27 +17,47 @@ export const useAudio = () => {
       if (savedFiles) {
         const parsedFiles = JSON.parse(savedFiles);
         
-        // 🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ НАСТРОЕК ЯЧЕЕК И ПРИЕМКИ
+        // 🏗️ АВТОЗАГРУЗКА ЗАБЕТОНИРОВАННЫХ ФАЙЛОВ ЯЧЕЕК
         try {
-          const protectedCellFiles = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
-          const cellLock = localStorage.getItem('wb-pvz-cell-audio-lock');
+          const sources = [
+            'wb-pvz-cell-audio-settings-permanent',
+            'wb-pvz-cell-audio-backup', 
+            'wb-pvz-cell-audio-cement'
+          ];
           
-          if (protectedCellFiles && cellLock === 'LOCKED') {
-            const cellSettings = JSON.parse(protectedCellFiles);
-            console.log('🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ ФАЙЛОВ:', Object.keys(cellSettings));
-            
-            // Принудительно мержим ВСЕ защищенные файлы
-            Object.keys(cellSettings).forEach(key => {
-              parsedFiles[key] = cellSettings[key];
-              console.log(`🔓 Восстановлен файл: ${key}`);
+          let cementedFiles = {};
+          let sourceName = '';
+          
+          // Пробуем загрузить из любого источника
+          for (const source of sources) {
+            const data = localStorage.getItem(source);
+            if (data) {
+              cementedFiles = JSON.parse(data);
+              sourceName = source;
+              console.log(`🏗️ ЗАГРУЖЕНО ИЗ ${sourceName}:`, Object.keys(cementedFiles).length, 'файлов');
+              break;
+            }
+          }
+          
+          if (Object.keys(cementedFiles).length > 0) {
+            // Принудительно восстанавливаем ВСЕ забетонированные файлы
+            Object.keys(cementedFiles).forEach(key => {
+              parsedFiles[key] = cementedFiles[key];
+              console.log(`🏗️ ИЗ БЕТОНА: ${key}`);
             });
             
-            console.log('🔓 ИТОГО ПОСЛЕ МЕРЖА:', Object.keys(parsedFiles).length, 'файлов');
+            // Дублируем во все источники для надежности
+            sources.forEach(source => {
+              localStorage.setItem(source, JSON.stringify(cementedFiles));
+            });
+            
+            console.log(`🏗️ ВОССТАНОВЛЕНО ИЗ БЕТОНА: ${Object.keys(cementedFiles).length} файлов`);
+            console.log('🏗️ ИТОГО ПОСЛЕ ВОССТАНОВЛЕНИЯ:', Object.keys(parsedFiles).length, 'файлов');
           } else {
-            console.warn('⚠️ Защищенные файлы не найдены или заблокированы');
+            console.warn('⚠️ Забетонированные файлы не найдены!');
           }
         } catch (error) {
-          console.error('❌ Ошибка загрузки защищенных настроек:', error);
+          console.error('❌ Ошибка загрузки из бетона:', error);
         }
         
         setCustomAudioFiles(parsedFiles);

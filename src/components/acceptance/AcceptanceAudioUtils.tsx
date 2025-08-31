@@ -74,6 +74,7 @@ export const createAcceptanceAudioUtils = ({ playAudio, customAudioFiles }: Acce
       'priority-order': ['приоритетный-заказ', 'receiving-приоритетный-заказ', 'priority-order'],
       'already-accepted': ['повтор-товар-уже-принят', 'receiving-повтор-товар-уже-принят', 'already-accepted'],
       'box-scanned': ['коробка-принята', 'коробка-отсканирована', 'receiving-коробка-принята', 'receiving-коробка-отсканирована', 'box-scanned'],
+      'box-closed': ['коробка-закрыта', 'receiving-коробка-закрыта', 'box-closed'],
       // Старые действия для совместимости
       'item_scanned': ['acceptance-Товар отсканирован', 'acceptance-scan-success', 'scan-success'],
       'accepted': ['acceptance-Принято в ПВЗ', 'accepted-success', 'товар принят'],
