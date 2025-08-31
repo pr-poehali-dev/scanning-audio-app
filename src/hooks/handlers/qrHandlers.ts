@@ -53,8 +53,8 @@ export const createQRHandlers = (props: QRHandlersProps) => {
       // Фиктивное сканирование для вкладки выдачи
       setIsScanning(true);
       
-      // Мгновенный поиск заказа без задержки
-      const testPhones = ['5667', '3321', '8899', '1144', '3366'];
+      // Мгновенный поиск заказа без задержки - используем актуальные телефоны
+      const testPhones = ['7589', '4321', '8899', '1144', '3366']; // 7589 = Елена Иванова
       const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
       const order = findOrderByPhone(randomPhone);
       
@@ -62,11 +62,16 @@ export const createQRHandlers = (props: QRHandlersProps) => {
       setTimeout(async () => {
         
         if (order) {
+          console.log('🎯 ЗАКАЗ НАЙДЕН! Устанавливаем deliveryStep = client-scanned');
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
           setScannedData(`qr-${order.id}-${order.phone}`);
           
-          console.log('Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
+          console.log('📋 Данные заказа:', {
+            customerName: order.customerName, 
+            cellNumber: order.cellNumber,
+            itemsCount: order.items?.length || 0
+          });
           
           // Генерируем случайный номер ячейки от 1 до 482
           const randomCellNumber = Math.floor(Math.random() * 482) + 1;
@@ -93,7 +98,7 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           console.log('❌ Заказ не найден. Пробуем тестовые номера...');
           
           // Если не найден, пробуем тестовые заказы
-          const testOrder = findOrderByPhone('5667');
+          const testOrder = findOrderByPhone('7589'); // Елена Иванова
           if (testOrder) {
             setCurrentOrder(testOrder);
             setDeliveryStep('client-scanned');
@@ -243,7 +248,7 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           console.log('❌ Заказ не найден. Пробуем тестовые номера...');
           
           // Если не найден, пробуем тестовые заказы
-          const testOrder = findOrderByPhone('5667');
+          const testOrder = findOrderByPhone('7589'); // Елена Иванова
           if (testOrder) {
             setCurrentOrder(testOrder);
             setDeliveryStep('client-scanned');

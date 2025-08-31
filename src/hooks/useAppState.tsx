@@ -16,7 +16,7 @@ export interface AudioSettings {
 
 export const useAppState = () => {
   // Основные состояния интерфейса
-  const [activeTab, setActiveTab] = useState('acceptance');
+  const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);

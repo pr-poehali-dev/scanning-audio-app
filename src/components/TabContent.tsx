@@ -40,8 +40,16 @@ const TabContent = ({
   customAudioFiles
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
+    console.log('🖥️ ПРОВЕРКА ИНТЕРФЕЙСА:', { 
+      activeTab, 
+      deliveryStep, 
+      currentOrder: currentOrder?.customerName,
+      shouldShowDeliveryInterface: deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed'
+    });
+    
     // Если клиент отсканирован, показываем интерфейс выдачи  
     if (deliveryStep === 'client-scanned' || deliveryStep === 'product-scanned' || deliveryStep === 'completed') {
+      console.log('✅ ПОКАЗЫВАЕМ ИНТЕРФЕЙС ВЫДАЧИ');
       return (
         <DeliveryInterface
           order={currentOrder}
