@@ -21,6 +21,7 @@ interface DeliveryTabProps {
   cellNumber: number;
   itemsCount: number;
   mockProducts: Product[];
+  currentOrder?: any;
   isScanning: boolean;
   isProcessing: boolean;
   phoneNumber: string;
@@ -38,6 +39,7 @@ export const DeliveryTab = ({
   cellNumber,
   itemsCount,
   mockProducts,
+  currentOrder,
   isScanning,
   isProcessing,
   phoneNumber,
@@ -100,11 +102,12 @@ export const DeliveryTab = ({
       {currentStep === 'manager-scan' && (
         <DeliveryProductList
           cellNumber={cellNumber}
-          itemsCount={itemsCount}
+          itemsCount={currentOrder?.items?.length || itemsCount}
           scannedCount={0}
-          products={mockProducts.map(p => ({
+          products={(currentOrder?.items || mockProducts).map(p => ({
             ...p,
-            image: `https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`,
+            article: p.article || p.id,
+            image: p.image || `https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`,
             scanned: false
           }))}
           onScanProduct={(productId) => {
@@ -121,6 +124,12 @@ export const DeliveryTab = ({
       {currentStep === 'check' && (
         <div className="space-y-6">
           <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
+          {currentOrder && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="font-medium">🧑‍🦱 Клиент: {currentOrder.customerName}</p>
+              <p className="text-sm text-gray-600">📞 Телефон: {currentOrder.phone}</p>
+            </div>
+          )}
           <div className="text-lg text-green-600">📱 Товар отсканирован менеджером</div>
           <div className="text-lg text-blue-600">🔍 "Проверьте товар под камерой"</div>
         </div>

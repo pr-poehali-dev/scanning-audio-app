@@ -19,6 +19,7 @@ const Index = () => {
     isProcessing,
     audioEnabled,
     cellNumber,
+    currentOrder,
     currentStep,
     itemsCount,
     customerPhone,
@@ -93,6 +94,7 @@ const Index = () => {
               isScanning={isScanning}
               isProcessing={isProcessing}
               products={mockProducts}
+              currentOrder={currentOrder}
               onPhoneNumberChange={setPhoneNumber}
               onConfirmCode={handleConfirmCode}
               onQRScan={handleQRScan}

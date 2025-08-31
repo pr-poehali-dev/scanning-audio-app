@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAudio } from './useAudio';
+import { findOrderByPhone } from '@/data/mockOrders';
 
 export interface Product {
   id: string;
@@ -40,7 +41,8 @@ export const useWarehouseApp = () => {
   });
   
   // Состояния для выдачи
-  const [cellNumber] = useState(() => Math.floor(Math.random() * 482) + 1);
+  const [cellNumber, setCellNumber] = useState(() => Math.floor(Math.random() * 482) + 1);
+  const [currentOrder, setCurrentOrder] = useState(null);
   const [currentStep, setCurrentStep] = useState('scan');
   const [itemsCount] = useState(() => Math.floor(Math.random() * 8) + 1);
   const [customerPhone] = useState(() => {
@@ -219,6 +221,22 @@ export const useWarehouseApp = () => {
 
   const handleConfirmCode = () => {
     if (phoneNumber.length === 4) {
+      // Ищем заказ по последним 4 цифрам телефона
+      const foundOrder = findOrderByPhone(phoneNumber);
+      
+      if (foundOrder) {
+        // Устанавливаем реальную ячейку из заказа
+        const cellNumberFromOrder = parseInt(foundOrder.cellNumber);
+        setCellNumber(cellNumberFromOrder);
+        setCurrentOrder(foundOrder);
+        console.log(`📦 Найден заказ для телефона ${phoneNumber}, ячейка: ${cellNumberFromOrder}`);
+      } else {
+        // Если заказ не найден, генерируем реалистичную ячейку
+        const randomCellNumber = Math.floor(Math.random() * 400) + 50;  // От 50 до 450
+        setCellNumber(randomCellNumber);
+        console.log(`📦 Заказ не найден для телефона ${phoneNumber}, используем ячейку: ${randomCellNumber}`);
+      }
+      
       handleQRScan();
     }
   };
@@ -307,6 +325,7 @@ export const useWarehouseApp = () => {
     isProcessing,
     audioEnabled,
     cellNumber,
+    currentOrder,
     currentStep,
     itemsCount,
     customerPhone,
