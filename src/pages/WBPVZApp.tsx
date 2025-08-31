@@ -80,7 +80,7 @@ const WBPVZApp = () => {
         />
       </div>
 
-      <Footer customAudioFiles={customAudioFiles} playAudio={playAudio} />
+      <Footer />
 
       <SideMenu
         isOpen={appState.showSideMenu}

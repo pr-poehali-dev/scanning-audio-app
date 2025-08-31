@@ -125,19 +125,7 @@ const AudioTestPanel = ({
   const { totalPossible, totalAvailable } = getAudioStats();
 
   if (!isVisible) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <Button
-          onClick={onToggle}
-          size="sm"
-          variant="outline"
-          className="bg-white shadow-lg"
-        >
-          <Icon name="Volume2" size={16} className="mr-2" />
-          Тест аудио
-        </Button>
-      </div>
-    );
+    return null;
   }
 
   return (
