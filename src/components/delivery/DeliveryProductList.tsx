@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 
 interface Product {
@@ -33,17 +32,6 @@ export const DeliveryProductList = ({
   onSkipAll,
   playAudio
 }: DeliveryProductListProps) => {
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
-
-  const toggleProduct = (productId: string) => {
-    const newSelected = new Set(selectedProducts);
-    if (newSelected.has(productId)) {
-      newSelected.delete(productId);
-    } else {
-      newSelected.add(productId);
-    }
-    setSelectedProducts(newSelected);
-  };
 
   const handleScanProduct = (productId: string) => {
     onScanProduct(productId);
@@ -54,142 +42,139 @@ export const DeliveryProductList = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-            <Icon name="Package" className="text-purple-600" size={24} />
+    <div className="h-screen flex bg-gray-50">
+      {/* Left panel - Cell and QR scanner */}
+      <div className="w-1/2 flex flex-col items-center justify-center bg-gray-100 p-8">
+        {/* Status text */}
+        <div className="text-center mb-8">
+          <p className="text-sm text-gray-600 mb-8">
+            Отсканируйте товары перед приемкой: {scannedCount} из {itemsCount}
+          </p>
+          
+          {/* Large cell number */}
+          <div className="bg-gray-200 rounded-2xl p-8 mb-8 shadow-inner">
+            <p className="text-sm text-gray-600 mb-2">Ячейка:</p>
+            <div className="text-8xl font-bold text-gray-800 leading-none">
+              {cellNumber}
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">Выдача</h1>
-            <p className="text-sm text-gray-600">v.1.0.23</p>
+          
+          {/* QR Scanner */}
+          <div className="relative">
+            {/* Purple scan frame */}
+            <div className="w-64 h-64 border-4 border-purple-400 rounded-2xl bg-white p-4 shadow-lg">
+              {/* QR code visualization */}
+              <div className="w-full h-full bg-black rounded-xl flex items-center justify-center relative">
+                {/* QR pattern */}
+                <div className="grid grid-cols-8 gap-1 w-32 h-32">
+                  {[...Array(64)].map((_, i) => {
+                    // Create QR pattern
+                    const isBlack = Math.random() > 0.4;
+                    return (
+                      <div 
+                        key={i} 
+                        className={`rounded-sm ${isBlack ? 'bg-white' : 'bg-black'}`} 
+                      />
+                    );
+                  })}
+                </div>
+                
+                {/* Corner markers */}
+                <div className="absolute top-2 left-2 w-8 h-8 border-4 border-white">
+                  <div className="w-full h-full bg-white border-2 border-black"></div>
+                </div>
+                <div className="absolute top-2 right-2 w-8 h-8 border-4 border-white">
+                  <div className="w-full h-full bg-white border-2 border-black"></div>
+                </div>
+                <div className="absolute bottom-2 left-2 w-8 h-8 border-4 border-white">
+                  <div className="w-full h-full bg-white border-2 border-black"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Purple scanning corners */}
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-purple-500 rounded-tl-2xl"></div>
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-purple-500 rounded-tr-2xl"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-purple-500 rounded-bl-2xl"></div>
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-purple-500 rounded-br-2xl"></div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-            Выдача {scannedCount}
-          </span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left panel - Cell and scan count */}
-        <div className="space-y-6">
-          <Card className="p-6 bg-gray-50 border-2 border-gray-200">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                Отсканируйте товары перед приемкой: {scannedCount} из {itemsCount}
-              </p>
-              <div className="relative">
-                <div className="text-8xl font-bold text-gray-900 mb-4">
-                  {cellNumber}
-                </div>
-                <p className="text-lg font-medium text-gray-700">Ячейка:</p>
-              </div>
-            </div>
-          </Card>
-
-          {/* QR Scanner placeholder */}
-          <Card className="p-6 border-2 border-purple-200">
-            <div className="aspect-square max-w-xs mx-auto bg-white border-4 border-purple-100 rounded-xl p-4 flex items-center justify-center">
-              <div className="w-full h-full bg-gray-900 rounded-lg flex items-center justify-center">
-                <div className="w-24 h-24 border-4 border-white rounded-lg flex items-center justify-center">
-                  <div className="grid grid-cols-3 gap-1">
-                    {[...Array(9)].map((_, i) => (
-                      <div key={i} className="w-2 h-2 bg-white rounded-sm" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-center text-sm text-gray-600 mt-4">
-              Наведите камеру на QR-код товара
-            </p>
-          </Card>
+      {/* Right panel - Products list */}
+      <div className="w-1/2 bg-white p-6 flex flex-col">
+        {/* Products header */}
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">Список товаров для сканирования:</p>
         </div>
 
-        {/* Right panel - Products list */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-700">
-              Список товаров для сканирования:
-            </h3>
-          </div>
+        {/* Products list */}
+        <div className="flex-1 space-y-3 overflow-y-auto">
+          {products.map((product) => (
+            <div key={product.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
+              {/* Product image */}
+              <div className="w-16 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <img
+                  src="https://cdn.poehali.dev/files/6e824208-60ff-4deb-921b-478d146f6a9d.png"
+                  alt={product.name}
+                  className="w-12 h-12 object-contain"
+                />
+              </div>
 
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {products.map((product) => (
-              <Card key={product.id} className="p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4">
-                  {/* Product image */}
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {product.image ? (
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
-                        <Icon name="Package" className="text-gray-400" size={20} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product details */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-lg font-semibold text-gray-900 truncate">
-                      {product.article} {product.id}
-                    </h4>
-                    <p className="text-sm text-gray-600 mb-1 truncate">{product.name}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>Размер: <strong className="text-gray-900">{product.size}</strong></span>
-                      <span>Цвет: <strong className="text-gray-900">{product.color}</strong></span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Баркод: {product.barcode}
-                    </p>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex flex-col gap-2">
-                    {product.scanned ? (
-                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
-                        <Icon name="CheckCircle" size={16} />
-                        Отсканировано
-                      </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleScanProduct(product.id)}
-                        className="whitespace-nowrap"
-                      >
-                        Не сканировать
-                      </Button>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="whitespace-nowrap"
-                    >
-                      Смотреть все
-                    </Button>
-                  </div>
+              {/* Product details */}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                  {product.article} <span className="font-bold">{product.id}</span>
+                </h4>
+                <p className="text-sm text-gray-600 mb-2 truncate uppercase font-medium">
+                  {product.name}
+                </p>
+                <div className="flex items-center gap-4 text-sm text-gray-500 mb-1">
+                  <span>Размер: <strong className="text-gray-900">{product.size}</strong></span>
+                  <span>Цвет: <strong className="text-gray-900">{product.color}</strong></span>
                 </div>
-              </Card>
-            ))}
-          </div>
+                <p className="text-xs text-gray-500">
+                  Баркод: {product.barcode}
+                </p>
+              </div>
 
-          {/* Bottom action button */}
-          <div className="pt-4 border-t">
-            <Button 
-              onClick={onSkipAll}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl"
-            >
-              Пропустить все
-            </Button>
-          </div>
+              {/* Action buttons */}
+              <div className="flex flex-col gap-2 flex-shrink-0">
+                {product.scanned ? (
+                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                    <Icon name="CheckCircle" size={16} />
+                    Отсканировано
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleScanProduct(product.id)}
+                    className="whitespace-nowrap border-gray-300 hover:bg-gray-50"
+                  >
+                    Не сканировать
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="whitespace-nowrap text-purple-600 border-purple-200 hover:bg-purple-50"
+                >
+                  Смотреть все
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom button */}
+        <div className="pt-6 border-t border-gray-200 mt-4">
+          <Button 
+            onClick={onSkipAll}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-medium"
+          >
+            Пропустить все
+          </Button>
         </div>
       </div>
     </div>

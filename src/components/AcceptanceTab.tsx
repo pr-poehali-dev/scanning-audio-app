@@ -80,9 +80,6 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
       console.log('📦 СКАНИРОВАНИЕ КОРОБКИ');
       setBoxBarcode(data);
       audioUtils.playAcceptanceAudio('box-scanned');
-      setTimeout(() => {
-        audioUtils.playAcceptanceAudio('continue-acceptance');
-      }, 1500);
       setCurrentStep('items');
     } else if (currentStep === 'items') {
       // Сканирование товара
@@ -114,14 +111,13 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
       // Добавляем товар
       setAcceptanceItems(prev => [...prev, newItem]);
       
-      // Озвучиваем действия
-      audioUtils.playAcceptanceAudio('item-for-pvz');
+      // Озвучиваем только номер ячейки (убираем "товар для пвз")
       setTimeout(async () => {
         await audioUtils.playCellAudio(cellNumber.toString());
         setTimeout(() => {
           audioUtils.playAcceptanceAudio('scan-next');
         }, 1000);
-      }, 1500);
+      }, 500);
       
       // Переходим к размещению если это первый товар
       if (acceptanceItems.length === 0) {

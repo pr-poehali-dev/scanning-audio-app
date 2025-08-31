@@ -12,8 +12,16 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between py-3">
-          {/* Left side - hamburger menu and search */}
+          {/* Left side - WB logo, hamburger menu and search */}
           <div className="flex items-center space-x-3">
+            {/* WB Logo */}
+            <div className="flex items-center">
+              <img 
+                src="https://cdn.poehali.dev/files/2f0c5a81-97a5-4c4d-8512-d9a07795ab42.png" 
+                alt="WB" 
+                className="w-8 h-8 rounded-lg"
+              />
+            </div>
             <button 
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md"
               onClick={onMenuOpen}
