@@ -84,8 +84,15 @@ const AcceptanceSteps = ({
           <h1 className="text-2xl font-bold text-gray-800 mb-8">
             📦 Отсканируйте стикер коробки
           </h1>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-blue-800">
+              <strong>📋 Инструкция:</strong><br/>
+              Используйте сканер камеры для считывания QR-кода или штрихкода на стикере коробки
+            </p>
+          </div>
 
-          {/* QR код с ФИКТИВНЫМ СКАНИРОВАНИЕМ */}
+          {/* QR код с ФИКТИВНЫМ СКАНИРОВАНИЕМ только для тестирования */}
           <QRCodeDisplay handleQRScan={handleQRScan} />
 
           <div className="space-y-4">
@@ -121,11 +128,11 @@ const AcceptanceSteps = ({
         </div>
       )}
       
-      {/* Шаг 2: Сканирование товаров */}
+      {/* Шаг 2: Принятие товаров из коробки */}
       {currentStep === 'items' && (
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-8">
-            📱 Сканируйте каждый товар
+            📦 Принимаем товары из коробки
           </h1>
           
           {boxBarcode && (
@@ -171,18 +178,32 @@ const AcceptanceSteps = ({
           )}
           
           <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold text-blue-800 mb-3">📋 Информация о товарах</h3>
+              <p className="text-blue-700 mb-4">В этой коробке находятся товары, которые будут автоматически приняты системой после сканирования стикера коробки.</p>
+              <p className="text-sm text-blue-600">Нажмите кнопку ниже для подтверждения принятия всех товаров из коробки.</p>
+            </div>
+            
             <Button
               onClick={() => {
-                // ФИКТИВНОЕ сканирование товара
-                const fakeItemBarcode = `ITEM-${Date.now().toString().slice(-8)}`;
-                console.log('🔍 ФИКТИВНОЕ СКАНИРОВАНИЕ ТОВАРА');
-                setTimeout(() => {
-                  handleQRScan(fakeItemBarcode);
-                }, 500);
+                // ФИКТИВНОЕ принятие ВСЕХ товаров из коробки одним действием
+                console.log('📦 ПРИНЯТИЕ ВСЕХ ТОВАРОВ ИЗ КОРОБКИ');
+                const itemsToAccept = [
+                  { barcode: `${boxBarcode}-ITEM-1`, name: 'Товар 1' },
+                  { barcode: `${boxBarcode}-ITEM-2`, name: 'Товар 2' },
+                  { barcode: `${boxBarcode}-ITEM-3`, name: 'Товар 3' }
+                ];
+                
+                itemsToAccept.forEach((item, index) => {
+                  setTimeout(() => {
+                    const fakeItemBarcode = item.barcode;
+                    handleQRScan(fakeItemBarcode);
+                  }, (index + 1) * 800); // Интервал между принятием товаров
+                });
               }}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 w-full"
+              className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 w-full"
             >
-              📱 Сканировать товар
+              📦 Принять все товары из коробки
             </Button>
             
             {acceptanceItems.length > 0 && (
@@ -197,22 +218,24 @@ const AcceptanceSteps = ({
         </div>
       )}
       
-      {/* Шаг 3: Размещение товара */}
+      {/* Шаг 3: Размещение коробки в ячейку */}
       {currentStep === 'location' && (
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-8">
-            Размещение товара
+            🏠 Размещение коробки в ячейку
           </h1>
-          <p className="text-gray-600 mb-4">Поместите товар в назначенную ячейку</p>
           
-          <div className="text-center space-y-2 mb-4">
-            <div className="text-gray-600">
-              Товар готов к размещению в любую доступную ячейку
-            </div>
-            <div className="text-sm text-purple-600 bg-purple-50 rounded-lg p-3">
-              💡 <strong>Озвучка ячеек:</strong> Загрузите аудиофайлы в разделе<br/>
-              <em>Настройки → Голосовая озвучка → Приемка</em>
-            </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h3 className="font-semibold text-blue-800 mb-3">📦 Коробка готова к размещению:</h3>
+            <p className="text-blue-700 mb-2"><strong>Коробка:</strong> {boxBarcode}</p>
+            <p className="text-blue-700"><strong>Товаров в коробке:</strong> {acceptanceItems.length}</p>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-yellow-800 text-sm">
+              💡 <strong>Система автоматически определит свободную ячейку</strong><br/>
+              Коробка будет размещена в ячейку №123
+            </p>
           </div>
           
           <Button 
@@ -220,9 +243,9 @@ const AcceptanceSteps = ({
               setCurrentStep('complete');
               playAcceptanceAudio('bulk_accepted');
             }}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
+            className="bg-green-500 hover:bg-green-600 text-white px-8 py-3"
           >
-            📦 Товар размещен в ячейку
+            🏠 Разместить коробку в ячейку 123
           </Button>
         </div>
       )}
@@ -236,8 +259,10 @@ const AcceptanceSteps = ({
           
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Успешно!</h3>
-            <p className="text-gray-600 mb-4">Товар принят и размещен</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">✅ Успешно!</h3>
+            <p className="text-gray-600 mb-2">📦 <strong>Коробка {boxBarcode} принята и размещена</strong></p>
+            <p className="text-gray-600 mb-2">🏠 Ячейка: 123</p>
+            <p className="text-gray-600">📋 Принято товаров: {acceptanceItems.length}</p>
           </div>
           
           <div className="flex gap-4 justify-center">
