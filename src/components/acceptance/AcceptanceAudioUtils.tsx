@@ -62,6 +62,7 @@ export const createAcceptanceAudioUtils = ({ playAudio, customAudioFiles }: Acce
   // 🔊 Озвучка действий приемки
   const playAcceptanceAudio = async (action: string, itemData?: any) => {
     console.log(`🔊 === ОЗВУЧКА ДЕЙСТВИЯ ПРИЕМКИ: ${action} ===`, itemData);
+    console.log(`📁 Доступные аудиофайлы:`, Object.keys(customAudioFiles));
     
     const actionAudios: Record<string, string[]> = {
       // Новые действия приемки
@@ -85,12 +86,25 @@ export const createAcceptanceAudioUtils = ({ playAudio, customAudioFiles }: Acce
     const searchKeys = actionAudios[action] || [action];
     let audioPlayed = false;
     
+    console.log(`🔍 Поиск аудио в порядке приоритета:`, searchKeys);
+    
     for (const audioKey of searchKeys) {
+      console.log(`🔎 Проверяю ключ: "${audioKey}"`);
       if (customAudioFiles[audioKey]) {
         try {
           console.log(`🎵 ВОСПРОИЗВОЖУ ДЕЙСТВИЕ ПРИЕМКИ: "${audioKey}"`);
           const audio = new Audio(customAudioFiles[audioKey]);
-          await audio.play();
+          
+          // Улучшенное воспроизведение с Promise
+          const playPromise = new Promise((resolve, reject) => {
+            audio.onended = resolve;
+            audio.onerror = reject;
+            audio.oncanplaythrough = () => {
+              audio.play().then(resolve).catch(reject);
+            };
+          });
+          
+          await playPromise;
           console.log(`🎵 ✅ ДЕЙСТВИЕ ОЗВУЧЕНО: "${audioKey}"`);
           audioPlayed = true;
           break;
@@ -98,11 +112,23 @@ export const createAcceptanceAudioUtils = ({ playAudio, customAudioFiles }: Acce
           console.error(`❌ ОШИБКА ОЗВУЧКИ "${audioKey}":`, error);
           continue;
         }
+      } else {
+        console.log(`❌ НЕ НАЙДЕН: "${audioKey}"`);
       }
     }
     
     if (!audioPlayed) {
       console.warn(`⚠️ ДЕЙСТВИЕ "${action}" НЕ ОЗВУЧЕНО - ФАЙЛ НЕ НАЙДЕН!`);
+      console.log('📤 Загрузите один из файлов:', searchKeys);
+      
+      // Резервная озвучка через общую функцию
+      try {
+        playAudio(action);
+        console.log(`🔄 Попытка резервной озвучки через playAudio: "${action}"`);
+        audioPlayed = true;
+      } catch (error) {
+        console.log(`❌ Резервная озвучка тоже не сработала`);
+      }
     }
     
     return audioPlayed;

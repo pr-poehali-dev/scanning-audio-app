@@ -172,7 +172,14 @@ const AcceptanceSteps = ({
           
           <div className="space-y-4">
             <Button
-              onClick={() => setShowScanner(true)}
+              onClick={() => {
+                // ФИКТИВНОЕ сканирование товара
+                const fakeItemBarcode = `ITEM-${Date.now().toString().slice(-8)}`;
+                console.log('🔍 ФИКТИВНОЕ СКАНИРОВАНИЕ ТОВАРА');
+                setTimeout(() => {
+                  handleQRScan(fakeItemBarcode);
+                }, 500);
+              }}
               className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 w-full"
             >
               📱 Сканировать товар

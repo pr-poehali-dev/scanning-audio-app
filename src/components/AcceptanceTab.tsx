@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import QRScanner from './QRScanner';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,28 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
 
   // Создание утилит для озвучки
   const audioUtils = createAcceptanceAudioUtils({ playAudio, customAudioFiles });
+
+  // 🔄 Принудительная загрузка защищенных аудиофайлов при запуске
+  React.useEffect(() => {
+    console.log('🔄 ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ЗАЩИЩЕННЫХ АУДИОФАЙЛОВ');
+    try {
+      const protectedFiles = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
+      const lock = localStorage.getItem('wb-pvz-cell-audio-lock');
+      
+      if (protectedFiles && lock === 'LOCKED') {
+        const savedFiles = JSON.parse(protectedFiles);
+        console.log('🔓 НАЙДЕНЫ ЗАЩИЩЕННЫЕ ФАЙЛЫ:', Object.keys(savedFiles));
+        
+        // Объединяем с текущими файлами
+        const mergedFiles = { ...customAudioFiles, ...savedFiles };
+        console.log('🔗 ОБЪЕДИНЕННЫЕ ФАЙЛЫ:', Object.keys(mergedFiles));
+      } else {
+        console.log('❌ Защищенные файлы не найдены или не заблокированы');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка загрузки защищенных файлов:', error);
+    }
+  }, [customAudioFiles]);
 
   // Генерация случайного названия товара
   const generateRandomProductName = () => {
@@ -155,11 +177,45 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       {/* Хедер с кнопкой назад */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" className="mr-4">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Вернуться к приемке
         </Button>
+        
+        {/* Тестовые кнопки озвучки */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              console.log('🧪 ТЕСТ ОЗВУЧКИ КОРОБКИ');
+              audioUtils.playAcceptanceAudio('box-scanned');
+            }}
+          >
+            🧪 Тест коробка
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              console.log('🧪 ТЕСТ ОЗВУЧКИ ТОВАРА');
+              audioUtils.playAcceptanceAudio('item-for-pvz');
+            }}
+          >
+            🧪 Тест товар
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              console.log('🧪 ТЕСТ ОЗВУЧКИ ЯЧЕЙКИ');
+              audioUtils.playCellAudio('123');
+            }}
+          >
+            🧪 Тест ячейка
+          </Button>
+        </div>
       </div>
 
       {/* Основные этапы приемки */}

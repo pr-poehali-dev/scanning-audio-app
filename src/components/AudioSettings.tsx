@@ -85,27 +85,32 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
         // ТАКЖЕ сохраняем БЕЗ префикса для глобального доступа
         convertedFiles[baseFileName] = audioUrl;
         
-        // 🔒 Специальная обработка файлов ячеек для защищенного сохранения
-        if (type === 'cells' || /^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка')) {
+        // 🔒 Специальная обработка файлов для защищенного сохранения
+        if (type === 'cells' || type === 'receiving' || type === 'delivery' || 
+            /^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка') ||
+            baseFileName.includes('коробка') || baseFileName.includes('товар') || baseFileName.includes('приемка')) {
           cellFiles[baseFileName] = audioUrl;
           cellFiles[prefixedFileName] = audioUrl;
-          console.log(`🏠 Файл ячейки сохранен: ${baseFileName}`);
+          console.log(`🏠 Защищенный файл сохранен: ${baseFileName} (тип: ${type})`);
         }
         
         totalConverted++;
       }
     }
     
-    // 🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ НАСТРОЕК ЯЧЕЕК
+    // 🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ НАСТРОЕК ЯЧЕЕК И ПРИЕМКИ
     if (Object.keys(cellFiles).length > 0) {
       try {
         localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(cellFiles));
         localStorage.setItem('wb-pvz-cell-audio-lock', 'LOCKED');
         localStorage.setItem('wb-pvz-cell-audio-timestamp', new Date().toISOString());
-        console.log(`🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ: ${Object.keys(cellFiles).length} файлов ячеек сохранены навсегда`);
+        console.log(`🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ: ${Object.keys(cellFiles).length} файлов сохранены навсегда`);
+        console.log('🔒 Защищенные файлы:', Object.keys(cellFiles));
       } catch (error) {
-        console.error('❌ Ошибка защищенного сохранения ячеек:', error);
+        console.error('❌ Ошибка защищенного сохранения:', error);
       }
+    } else {
+      console.log('⚠️ Нет файлов для защищенного сохранения');
     }
     
     if (totalConverted > 0) {
