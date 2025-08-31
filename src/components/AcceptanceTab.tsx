@@ -97,10 +97,11 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
   };
 
   // 🔊 Озвучка действий приемки
-  const playAcceptanceAudio = async (action: string) => {
-    console.log(`🔊 === ОЗВУЧКА ДЕЙСТВИЯ ПРИЕМКИ: ${action} ===`);
+  const playAcceptanceAudio = async (action: string, itemData?: any) => {
+    console.log(`🔊 === ОЗВУЧКА ДЕЙСТВИЯ ПРИЕМКИ: ${action} ===`, itemData);
     
     const actionAudios: Record<string, string[]> = {
+      // Новые действия приемки
       'box-accepted': ['коробка-принята', 'receiving-коробка-принята', 'box-accepted'],
       'scan-again': ['отсканируйте-еще-раз', 'receiving-отсканируйте-еще-раз', 'scan-again'],
       'continue-acceptance': ['продолжайте-приемку', 'receiving-продолжайте-приемку', 'continue-acceptance'],
@@ -108,7 +109,14 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
       'scan-next': ['отсканируйте-следующий-товар', 'receiving-отсканируйте-следующий-товар', 'scan-next'],
       'priority-order': ['приоритетный-заказ', 'receiving-приоритетный-заказ', 'priority-order'],
       'already-accepted': ['повтор-товар-уже-принят', 'receiving-повтор-товар-уже-принят', 'already-accepted'],
-      'box-scanned': ['коробка-отсканирована', 'receiving-коробка-отсканирована', 'box-scanned']
+      'box-scanned': ['коробка-отсканирована', 'receiving-коробка-отсканирована', 'box-scanned'],
+      // Старые действия для совместимости
+      'item_scanned': ['acceptance-Товар отсканирован', 'acceptance-scan-success', 'scan-success'],
+      'accepted': ['acceptance-Принято в ПВЗ', 'accepted-success', 'товар принят'],
+      'bulk_accepted': ['acceptance-Все товары приняты', 'acceptance-bulk-success'],
+      'damaged': ['acceptance-Товар поврежден', 'damaged-item'],
+      'rejected': ['acceptance-Ошибка приемки', 'rejection-sound', 'error'],
+      'start_scanning': ['acceptance-Начинаю сканирование', 'scan-start']
     };
 
     const searchKeys = actionAudios[action] || [action];
@@ -297,86 +305,7 @@ const ${functionName} = async () => {
     return generatedFunctions;
   };
 
-  // Расширенная функция для проигрывания аудио с умным алгоритмом
-  const playAcceptanceAudio = (action: string, itemData?: any) => {
-    console.log(`🔊 Запрос на озвучку приемки: ${action}`, itemData);
-    
-    // Расширенная карта аудиофайлов для разных действий
-    const audioMap: Record<string, string[]> = {
-      // Успешные действия
-      'item_scanned': [
-        'acceptance-Товар отсканирован',
-        'acceptance-Сканирование успешно', 
-        'acceptance-scan-success',
-        'scan-success',
-        'Товар найден'
-      ],
-      'accepted': [
-        'acceptance-Принято в ПВЗ', 
-        'Принято в ПВЗ',
-        'acceptance-accepted',
-        'accepted-success',
-        'товар принят'
-      ],
-      'bulk_accepted': [
-        'acceptance-Все товары приняты',
-        'acceptance-bulk-success',
-        'Массовое принятие завершено'
-      ],
-      // Проблемные ситуации
-      'damaged': [
-        'acceptance-Товар поврежден', 
-        'Товар поврежден',
-        'acceptance-damaged',
-        'Обнаружено повреждение',
-        'damaged-item'
-      ],
-      'rejected': [
-        'acceptance-Ошибка приемки', 
-        'Ошибка приемки',
-        'acceptance-error',
-        'rejection-sound',
-        'error'
-      ],
-      'scan_error': [
-        'acceptance-Ошибка сканирования',
-        'scan-error', 
-        'Штрихкод не распознан',
-        'error'
-      ],
-      // Общие звуки
-      'start_scanning': [
-        'acceptance-Начинаю сканирование',
-        'scan-start',
-        'Сканер запущен'
-      ]
-    };
 
-    const possibleAudios = audioMap[action] || [];
-    let audioPlayed = false;
-    
-    // Пробуем найти и воспроизвести аудиофайл
-    for (const audioName of possibleAudios) {
-      if (customAudioFiles[audioName]) {
-        console.log(`🔊 ✅ Проигрываю аудио для приемки: ${audioName}`);
-        playAudio(audioName);
-        audioPlayed = true;
-        break;
-      }
-    }
-    
-    if (!audioPlayed) {
-      console.log(`⚠️ Аудиофайл для "${action}" не найден. Проверьте загруженные файлы.`);
-      console.log('Доступные аудиофайлы:', Object.keys(customAudioFiles));
-      
-      // Показываем уведомление пользователю
-      if (typeof window !== 'undefined' && window.navigator?.vibrate) {
-        window.navigator.vibrate([100, 50, 100]); // Вибрация как альтернатива
-      }
-    }
-    
-    return audioPlayed;
-  };
 
   // 📦 Обработчик сканирования в приемке
   const handleQRScan = (data: string) => {
