@@ -17,20 +17,27 @@ export const useAudio = () => {
       if (savedFiles) {
         const parsedFiles = JSON.parse(savedFiles);
         
-        // 🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ НАСТРОЕК ЯЧЕЕК
+        // 🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ НАСТРОЕК ЯЧЕЕК И ПРИЕМКИ
         try {
           const protectedCellFiles = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
           const cellLock = localStorage.getItem('wb-pvz-cell-audio-lock');
           
           if (protectedCellFiles && cellLock === 'LOCKED') {
             const cellSettings = JSON.parse(protectedCellFiles);
-            console.log('🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ ЯЧЕЕК:', Object.keys(cellSettings));
+            console.log('🔓 АВТОЗАГРУЗКА ЗАЩИЩЕННЫХ ФАЙЛОВ:', Object.keys(cellSettings));
             
-            // Мержим защищенные настройки ячеек с обычными файлами
-            Object.assign(parsedFiles, cellSettings);
+            // Принудительно мержим ВСЕ защищенные файлы
+            Object.keys(cellSettings).forEach(key => {
+              parsedFiles[key] = cellSettings[key];
+              console.log(`🔓 Восстановлен файл: ${key}`);
+            });
+            
+            console.log('🔓 ИТОГО ПОСЛЕ МЕРЖА:', Object.keys(parsedFiles).length, 'файлов');
+          } else {
+            console.warn('⚠️ Защищенные файлы не найдены или заблокированы');
           }
         } catch (error) {
-          console.warn('⚠️ Ошибка загрузки защищенных настроек ячеек:', error);
+          console.error('❌ Ошибка загрузки защищенных настроек:', error);
         }
         
         setCustomAudioFiles(parsedFiles);

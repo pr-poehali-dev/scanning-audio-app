@@ -86,12 +86,17 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
         convertedFiles[baseFileName] = audioUrl;
         
         // 🔒 Специальная обработка файлов для защищенного сохранения
-        if (type === 'cells' || type === 'receiving' || type === 'delivery' || 
+        const isProtectedFile = type === 'cells' || type === 'receiving' || type === 'delivery' || 
             /^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка') ||
-            baseFileName.includes('коробка') || baseFileName.includes('товар') || baseFileName.includes('приемка')) {
+            baseFileName.includes('коробка') || baseFileName.includes('товар') || baseFileName.includes('приемка') ||
+            baseFileName.includes('box-scanned') || baseFileName.includes('item-for-pvz') || baseFileName.includes('bulk-accepted');
+        
+        console.log(`🔍 ПРОВЕРКА ЗАЩИЩЕННОГО ФАЙЛА: ${baseFileName} (тип: ${type}) - защищенный: ${isProtectedFile}`);
+        
+        if (isProtectedFile) {
           cellFiles[baseFileName] = audioUrl;
           cellFiles[prefixedFileName] = audioUrl;
-          console.log(`🏠 Защищенный файл сохранен: ${baseFileName} (тип: ${type})`);
+          console.log(`🔒 ЗАЩИЩЕННЫЙ ФАЙЛ ДОБАВЛЕН: ${baseFileName} → ${prefixedFileName} (тип: ${type})`);
         }
         
         totalConverted++;
@@ -111,6 +116,32 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
       }
     } else {
       console.log('⚠️ Нет файлов для защищенного сохранения');
+    }
+
+    // 🔒 ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА: Сохраняем файлы ячеек из всех разделов
+    try {
+      const allCellFiles = {};
+      Object.keys(convertedFiles).forEach(key => {
+        // Проверяем все возможные варианты файлов ячеек
+        if (/^\d+$/.test(key) || key.includes('cell-') || key.includes('ячейка') || 
+            key.includes('receiving-') || key.includes('delivery-') || key.includes('cells-')) {
+          allCellFiles[key] = convertedFiles[key];
+          console.log(`🔒 ДОПОЛНИТЕЛЬНО СОХРАНЕН: ${key}`);
+        }
+      });
+      
+      if (Object.keys(allCellFiles).length > 0) {
+        // Объединяем с уже сохраненными защищенными файлами
+        const existingProtected = JSON.parse(localStorage.getItem('wb-pvz-cell-audio-settings-permanent') || '{}');
+        const mergedFiles = { ...existingProtected, ...allCellFiles };
+        
+        localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(mergedFiles));
+        localStorage.setItem('wb-pvz-cell-audio-lock', 'LOCKED');
+        console.log(`🔒 ДОПОЛНИТЕЛЬНО ЗАЩИЩЕНО: ${Object.keys(allCellFiles).length} файлов ячеек`);
+        console.log('🔒 Всего в защищенном хранилище:', Object.keys(mergedFiles));
+      }
+    } catch (error) {
+      console.error('❌ Ошибка дополнительного защищенного сохранения:', error);
     }
     
     if (totalConverted > 0) {
@@ -408,6 +439,29 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
               <span>Всего загружено: <strong>{getTotalFiles()} файлов</strong></span>
             </div>
             <div className="flex gap-3">
+              {/* Отладочная кнопка для проверки защищенного хранилища */}
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  const protected_files = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
+                  const lock = localStorage.getItem('wb-pvz-cell-audio-lock');
+                  console.log('🔍 ПРОВЕРКА ЗАЩИЩЕННОГО ХРАНИЛИЩА:');
+                  console.log('🔒 Заблокировано:', lock);
+                  if (protected_files) {
+                    const files = JSON.parse(protected_files);
+                    console.log('🔒 Защищенные файлы:', Object.keys(files));
+                    console.log('🔒 Всего:', Object.keys(files).length, 'файлов');
+                    alert(`Защищенных файлов: ${Object.keys(files).length}\nСписок в консоли`);
+                  } else {
+                    console.log('❌ Нет защищенных файлов');
+                    alert('Защищенные файлы не найдены');
+                  }
+                }}
+                size="sm"
+              >
+                🔍 Проверить защищенные
+              </Button>
+              
               <Button variant="outline" onClick={onClose}>
                 Отмена
               </Button>
