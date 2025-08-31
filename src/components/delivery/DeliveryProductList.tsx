@@ -43,61 +43,22 @@ export const DeliveryProductList = ({
 
   return (
     <div className="h-screen flex bg-gray-50">
-      {/* Left panel - Cell and QR scanner */}
-      <div className="w-1/2 flex flex-col items-center justify-center bg-gray-100 p-8">
-        {/* Status text */}
-        <div className="text-center mb-8">
-          <p className="text-sm text-gray-600 mb-8">
-            Отсканируйте товары перед приемкой: {scannedCount} из {itemsCount}
-          </p>
-          
-          {/* Large cell number */}
-          <div className="bg-gray-200 rounded-2xl p-8 mb-8 shadow-inner">
-            <p className="text-sm text-gray-600 mb-2">Ячейка:</p>
-            <div className="text-8xl font-bold text-gray-800 leading-none">
-              {cellNumber}
-            </div>
-          </div>
-          
-          {/* QR Scanner */}
-          <div className="relative">
-            {/* Purple scan frame */}
-            <div className="w-64 h-64 border-4 border-purple-400 rounded-2xl bg-white p-4 shadow-lg">
-              {/* QR code visualization */}
-              <div className="w-full h-full bg-black rounded-xl flex items-center justify-center relative">
-                {/* QR pattern */}
-                <div className="grid grid-cols-8 gap-1 w-32 h-32">
-                  {[...Array(64)].map((_, i) => {
-                    // Create QR pattern
-                    const isBlack = Math.random() > 0.4;
-                    return (
-                      <div 
-                        key={i} 
-                        className={`rounded-sm ${isBlack ? 'bg-white' : 'bg-black'}`} 
-                      />
-                    );
-                  })}
-                </div>
-                
-                {/* Corner markers */}
-                <div className="absolute top-2 left-2 w-8 h-8 border-4 border-white">
-                  <div className="w-full h-full bg-white border-2 border-black"></div>
-                </div>
-                <div className="absolute top-2 right-2 w-8 h-8 border-4 border-white">
-                  <div className="w-full h-full bg-white border-2 border-black"></div>
-                </div>
-                <div className="absolute bottom-2 left-2 w-8 h-8 border-4 border-white">
-                  <div className="w-full h-full bg-white border-2 border-black"></div>
-                </div>
+      {/* Left panel - ОГРОМНАЯ ЯЧЕЙКА как на скрине */}
+      <div className="w-1/2 flex flex-col items-center justify-center bg-white p-8">
+        {/* ГИГАНТСКАЯ ЯЧЕЙКА - ОСНОВНОЙ ФОКУС */}
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="bg-gray-100 rounded-3xl p-12 shadow-lg border-4 border-gray-300">
+            <div className="text-center">
+              <p className="text-lg text-gray-600 mb-4 font-medium">Ячейка</p>
+              <div className="text-[12rem] font-bold text-gray-800 leading-none">
+                {cellNumber}
               </div>
             </div>
-            
-            {/* Purple scanning corners */}
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-purple-500 rounded-tl-2xl"></div>
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-purple-500 rounded-tr-2xl"></div>
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-purple-500 rounded-bl-2xl"></div>
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-purple-500 rounded-br-2xl"></div>
           </div>
+          
+          <p className="text-sm text-gray-500 mt-6 text-center">
+            Товары: {scannedCount} из {itemsCount}
+          </p>
         </div>
       </div>
 

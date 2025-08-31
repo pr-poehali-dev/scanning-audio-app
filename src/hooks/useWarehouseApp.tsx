@@ -137,31 +137,21 @@ export const useWarehouseApp = () => {
       setIsScanning(true);
       
       try {
-        console.log('🔊 Начинаем озвучку для QR сканирования');
+        console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ QR!');
         
-        if (audioEnabled) {
-          try {
-            await playCellAudio(String(cellNumber));
-          } catch (audioError) {
-            console.warn('Ошибка озвучки (продолжаем):', audioError);
-          }
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
         setCurrentStep('manager-scan');
         
+        // Озвучка ячейки (без await чтобы не блокировать)
         if (audioEnabled) {
-          try {
-            await playAudio('manager-scan');
-          } catch (audioError) {
-            console.warn('Ошибка озвучки менеджера (продолжаем):', audioError);
-          }
+          playCellAudio(String(cellNumber)).catch(audioError => {
+            console.warn('Ошибка озвучки ячейки:', audioError);
+          });
         }
         
-        setTimeout(() => {
-          handleManagerScan();
-        }, 400);
+        // МГНОВЕННЫЙ ПЕРЕХОД К СКАНИРОВАНИЮ МЕНЕДЖЕРА
+        handleManagerScan();
         
       } catch (error) {
         console.error('Ошибка в процессе QR сканирования:', error);
@@ -174,13 +164,14 @@ export const useWarehouseApp = () => {
   const handleManagerScan = async () => {
     if (isProcessing && currentStep === 'manager-scan') {
       try {
-        console.log('👨‍💼 Менеджер сканирует товары...');
-        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ МЕНЕДЖЕРА!');
+        
+        // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setCurrentStep('check');
         
-        setTimeout(() => {
-          handleGiveItem();
-        }, 500);
+        // МГНОВЕННАЯ ВЫДАЧА ТОВАРА
+        handleGiveItem();
+        
       } catch (error) {
         console.error('Ошибка в процессе сканирования менеджера:', error);
         setIsProcessing(false);
@@ -193,25 +184,22 @@ export const useWarehouseApp = () => {
     
     enableAudio();
     setIsProcessing(true);
-    console.log('✅ Товар выдан клиенту');
+    console.log('⚡ МГНОВЕННАЯ ВЫДАЧА ТОВАРА!');
     setCurrentStep('payment');
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+      // Озвучка завершения (без await чтобы не блокировать)
       if (audioEnabled) {
-        try {
-          await playAudio('delivery-complete');
-        } catch (audioError) {
-          console.warn('Ошибка озвучки завершения (продолжаем):', audioError);
-        }
+        playAudio('delivery-complete').catch(audioError => {
+          console.warn('Ошибка озвучки завершения:', audioError);
+        });
       }
       
-      setTimeout(() => {
-        setCurrentStep('scan');
-        setPhoneNumber('');
-        setIsProcessing(false);
-      }, 400);
+      // МГНОВЕННЫЙ СБРОС БЕЗ ЗАДЕРЖЕК
+      setCurrentStep('scan');
+      setPhoneNumber('');
+      setCurrentOrder(null); // Сбрасываем заказ
+      setIsProcessing(false);
       
     } catch (error) {
       console.error('Ошибка в процессе выдачи:', error);

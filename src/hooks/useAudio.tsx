@@ -6,90 +6,104 @@ export const useAudio = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [customAudioFiles, setCustomAudioFiles] = useState<{[key: string]: string}>({});
 
-  // Загрузка сохраненных файлов при инициализации с улучшенным логированием
+  // СУПЕР ЗАЩИТА - ЗАГРУЗКА СОХРАНЕННЫХ ФАЙЛОВ С ТРОЙНЫМ ВОССТАНОВЛЕНИЕМ
   useEffect(() => {
-    try {
-      console.log('🔄 === ЗАГРУЗКА СОХРАНЕННЫХ АУДИОФАЙЛОВ ===');
-      const savedFiles = localStorage.getItem(STORAGE_KEY);
-      const timestamp = localStorage.getItem(`${STORAGE_KEY}-timestamp`);
-      const count = localStorage.getItem(`${STORAGE_KEY}-count`);
-      
-      if (savedFiles) {
-        const parsedFiles = JSON.parse(savedFiles);
+    const loadAudioFiles = () => {
+      try {
+        console.log('🔄 === МОЩНАЯ ЗАГРУЗКА АУДИОФАЙЛОВ ===');
         
-        // 🏗️ АВТОЗАГРУЗКА ЗАБЕТОНИРОВАННЫХ ФАЙЛОВ ЯЧЕЕК
-        try {
-          const sources = [
-            'wb-pvz-cell-audio-settings-permanent',
-            'wb-pvz-cell-audio-backup', 
-            'wb-pvz-cell-audio-cement'
-          ];
-          
-          let cementedFiles = {};
-          let sourceName = '';
-          
-          // Пробуем загрузить из любого источника
-          for (const source of sources) {
+        // 🏗️ ТОТАЛЬНАЯ ЗАГРУЗКА ЗАБЕТОНИРОВАННЫХ ФАЙЛОВ
+        const cementSources = [
+          'wb-pvz-cell-audio-settings-permanent',
+          'wb-pvz-cell-audio-backup', 
+          'wb-pvz-cell-audio-cement',
+          'wb-pvz-cell-audio-settings-STEEL-PROTECTION', // дополнительная защита
+          'wb-pvz-EMERGENCY-audio-backup' // аварийная защита
+        ];
+        
+        let finalFiles = {};
+        let cementedFiles = {};
+        
+        // Загружаем основные файлы
+        const savedFiles = localStorage.getItem(STORAGE_KEY);
+        if (savedFiles) {
+          finalFiles = JSON.parse(savedFiles);
+          console.log('📁 Основные файлы:', Object.keys(finalFiles).length);
+        }
+        
+        // ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ЗАБЕТОНИРОВАННЫХ ФАЙЛОВ ИЗ ВСЕХ ИСТОЧНИКОВ
+        cementSources.forEach(source => {
+          try {
             const data = localStorage.getItem(source);
             if (data) {
-              cementedFiles = JSON.parse(data);
-              sourceName = source;
-              console.log(`🏗️ ЗАГРУЖЕНО ИЗ ${sourceName}:`, Object.keys(cementedFiles).length, 'файлов');
-              break;
+              const sourceFiles = JSON.parse(data);
+              Object.assign(cementedFiles, sourceFiles);
+              console.log(`🏗️ ИЗ БЕТОНА (${source}):`, Object.keys(sourceFiles).length, 'файлов');
             }
+          } catch (err) {
+            console.warn(`⚠️ Ошибка загрузки из ${source}:`, err);
           }
+        });
+        
+        // ПРИНУДИТЕЛЬНОЕ СЛИЯНИЕ ВСЕХ ИСТОЧНИКОВ
+        if (Object.keys(cementedFiles).length > 0) {
+          Object.assign(finalFiles, cementedFiles);
+          console.log(`🏗️ СУММАРНО ИЗ БЕТОНА: ${Object.keys(cementedFiles).length} файлов`);
           
-          if (Object.keys(cementedFiles).length > 0) {
-            // Принудительно восстанавливаем ВСЕ забетонированные файлы
-            Object.keys(cementedFiles).forEach(key => {
-              parsedFiles[key] = cementedFiles[key];
-              console.log(`🏗️ ИЗ БЕТОНА: ${key}`);
-            });
-            
-            // Дублируем во все источники для надежности
-            sources.forEach(source => {
-              localStorage.setItem(source, JSON.stringify(cementedFiles));
-            });
-            
-            console.log(`🏗️ ВОССТАНОВЛЕНО ИЗ БЕТОНА: ${Object.keys(cementedFiles).length} файлов`);
-            console.log('🏗️ ИТОГО ПОСЛЕ ВОССТАНОВЛЕНИЯ:', Object.keys(parsedFiles).length, 'файлов');
-          } else {
-            console.warn('⚠️ Забетонированные файлы не найдены!');
+          // МГНОВЕННАЯ РЕЗЕРВНАЯ КОПИЯ В 5 МЕСТ
+          const allBackupKeys = [
+            ...cementSources,
+            STORAGE_KEY,
+            'wb-pvz-NEVER-LOSE-CELLS-BACKUP'
+          ];
+          
+          allBackupKeys.forEach(key => {
+            try {
+              localStorage.setItem(key, JSON.stringify(finalFiles));
+            } catch (err) {
+              console.warn(`Не удалось сохранить в ${key}:`, err);
+            }
+          });
+          
+          console.log(`🏗️ ФАЙЛЫ ПРОДУБЛИРОВАНЫ В ${allBackupKeys.length} МЕСТ!`);
+        }
+        
+        console.log(`✅ ИТОГО ЗАГРУЖЕНО: ${Object.keys(finalFiles).length} файлов`);
+        setCustomAudioFiles(finalFiles);
+        
+      } catch (error) {
+        console.error('❌ Критическая ошибка загрузки аудио:', error);
+        // Аварийная попытка загрузки хотя бы из одного источника
+        try {
+          const emergency = localStorage.getItem('wb-pvz-cell-audio-cement');
+          if (emergency) {
+            setCustomAudioFiles(JSON.parse(emergency));
+            console.log('🚨 АВАРИЙНОЕ ВОССТАНОВЛЕНИЕ УСПЕШНО!');
           }
-        } catch (error) {
-          console.error('❌ Ошибка загрузки из бетона:', error);
+        } catch (emergencyError) {
+          console.error('🚨 Аварийное восстановление не удалось:', emergencyError);
         }
-        
-        setCustomAudioFiles(parsedFiles);
-        
-        const cellFiles = Object.keys(parsedFiles).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
-        
-        console.log('✅ АВТОЗАГРУЗКА УСПЕШНА!');
-        console.log(`💾 Загружено ${Object.keys(parsedFiles).length} файлов`);
-        console.log(`🏠 Загружено ${cellFiles.length} файлов ячеек:`, cellFiles);
-        console.log(`⏰ Последнее сохранение:`, timestamp || 'неизвестно');
-        console.log(`📊 Ожидалось файлов:`, count || 'неизвестно');
-        console.log(`🔒 Защищенных настроек ячеек: ${Object.keys(localStorage.getItem('wb-pvz-cell-audio-settings-permanent') || '{}').length}`);
-        
-        if (cellFiles.length === 0) {
-          console.warn('⚠️ ФАЙЛЫ ЯЧЕЕК НЕ НАЙДЕНЫ! Проверьте загрузку в настройках.');
-        }
-      } else {
-        console.log('ℹ️ Сохраненные файлы не найдены - первый запуск');
       }
-    } catch (error) {
-      console.error('❌ КРИТИЧЕСКАЯ ОШИБКА загрузки аудиофайлов:', error);
-      console.log('🔧 Попытка очистки поврежденных данных...');
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(`${STORAGE_KEY}-timestamp`);
-        localStorage.removeItem(`${STORAGE_KEY}-count`);
-        console.log('✅ Поврежденные данные очищены');
-      } catch (clearError) {
-        console.error('❌ Не удалось очистить поврежденные данные:', clearError);
+    };
+    
+    // ЗАГРУЗКА ПРИ СТАРТЕ
+    loadAudioFiles();
+    
+    // ДОПОЛНИТЕЛЬНАЯ ЗАГРУЗКА ЧЕРЕЗ 1 СЕКУНДУ (на случай задержки)
+    setTimeout(loadAudioFiles, 1000);
+    
+    // ПРОВЕРКА КАЖДЫЕ 10 СЕКУНД (на случай потери)
+    const interval = setInterval(() => {
+      const currentFiles = Object.keys(customAudioFiles).length;
+      console.log(`🔍 ПРОВЕРКА ОЗВУЧКИ: ${currentFiles} файлов`);
+      if (currentFiles === 0) {
+        console.log('⚠️ ОЗВУЧКА ПОТЕРЯНА! ВОССТАНАВЛИВАЮ...');
+        loadAudioFiles();
       }
-    }
-  }, []);
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [customAudioFiles]);
 
   const playAudio = useCallback(async (audioKey: string) => {
     try {
