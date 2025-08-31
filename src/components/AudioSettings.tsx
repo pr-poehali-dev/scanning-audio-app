@@ -69,6 +69,7 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
   const handleSave = async () => {
     // Конвертируем File objects в URL для системы
     const convertedFiles: {[key: string]: string} = {};
+    const cellFiles: {[key: string]: string} = {};
     let totalConverted = 0;
     
     // Обрабатываем все типы файлов
@@ -84,7 +85,26 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
         // ТАКЖЕ сохраняем БЕЗ префикса для глобального доступа
         convertedFiles[baseFileName] = audioUrl;
         
+        // 🔒 Специальная обработка файлов ячеек для защищенного сохранения
+        if (type === 'cells' || /^\d+$/.test(baseFileName) || baseFileName.includes('cell-') || baseFileName.includes('ячейка')) {
+          cellFiles[baseFileName] = audioUrl;
+          cellFiles[prefixedFileName] = audioUrl;
+          console.log(`🏠 Файл ячейки сохранен: ${baseFileName}`);
+        }
+        
         totalConverted++;
+      }
+    }
+    
+    // 🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ НАСТРОЕК ЯЧЕЕК
+    if (Object.keys(cellFiles).length > 0) {
+      try {
+        localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(cellFiles));
+        localStorage.setItem('wb-pvz-cell-audio-lock', 'LOCKED');
+        localStorage.setItem('wb-pvz-cell-audio-timestamp', new Date().toISOString());
+        console.log(`🔒 ЗАЩИЩЕННОЕ СОХРАНЕНИЕ: ${Object.keys(cellFiles).length} файлов ячеек сохранены навсегда`);
+      } catch (error) {
+        console.error('❌ Ошибка защищенного сохранения ячеек:', error);
       }
     }
     
@@ -238,6 +258,16 @@ export const AudioSettings = ({ onClose, onAudioFilesUpdate, existingFiles }: Au
                   </>
                 )}
               </Button>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800 font-medium mb-2">💡 Рекомендуемые файлы для приемки:</p>
+                <div className="text-xs text-blue-700 space-y-1">
+                  <div><strong>Действия:</strong> "коробка-принята.mp3", "отсканируйте-еще-раз.mp3", "продолжайте-приемку.mp3"</div>
+                  <div><strong>Статусы:</strong> "товар-для-пвз.mp3", "отсканируйте-следующий-товар.mp3", "приоритетный-заказ.mp3"</div>
+                  <div><strong>Проверки:</strong> "повтор-товар-уже-принят.mp3", "коробка-отсканирована.mp3"</div>
+                  <div><strong>Ячейки:</strong> "1.mp3", "2.mp3", "3.mp3" ... "482.mp3" (номера ячеек)</div>
+                </div>
+              </div>
             </div>
 
             {/* Возврат */}

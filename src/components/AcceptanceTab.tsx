@@ -9,7 +9,7 @@ interface AcceptanceTabProps {
   customAudioFiles: Record<string, string>;
 }
 
-type AcceptanceStep = 'scan' | 'confirm' | 'location' | 'complete';
+type AcceptanceStep = 'box' | 'items' | 'location' | 'complete';
 
 interface AcceptanceItem {
   id: string;
@@ -18,10 +18,12 @@ interface AcceptanceItem {
   quantity: number;
   status: 'pending' | 'accepted' | 'damaged' | 'rejected';
   timestamp: string;
+  cellNumber?: number; // Номер ячейки
 }
 
 const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
-  const [currentStep, setCurrentStep] = useState<AcceptanceStep>('scan');
+  const [currentStep, setCurrentStep] = useState<AcceptanceStep>('box');
+  const [boxBarcode, setBoxBarcode] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [scannedCode, setScannedCode] = useState('');
@@ -92,6 +94,47 @@ const AcceptanceTab = ({ playAudio, customAudioFiles }: AcceptanceTabProps) => {
     }
     
     return cellAudioPlayed;
+  };
+
+  // 🔊 Озвучка действий приемки
+  const playAcceptanceAudio = async (action: string) => {
+    console.log(`🔊 === ОЗВУЧКА ДЕЙСТВИЯ ПРИЕМКИ: ${action} ===`);
+    
+    const actionAudios: Record<string, string[]> = {
+      'box-accepted': ['коробка-принята', 'receiving-коробка-принята', 'box-accepted'],
+      'scan-again': ['отсканируйте-еще-раз', 'receiving-отсканируйте-еще-раз', 'scan-again'],
+      'continue-acceptance': ['продолжайте-приемку', 'receiving-продолжайте-приемку', 'continue-acceptance'],
+      'item-for-pvz': ['товар-для-пвз', 'receiving-товар-для-пвз', 'item-for-pvz'],
+      'scan-next': ['отсканируйте-следующий-товар', 'receiving-отсканируйте-следующий-товар', 'scan-next'],
+      'priority-order': ['приоритетный-заказ', 'receiving-приоритетный-заказ', 'priority-order'],
+      'already-accepted': ['повтор-товар-уже-принят', 'receiving-повтор-товар-уже-принят', 'already-accepted'],
+      'box-scanned': ['коробка-отсканирована', 'receiving-коробка-отсканирована', 'box-scanned']
+    };
+
+    const searchKeys = actionAudios[action] || [action];
+    let audioPlayed = false;
+    
+    for (const audioKey of searchKeys) {
+      if (customAudioFiles[audioKey]) {
+        try {
+          console.log(`🎵 ВОСПРОИЗВОЖУ ДЕЙСТВИЕ ПРИЕМКИ: "${audioKey}"`);
+          const audio = new Audio(customAudioFiles[audioKey]);
+          await audio.play();
+          console.log(`🎵 ✅ ДЕЙСТВИЕ ОЗВУЧЕНО: "${audioKey}"`);
+          audioPlayed = true;
+          break;
+        } catch (error) {
+          console.error(`❌ ОШИБКА ОЗВУЧКИ "${audioKey}":`, error);
+          continue;
+        }
+      }
+    }
+    
+    if (!audioPlayed) {
+      console.warn(`⚠️ ДЕЙСТВИЕ "${action}" НЕ ОЗВУЧЕНО - ФАЙЛ НЕ НАЙДЕН!`);
+    }
+    
+    return audioPlayed;
   };
 
   // 🎤 Функция расшифровки аудиофайлов (симуляция)
@@ -335,30 +378,88 @@ const ${functionName} = async () => {
     return audioPlayed;
   };
 
-  // ФИКТИВНОЕ сканирование для приемки
+  // 📦 Обработчик сканирования в приемке
   const handleQRScan = (data: string) => {
-    console.log('📦 === ФИКТИВНОЕ СКАНИРОВАНИЕ ПРИЕМКИ ===');
-    console.log('🔍 Отсканирован код для приемки:', data);
+    console.log('📦 === СКАНИРОВАНИЕ В ПРИЕМКЕ ===');
+    console.log('🔍 Отсканирован код:', data);
     setScannedCode(data);
     setShowScanner(false);
     
-    // Озвучиваем сканирование
-    playAcceptanceAudio('item_scanned', { barcode: data });
-    
-    // Переходим к следующему шагу
-    setCurrentStep('confirm');
-    
-    // Генерируем случайные данные товара
+    if (currentStep === 'box') {
+      // Сканирование коробки
+      console.log('📦 СКАНИРОВАНИЕ КОРОБКИ');
+      setBoxBarcode(data);
+      playAcceptanceAudio('box-scanned');
+      setTimeout(() => {
+        playAcceptanceAudio('continue-acceptance');
+      }, 1500);
+      setCurrentStep('items');
+    } else if (currentStep === 'items') {
+      // Сканирование товара
+      console.log('📱 СКАНИРОВАНИЕ ТОВАРА');
+      
+      // Проверяем, не был ли товар уже принят
+      const existingItem = acceptanceItems.find(item => item.barcode === data);
+      if (existingItem) {
+        playAcceptanceAudio('already-accepted');
+        return;
+      }
+      
+      // Генерируем случайный номер ячейки
+      const cellNumber = Math.floor(Math.random() * 482) + 1;
+      
+      // Создаем новый товар с номером ячейки
+      const newItem: AcceptanceItem = {
+        id: `item-${Date.now()}`,
+        barcode: data,
+        productName: generateRandomProductName(),
+        quantity: 1,
+        status: 'accepted',
+        timestamp: new Date().toISOString(),
+        cellNumber: cellNumber // Добавляем номер ячейки
+      };
+      
+      console.log(`📱 ТОВАР ПРИНЯТ В ЯЧЕЙКУ ${cellNumber}:`, newItem);
+      
+      // Добавляем товар
+      setAcceptanceItems(prev => [...prev, newItem]);
+      
+      // Озвучиваем действия
+      playAcceptanceAudio('item-for-pvz');
+      setTimeout(async () => {
+        await playCellAudio(cellNumber.toString());
+        setTimeout(() => {
+          playAcceptanceAudio('scan-next');
+        }, 1000);
+      }, 1500);
+      
+      // Переходим к размещению если это первый товар
+      if (acceptanceItems.length === 0) {
+        setTimeout(() => {
+          setCurrentStep('location');
+        }, 3000);
+      }
+    }
+  };
+
+  // Генерация случайного названия товара
+  const generateRandomProductName = () => {
     const productNames = [
       'Смартфон Samsung Galaxy',
-      'Наушники Apple AirPods',
+      'Наушники Apple AirPods',  
       'Куртка зимняя Nike',
       'Кроссовки Adidas',
       'Рюкзак школьный',
       'Планшет iPad',
       'Книга "Мастер и Маргарита"',
-      'Игрушка мягкая медведь'
+      'Игрушка мягкая медведь',
+      'Часы Xiaomi Mi Band',
+      'Термос Stanley',
+      'Джинсы Levi\'s 501',
+      'Футболка с принтом'
     ];
+    
+    return productNames[Math.floor(Math.random() * productNames.length)];
     
     const randomProduct = productNames[Math.floor(Math.random() * productNames.length)];
     const randomQuantity = Math.floor(Math.random() * 3) + 1;
@@ -469,27 +570,31 @@ const ${functionName} = async () => {
       <div className="bg-white rounded-lg p-6 mb-6">
         <div className="flex items-center justify-center space-x-8 mb-8">
           <div className="flex flex-col items-center">
-            <StepIndicator step={1} isActive={currentStep === 'scan'} isCompleted={false} />
+            <StepIndicator step={1} isActive={currentStep === 'box'} isCompleted={currentStep !== 'box'} />
+            <span className="text-xs mt-2 text-gray-600">Коробка</span>
           </div>
           <div className="flex-1 h-0.5 bg-gray-200"></div>
           <div className="flex flex-col items-center">
-            <StepIndicator step={2} isActive={currentStep === 'confirm'} isCompleted={false} />
+            <StepIndicator step={2} isActive={currentStep === 'items'} isCompleted={currentStep === 'location' || currentStep === 'complete'} />
+            <span className="text-xs mt-2 text-gray-600">Товары</span>
           </div>
           <div className="flex-1 h-0.5 bg-gray-200"></div>
           <div className="flex flex-col items-center">
-            <StepIndicator step={3} isActive={currentStep === 'location'} isCompleted={false} />
+            <StepIndicator step={3} isActive={currentStep === 'location'} isCompleted={currentStep === 'complete'} />
+            <span className="text-xs mt-2 text-gray-600">Размещение</span>
           </div>
           <div className="flex-1 h-0.5 bg-gray-200"></div>
           <div className="flex flex-col items-center">
             <StepIndicator step={4} isActive={currentStep === 'complete'} isCompleted={false} />
+            <span className="text-xs mt-2 text-gray-600">Завершено</span>
           </div>
         </div>
 
         {/* Контент в зависимости от шага */}
-        {currentStep === 'scan' && (
+        {currentStep === 'box' && (
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-8">
-              Отсканируйте стикер коробки
+              📦 Отсканируйте стикер коробки
             </h1>
 
             {/* QR код с ФИКТИВНЫМ СКАНИРОВАНИЕМ */}
@@ -537,45 +642,71 @@ const ${functionName} = async () => {
           </div>
         )}
         
-        {/* Шаг 2: Подтверждение товара */}
-        {currentStep === 'confirm' && scannedCode && (
+        {/* Шаг 2: Сканирование товаров */}
+        {currentStep === 'items' && (
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-8">
-              Подтвердите товар
+              📱 Сканируйте каждый товар
             </h1>
             
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Товар найден!</h3>
-              <p className="text-gray-600 mb-4">Штрихкод: {scannedCode}</p>
-              {acceptanceItems.length > 0 && (
-                <p className="text-gray-800 font-medium">{acceptanceItems[0].productName}</p>
-              )}
-            </div>
+            {boxBarcode && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-blue-800">
+                  📦 <strong>Коробка:</strong> {boxBarcode}
+                </p>
+              </div>
+            )}
             
-            <div className="flex gap-4 justify-center">
-              <Button 
-                onClick={() => {
-                  setCurrentStep('location');
-                  playAcceptanceAudio('accepted');
-                }}
-                className="bg-green-500 hover:bg-green-600 text-white px-8 py-3"
+            {acceptanceItems.length > 0 && (
+              <div className="bg-white border rounded-lg p-4 mb-6">
+                <h3 className="font-semibold mb-3">✅ Принятые товары:</h3>
+                <div className="space-y-2">
+                  {acceptanceItems.map((item, index) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-3">
+                        <span className="bg-green-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+                          {index + 1}
+                        </span>
+                        <div className="text-left">
+                          <p className="font-medium">{item.productName}</p>
+                          <p className="text-sm text-gray-600">Штрихкод: {item.barcode}</p>
+                          {item.cellNumber && (
+                            <p className="text-sm font-semibold text-purple-600">
+                              🏠 Ячейка: {item.cellNumber}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-green-600 font-bold">✅ Принят</div>
+                        {item.cellNumber && (
+                          <div className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full mt-1">
+                            Ячейка {item.cellNumber}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <Button
+                onClick={() => setShowScanner(true)}
+                className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3 w-full"
               >
-                ✅ Принять товар
+                📱 Сканировать товар
               </Button>
               
-              <Button 
-                onClick={() => {
-                  if (acceptanceItems.length > 0) {
-                    changeItemStatus(acceptanceItems[0].id, 'damaged');
-                  }
-                  setCurrentStep('location');
-                  playAcceptanceAudio('damaged');
-                }}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3"
-              >
-                ⚠️ Повреждено
-              </Button>
+              {acceptanceItems.length > 0 && (
+                <Button
+                  onClick={() => setCurrentStep('location')}
+                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 w-full"
+                >
+                  ➡️ Перейти к размещению
+                </Button>
+              )}
               
               <Button 
                 onClick={() => {
@@ -646,13 +777,15 @@ const ${functionName} = async () => {
             <div className="flex gap-4 justify-center">
               <Button 
                 onClick={() => {
-                  setCurrentStep('scan');
+                  setCurrentStep('box');
+                  setBoxBarcode('');
                   setScannedCode('');
                   setSearchValue('');
+                  setAcceptanceItems([]);
                 }}
                 className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3"
               >
-                📦 Принять еще товар
+                📦 Принять новую коробку
               </Button>
               
               <Button 
