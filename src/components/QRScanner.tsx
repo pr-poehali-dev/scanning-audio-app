@@ -36,8 +36,11 @@ const QRScanner = ({ onScan, onClose, isOpen }: QRScannerProps) => {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment', // задняя камера
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+          width: { ideal: 1280, max: 1920 }, // Увеличиваем разрешение для лучшего распознавания
+          height: { ideal: 720, max: 1080 },
+          frameRate: { ideal: 30, min: 15 }, // Высокий FPS
+          focusMode: 'continuous', // Непрерывная фокусировка
+          torch: false // Выключаем вспышку по умолчанию
         } 
       });
       
@@ -70,18 +73,27 @@ const QRScanner = ({ onScan, onClose, isOpen }: QRScannerProps) => {
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
       
-      if (code) {
-        console.log('QR код найден:', code.data);
-        onScan(code.data);
+      // УСКОРЕННОЕ СКАНИРОВАНИЕ с дополнительными опциями jsQR
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert", // Не инвертировать цвета для ускорения
+      });
+      
+      if (code && code.data.trim()) {
+        console.log('🎯 QR код найден мгновенно:', code.data);
+        onScan(code.data.trim());
         stopCamera();
         onClose();
         return;
       }
     }
     
-    animationRef.current = requestAnimationFrame(scanQR);
+    // УВЕЛИЧЕННАЯ ЧАСТОТА СКАНИРОВАНИЯ - каждые 50мс вместо каждого кадра
+    setTimeout(() => {
+      if (isScanning) {
+        animationRef.current = requestAnimationFrame(scanQR);
+      }
+    }, 50);
   }, [isScanning, onScan, onClose, stopCamera]);
 
   useEffect(() => {
@@ -96,15 +108,30 @@ const QRScanner = ({ onScan, onClose, isOpen }: QRScannerProps) => {
 
   useEffect(() => {
     if (isScanning && videoRef.current) {
-      videoRef.current.addEventListener('loadeddata', scanQR);
+      const video = videoRef.current;
+      
+      // Запускаем сканирование сразу когда видео готово
+      video.addEventListener('loadeddata', scanQR);
+      video.addEventListener('canplay', scanQR);
+      video.addEventListener('playing', scanQR);
+      
+      // АГРЕССИВНОЕ СКАНИРОВАНИЕ - запускаем немедленно и через интервалы
       scanQR();
+      
+      // Дополнительный таймер для подстраховки - сканируем каждые 100мс
+      const aggressiveTimer = setInterval(() => {
+        if (isScanning && video.readyState >= 2) {
+          scanQR();
+        }
+      }, 100);
+      
+      return () => {
+        video.removeEventListener('loadeddata', scanQR);
+        video.removeEventListener('canplay', scanQR);
+        video.removeEventListener('playing', scanQR);
+        clearInterval(aggressiveTimer);
+      };
     }
-    
-    return () => {
-      if (videoRef.current) {
-        videoRef.current.removeEventListener('loadeddata', scanQR);
-      }
-    };
   }, [isScanning, scanQR]);
 
   if (!isOpen) return null;

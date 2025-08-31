@@ -4,7 +4,7 @@ import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import Footer from '@/components/Footer';
-import AudioTestPanel from '@/components/AudioTestPanel';
+
 import { useAudio } from '@/hooks/useAudio';
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
@@ -112,13 +112,7 @@ const WBPVZApp = () => {
         onClose={() => appState.setShowQRScanner(false)}
       />
 
-      {/* Тестовая панель аудио */}
-      <AudioTestPanel
-        playAudio={playAudio}
-        customAudioFiles={customAudioFiles}
-        isVisible={appState.showAudioTest}
-        onToggle={() => appState.setShowAudioTest(!appState.showAudioTest)}
-      />
+
     </div>
   );
 };
