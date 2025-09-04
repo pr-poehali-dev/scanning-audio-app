@@ -9,11 +9,12 @@ export const useAudio = () => {
 
   // СУПЕР ЗАЩИТА - ЗАГРУЗКА СОХРАНЕННЫХ ФАЙЛОВ С ТРОЙНЫМ ВОССТАНОВЛЕНИЕМ
   useEffect(() => {
-    const { setupAudioLoading } = createAudioLoader(setCustomAudioFiles, customAudioFiles);
+    console.log('🚀 ИНИЦИАЛИЗАЦИЯ АУДИО СИСТЕМЫ...');
+    const { setupAudioLoading } = createAudioLoader(setCustomAudioFiles, {});
     const cleanup = setupAudioLoading();
     
     return cleanup;
-  }, [customAudioFiles]);
+  }, []); // Без зависимости для избежания бесконечного цикла
 
   // Обертка для playAudio с передачей customAudioFiles
   const playAudioCallback = useCallback(async (audioKey: string) => {

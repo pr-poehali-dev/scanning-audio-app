@@ -49,11 +49,61 @@ export const updateAudioFiles = async (
   }
   
   const updatedFiles = { ...customAudioFiles, ...permanentFiles };
-  setCustomAudioFiles(updatedFiles);
+  
+  // 🔧 ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ФАЙЛОВ ЯЧЕЕК ПРЯМО ЗДЕСЬ
+  console.log('🔧 === ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ===');
+  
+  // Находим все файлы которые могут быть ячейками
+  const cellKeys = Object.keys(updatedFiles).filter(key => 
+    /^\d+$/.test(key) || 
+    key.includes('cell-') || 
+    key.includes('ячейка') ||
+    key.includes('коробка') ||
+    key.includes('box')
+  );
+  
+  console.log(`🏠 Найдено ${cellKeys.length} файлов ячеек:`, cellKeys);
+  
+  // ПРИНУДИТЕЛЬНОЕ ДУБЛИРОВАНИЕ ВО ВСЕ ФОРМАТЫ
+  const syncedFiles = { ...updatedFiles };
+  
+  cellKeys.forEach(originalKey => {
+    const audioUrl = updatedFiles[originalKey];
+    
+    // Если это просто число - создаем все варианты
+    if (/^\d+$/.test(originalKey)) {
+      syncedFiles[originalKey] = audioUrl; // 44
+      syncedFiles[`cell-${originalKey}`] = audioUrl; // cell-44  
+      syncedFiles[`ячейка-${originalKey}`] = audioUrl; // ячейка-44
+      console.log(`🔄 СИНХРОНИЗИРОВАНА ЯЧЕЙКА: ${originalKey} → 3 формата`);
+    }
+    
+    // Если есть cell- префикс - создаем остальные варианты  
+    if (originalKey.startsWith('cell-')) {
+      const number = originalKey.replace('cell-', '');
+      syncedFiles[number] = audioUrl; // 44
+      syncedFiles[originalKey] = audioUrl; // cell-44
+      syncedFiles[`ячейка-${number}`] = audioUrl; // ячейка-44
+      console.log(`🔄 СИНХРОНИЗИРОВАН CELL-: ${originalKey} → 3 формата`);
+    }
+    
+    // Если есть ячейка- префикс
+    if (originalKey.startsWith('ячейка-')) {
+      const number = originalKey.replace('ячейка-', '');
+      syncedFiles[number] = audioUrl; // 44
+      syncedFiles[`cell-${number}`] = audioUrl; // cell-44  
+      syncedFiles[originalKey] = audioUrl; // ячейка-44
+      console.log(`🔄 СИНХРОНИЗИРОВАНА ЯЧЕЙКА-: ${originalKey} → 3 формата`);
+    }
+  });
+  
+  console.log(`🔧 ИТОГО ПОСЛЕ СИНХРОНИЗАЦИИ: ${Object.keys(syncedFiles).length} файлов`);
+  
+  setCustomAudioFiles(syncedFiles);
   
   // 🔒 МУЛЬТИСОХРАНЕНИЕ В 10 МЕСТАХ для озвучки ячеек
   const cellFiles = Object.fromEntries(
-    Object.entries(updatedFiles).filter(([key]) => 
+    Object.entries(syncedFiles).filter(([key]) => 
       /^\d+$/.test(key) || key.includes('cell-') || key.includes('ячейка')
     )
   );
@@ -76,7 +126,7 @@ export const updateAudioFiles = async (
     
     cellBackupKeys.forEach(key => {
       try {
-        localStorage.setItem(key, JSON.stringify(updatedFiles));
+        localStorage.setItem(key, JSON.stringify(syncedFiles)); // Сохраняем syncedFiles
         localStorage.setItem(`${key}-timestamp`, new Date().toISOString());
       } catch (err) {
         console.warn(`Не удалось сохранить ячейки в ${key}:`, err);
@@ -87,8 +137,8 @@ export const updateAudioFiles = async (
   }
   
   // Сохранение всех файлов  
-  saveAudioFiles(updatedFiles);
-  saveCellSettings(updatedFiles);
+  saveAudioFiles(syncedFiles); // Используем syncedFiles
+  saveCellSettings(syncedFiles); // Используем syncedFiles
 };
 
 // Удаление аудиофайла

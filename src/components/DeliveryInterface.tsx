@@ -321,6 +321,70 @@ const DeliveryInterface = ({
               🔊 ПОЛНЫЙ ТЕСТ
             </button>
             
+            {/* НОВАЯ КНОПКА - ТЕСТ ЯЧЕЙКИ */}
+            <button
+              onClick={async () => {
+                console.log('🧪 === ПРЯМОЙ ТЕСТ ЯЧЕЙКИ ===');
+                
+                // Получаем ячейку из заказа
+                const testCellNumber = order?.cellNumber || '44';
+                console.log(`🎯 Тестируем ячейку: ${testCellNumber}`);
+                
+                // Проверяем все хранилища
+                const storages = [
+                  'wb-audio-files',
+                  'wb-pvz-cell-audio-settings-permanent',
+                  'wb-pvz-cell-audio-cement',
+                  'wb-pvz-cell-audio-IMMEDIATE'
+                ];
+                
+                let foundFiles = false;
+                let testKeys = [testCellNumber, `cell-${testCellNumber}`, `ячейка-${testCellNumber}`];
+                
+                for (const storageKey of storages) {
+                  const storage = localStorage.getItem(storageKey);
+                  if (storage) {
+                    try {
+                      const files = JSON.parse(storage);
+                      const keys = Object.keys(files);
+                      console.log(`📦 ${storageKey}: ${keys.length} файлов`, keys);
+                      
+                      // Проверяем есть ли наши ключи
+                      for (const testKey of testKeys) {
+                        if (files[testKey]) {
+                          console.log(`✅ НАЙДЕН: ${testKey} в ${storageKey}`);
+                          
+                          // Пробуем воспроизвести
+                          try {
+                            const audio = new Audio(files[testKey]);
+                            audio.volume = 0.7;
+                            await audio.play();
+                            console.log(`🎵 ЗВУК ВОСПРОИЗВЕДЕН: ${testKey}`);
+                            foundFiles = true;
+                            
+                            setTimeout(() => audio.pause(), 2000);
+                            alert(`✅ ЯЧЕЙКА ${testCellNumber} РАБОТАЕТ!\n\nКлюч: ${testKey}\nХранилище: ${storageKey}`);
+                            return;
+                          } catch (audioError) {
+                            console.error(`❌ Ошибка воспроизведения ${testKey}:`, audioError);
+                          }
+                        }
+                      }
+                    } catch (parseError) {
+                      console.error(`❌ Ошибка парсинга ${storageKey}:`, parseError);
+                    }
+                  }
+                }
+                
+                if (!foundFiles) {
+                  alert(`❌ ЯЧЕЙКА ${testCellNumber} НЕ НАЙДЕНА!\n\nПроверено в ${storages.length} хранилищах.\nКлючи: ${testKeys.join(', ')}\n\nЗагрузите файлы ячеек заново.`);
+                }
+              }}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs font-bold"
+            >
+              🧪 ТЕСТ ЯЧЕЙКИ {order?.cellNumber || '44'}
+            </button>
+            
             <button
               onClick={() => {
                 console.log('🧹 ЭКСТРЕННАЯ ОЧИСТКА - УДАЛЯЕМ ВСЁ СТАРОЕ');

@@ -100,6 +100,57 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
             <button className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md">
               <Icon name="MessageCircle" size={20} />
             </button>
+            
+            {/* КНОПКА ЭКСТРЕННОГО ТЕСТА ЯЧЕЕК */}
+            <button 
+              onClick={async () => {
+                console.log('🧪 === ЭКСТРЕННЫЙ ТЕСТ ЯЧЕЕК ===');
+                
+                // Проверяем все хранилища
+                const storages = [
+                  'wb-audio-files',
+                  'wb-pvz-cell-audio-settings-permanent',
+                  'wb-pvz-cell-audio-cement',
+                  'wb-pvz-cell-audio-IMMEDIATE'
+                ];
+                
+                let totalFiles = 0;
+                let report = '🧪 ЭКСТРЕННАЯ ДИАГНОСТИКА ЯЧЕЕК:\n\n';
+                
+                for (const storageKey of storages) {
+                  const storage = localStorage.getItem(storageKey);
+                  if (storage) {
+                    try {
+                      const files = JSON.parse(storage);
+                      const cellFiles = Object.keys(files).filter(key => 
+                        /^\d+$/.test(key) || key.includes('cell-') || key.includes('ячейка')
+                      );
+                      totalFiles += cellFiles.length;
+                      report += `📦 ${storageKey}: ${cellFiles.length} ячеек\n`;
+                      if (cellFiles.length > 0) {
+                        report += `   📋 Ключи: ${cellFiles.slice(0, 5).join(', ')}${cellFiles.length > 5 ? '...' : ''}\n`;
+                      }
+                    } catch (error) {
+                      report += `❌ ${storageKey}: Ошибка парсинга\n`;
+                    }
+                  } else {
+                    report += `❌ ${storageKey}: НЕТ ДАННЫХ\n`;
+                  }
+                }
+                
+                if (totalFiles === 0) {
+                  report += `\n❌ ЯЧЕЙКИ НЕ НАЙДЕНЫ!\n\n🔧 РЕШЕНИЕ:\n1. Настройки → Голосовая озвучка\n2. Загрузите папку с ячейками\n3. Нажмите "Сохранить"`;
+                } else {
+                  report += `\n✅ НАЙДЕНО ${totalFiles} файлов ячеек`;
+                }
+                
+                alert(report);
+              }}
+              className="p-1 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded-md text-xs font-bold"
+              title="Экстренный тест ячеек"
+            >
+              🧪
+            </button>
           </div>
         </div>
       </div>

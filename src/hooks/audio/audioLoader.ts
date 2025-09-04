@@ -90,11 +90,17 @@ export const createAudioLoader = (
     
     // ПРОВЕРКА КАЖДЫЕ 10 СЕКУНД (на случай потери)
     const interval = setInterval(() => {
-      const currentFiles = Object.keys(customAudioFiles).length;
-      console.log(`🔍 ПРОВЕРКА ОЗВУЧКИ: ${currentFiles} файлов`);
-      if (currentFiles === 0) {
-        console.log('⚠️ ОЗВУЧКА ПОТЕРЯНА! ВОССТАНАВЛИВАЮ...');
-        loadAudioFiles();
+      try {
+        // Проверяем localStorage напрямую вместо состояния
+        const storedFiles = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
+        const currentFiles = storedFiles ? Object.keys(JSON.parse(storedFiles)).length : 0;
+        
+        if (currentFiles === 0) {
+          console.log('⚠️ ОЗВУЧКА ПОТЕРЯНА! ВОССТАНАВЛИВАЮ...');
+          loadAudioFiles();
+        }
+      } catch (error) {
+        console.warn('⚠️ Ошибка проверки localStorage:', error);
       }
     }, 10000);
     
