@@ -1,3 +1,5 @@
+import { saveCellFolder } from '@/utils/simpleCellAudio';
+
 interface AudioFiles {
   delivery: File[];
   receiving: File[];
@@ -24,20 +26,14 @@ export const saveAudioFiles = async (
       convertedFiles[baseFileName] = audioUrl;
       
       if (type === 'cells') {
+        // ИСПОЛЬЗУЕМ ПРОСТУЮ СИСТЕМУ для файлов ячеек
+        console.log(`🏠 СОХРАНЯЮ ЯЧЕЙКУ ЧЕРЕЗ ПРОСТУЮ СИСТЕМУ: ${baseFileName}`);
+        // Простая система сохранит файл автоматически при обработке всех файлов ячеек
+        
+        // Также сохраняем в старой системе для совместимости  
         cellFiles[baseFileName] = audioUrl;
         cellFiles[prefixedFileName] = audioUrl;
-        console.log(`🏠 ЯЧЕЙКА ПРИНУДИТЕЛЬНО ЗАЩИЩЕНА: ${baseFileName} → ${audioUrl.substring(0, 50)}...`);
-        
-        // Дополнительное сохранение для ячеек сразу же
-        try {
-          const tempCellStorage = JSON.parse(localStorage.getItem('wb-pvz-cell-audio-IMMEDIATE') || '{}');
-          tempCellStorage[baseFileName] = audioUrl;
-          tempCellStorage[prefixedFileName] = audioUrl;
-          localStorage.setItem('wb-pvz-cell-audio-IMMEDIATE', JSON.stringify(tempCellStorage));
-          console.log(`⚡ МГНОВЕННОЕ СОХРАНЕНИЕ ЯЧЕЙКИ: ${baseFileName}`);
-        } catch (err) {
-          console.error('❌ Ошибка мгновенного сохранения:', err);
-        }
+        console.log(`🏠 ЯЧЕЙКА ТАКЖЕ СОХРАНЕНА В СТАРОЙ СИСТЕМЕ: ${baseFileName}`);
       }
       
       if (type === 'receiving' || type === 'delivery') {
@@ -109,6 +105,17 @@ export const saveAudioFiles = async (
     console.error('❌ Ошибка бетонирования:', error);
   }
   
+  // 🚀 ДОПОЛНИТЕЛЬНО СОХРАНЯЕМ ЧЕРЕЗ ПРОСТУЮ СИСТЕМУ
+  if (audioFiles.cells && audioFiles.cells.length > 0) {
+    console.log(`🚀 === СОХРАНЯЮ ${audioFiles.cells.length} ЯЧЕЕК ЧЕРЕЗ ПРОСТУЮ СИСТЕМУ ===`);
+    try {
+      const savedCount = await saveCellFolder(audioFiles.cells);
+      console.log(`✅ Простая система сохранила ${savedCount} файлов ячеек`);
+    } catch (error) {
+      console.error('❌ Ошибка простой системы:', error);
+    }
+  }
+
   if (totalConverted > 0) {
     await updateAudioFiles(convertedFiles);
     console.log(`✅ Сохранено ${totalConverted} аудиофайлов через useAudio`);
