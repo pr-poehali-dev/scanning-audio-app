@@ -62,16 +62,11 @@ export const createQRHandlers = (props: QRHandlersProps) => {
       setTimeout(async () => {
         
         if (order) {
-          console.log('🎯 ЗАКАЗ НАЙДЕН! Устанавливаем deliveryStep = client-scanned');
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
           setScannedData(`qr-${order.id}-${order.phone}`);
           
-          console.log('📋 Данные заказа:', {
-            customerName: order.customerName, 
-            cellNumber: order.cellNumber,
-            itemsCount: order.items?.length || 0
-          });
+          console.log('✅ Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
           
           // Генерируем случайный номер ячейки от 1 до 482
           const randomCellNumber = Math.floor(Math.random() * 482) + 1;
