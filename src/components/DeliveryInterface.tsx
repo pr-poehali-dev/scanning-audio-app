@@ -226,14 +226,13 @@ const DeliveryInterface = ({
             </div>
           </div>
             
-            {selectedCell === order.cellNumber && (
-              <div className="absolute top-2 right-2">
-                <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
-                  <Icon name="Check" size={16} className="text-white" />
-                </div>
+          {selectedCell === order.cellNumber && (
+            <div className="absolute top-2 right-2">
+              <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                <Icon name="Check" size={16} className="text-white" />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
