@@ -236,7 +236,6 @@ const DeliveryInterface = ({
           </div>
         </div>
       </div>
-      )}
 
       {/* Товары - показываем всегда */}
       <div className="bg-white rounded-lg border p-6">
