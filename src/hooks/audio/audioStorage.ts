@@ -6,7 +6,9 @@ export const CEMENT_SOURCES = [
   'wb-pvz-cell-audio-backup', 
   'wb-pvz-cell-audio-cement',
   'wb-pvz-cell-audio-settings-STEEL-PROTECTION',
-  'wb-pvz-EMERGENCY-audio-backup'
+  'wb-pvz-EMERGENCY-audio-backup',
+  'wb-pvz-cell-audio-IMMEDIATE', // Мгновенное сохранение
+  'wb-NEVER-LOSE-CELLS-BACKUP' // Дополнительный резерв
 ];
 
 // Сохранение файлов в localStorage с множественным резервированием

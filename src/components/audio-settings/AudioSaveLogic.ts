@@ -26,7 +26,18 @@ export const saveAudioFiles = async (
       if (type === 'cells') {
         cellFiles[baseFileName] = audioUrl;
         cellFiles[prefixedFileName] = audioUrl;
-        console.log(`🏠 ЯЧЕЙКА ПРИНУДИТЕЛЬНО ЗАЩИЩЕНА: ${baseFileName} (тип: ${type})`);
+        console.log(`🏠 ЯЧЕЙКА ПРИНУДИТЕЛЬНО ЗАЩИЩЕНА: ${baseFileName} → ${audioUrl.substring(0, 50)}...`);
+        
+        // Дополнительное сохранение для ячеек сразу же
+        try {
+          const tempCellStorage = JSON.parse(localStorage.getItem('wb-pvz-cell-audio-IMMEDIATE') || '{}');
+          tempCellStorage[baseFileName] = audioUrl;
+          tempCellStorage[prefixedFileName] = audioUrl;
+          localStorage.setItem('wb-pvz-cell-audio-IMMEDIATE', JSON.stringify(tempCellStorage));
+          console.log(`⚡ МГНОВЕННОЕ СОХРАНЕНИЕ ЯЧЕЙКИ: ${baseFileName}`);
+        } catch (err) {
+          console.error('❌ Ошибка мгновенного сохранения:', err);
+        }
       }
       
       if (type === 'receiving' || type === 'delivery') {

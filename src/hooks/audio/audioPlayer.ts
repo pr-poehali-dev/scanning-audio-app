@@ -205,25 +205,74 @@ export const playAudio = async (audioKey: string, customAudioFiles: {[key: strin
 // Воспроизведение звука ячейки
 export const playCellAudio = async (cellNumber: string, customAudioFiles: {[key: string]: string}): Promise<void> => {
   try {
-    console.log(`🔊 Озвучка ячейки: ${cellNumber}`);
-    console.log(`📁 Доступные файлы ячеек:`, Object.keys(customAudioFiles).filter(key => key.startsWith('cell-')));
+    console.log(`🔊 === ОЗВУЧКА ЯЧЕЙКИ ===`);
+    console.log(`🎯 Ячейка: ${cellNumber}`);
+    console.log(`📊 Всего файлов в памяти: ${Object.keys(customAudioFiles).length}`);
     
-    // Создаем ключ для поиска аудио файла ячейки
-    const cellKey = `cell-${cellNumber}`;
-    const audioUrl = customAudioFiles[cellKey];
-    
-    if (audioUrl) {
-      console.log(`🎵 Найден пользовательский файл для ячейки ${cellNumber}`);
-      await playAudioFile(audioUrl, cellKey);
-      console.log(`✅ Успешно воспроизведена пользовательская озвучка ячейки ${cellNumber}`);
-      return;
-    } else {
-      console.log(`⚠️ Пользовательский файл не найден для ячейки ${cellNumber} (ключ: ${cellKey})`);
+    // ПРИНУДИТЕЛЬНАЯ ПОПЫТКА ВОССТАНОВЛЕНИЯ ФАЙЛОВ ЯЧЕЕК
+    if (Object.keys(customAudioFiles).length === 0) {
+      console.log(`⚠️ ФАЙЛЫ НЕ ЗАГРУЖЕНЫ! ПОПЫТКА АВАРИЙНОГО ВОССТАНОВЛЕНИЯ...`);
+      const backupSources = [
+        'wb-pvz-cell-audio-settings-permanent',
+        'wb-pvz-cell-audio-IMMEDIATE', 
+        'wb-pvz-cell-audio-cement',
+        'wb-NEVER-LOSE-CELLS-BACKUP'
+      ];
+      
+      for (const source of backupSources) {
+        const backupData = localStorage.getItem(source);
+        if (backupData) {
+          try {
+            const backupFiles = JSON.parse(backupData);
+            console.log(`🔄 ВОССТАНОВЛЕН ИСТОЧНИК ${source}: ${Object.keys(backupFiles).length} файлов`);
+            Object.assign(customAudioFiles, backupFiles);
+            break;
+          } catch (err) {
+            console.warn(`⚠️ Ошибка восстановления из ${source}:`, err);
+          }
+        }
+      }
     }
     
-    // ВСТРОЕННЫЙ ЗВУК ДЛЯ ЯЧЕЕК ТОЖЕ ОТКЛЮЧЕН
-    console.log(`📁 Доступные файлы ячеек:`, Object.keys(customAudioFiles).filter(key => key.startsWith('cell-')));
-    console.log(`❌ ЗВУК ЯЧЕЙКИ НЕ ВОСПРОИЗВЕДЕН - загрузите аудиофайл cell-${cellNumber}.mp3 в настройках`);
+    const cellFiles = Object.keys(customAudioFiles).filter(key => 
+      key.startsWith('cell-') || key.includes('ячейка') || /^\d+$/.test(key)
+    );
+    console.log(`🏠 Файлы ячеек (${cellFiles.length}):`, cellFiles);
+    
+    // Множественные варианты поиска ячейки
+    const possibleCellKeys = [
+      `cell-${cellNumber}`,
+      `${cellNumber}`, // Просто номер
+      `ячейка-${cellNumber}`,
+      `cells-${cellNumber}`,
+      cellNumber.toString()
+    ];
+    
+    console.log(`🔍 Ищем ячейку по ключам:`, possibleCellKeys);
+    
+    let foundKey = null;
+    let audioUrl = null;
+    
+    for (const key of possibleCellKeys) {
+      if (customAudioFiles[key]) {
+        foundKey = key;
+        audioUrl = customAudioFiles[key];
+        console.log(`✅ НАЙДЕНА ЯЧЕЙКА: "${key}" → ${audioUrl.substring(0, 50)}...`);
+        break;
+      }
+    }
+    
+    if (audioUrl && foundKey) {
+      console.log(`🎵 ВОСПРОИЗВОЖУ ЯЧЕЙКУ: ${foundKey}`);
+      await playAudioFile(audioUrl, foundKey);
+      console.log(`✅ ЯЧЕЙКА ${cellNumber} УСПЕШНО ОЗВУЧЕНА`);
+      return;
+    }
+    
+    console.log(`❌ ОЗВУЧКА ЯЧЕЙКИ ${cellNumber} НЕ НАЙДЕНА`);
+    console.log(`💾 Проверенные ключи:`, possibleCellKeys);
+    console.log(`📁 Доступные файлы ячеек:`, cellFiles);
+    console.log(`💡 Загрузите аудиофайл для ячейки в: Настройки → Озвучка ячеек`);
     
   } catch (error) {
     console.error(`❌ Ошибка озвучки ячейки ${cellNumber}:`, error);
