@@ -36,9 +36,50 @@ export const AudioDiagnostics = ({ order }: AudioDiagnosticsProps) => {
             const hasAudio = hasCellAudio(order.cellNumber);
             alert(`Ячейка ${order.cellNumber} ${hasAudio ? 'ИМЕЕТ' : 'НЕ ИМЕЕТ'} настроенную озвучку`);
           }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold mr-2"
         >
           ℹ️ ПРОВЕРИТЬ НАЛИЧИЕ
+        </button>
+        
+        <button
+          onClick={() => {
+            // Проверяем интеграцию с разделом выдачи
+            const mainAudioFiles = localStorage.getItem('wb-audio-files');
+            if (mainAudioFiles) {
+              const audioFiles = JSON.parse(mainAudioFiles);
+              const deliveryKey = `delivery-cell-${order.cellNumber.toUpperCase()}`;
+              const simpleKey = order.cellNumber.toUpperCase();
+              
+              let report = `🔍 ИНТЕГРАЦИЯ С РАЗДЕЛОМ ВЫДАЧИ:\n\n`;
+              report += `Ячейка: ${order.cellNumber}\n\n`;
+              
+              if (audioFiles[deliveryKey]) {
+                report += `✅ Найден файл с префиксом выдачи: ${deliveryKey}\n`;
+              } else {
+                report += `❌ НЕТ файла с префиксом выдачи: ${deliveryKey}\n`;
+              }
+              
+              if (audioFiles[simpleKey]) {
+                report += `✅ Найден простой ключ: ${simpleKey}\n`;
+              } else {
+                report += `❌ НЕТ простого ключа: ${simpleKey}\n`;
+              }
+              
+              const deliveryFiles = Object.keys(audioFiles).filter(k => k.startsWith('delivery-cell-'));
+              report += `\n📦 Всего ячеек в разделе выдачи: ${deliveryFiles.length}\n`;
+              
+              if (deliveryFiles.length > 0) {
+                report += `📋 Список: ${deliveryFiles.join(', ')}`;
+              }
+              
+              alert(report);
+            } else {
+              alert('❌ Основное хранилище аудиофайлов пустое!\nЗагрузите файлы через настройки.');
+            }
+          }}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold"
+        >
+          🔗 ПРОВЕРИТЬ ИНТЕГРАЦИЮ
         </button>
       </div>
       

@@ -242,16 +242,33 @@ export const CellAudioManager = ({ cellAudios, onCellAudiosUpdate }: CellAudioMa
         </div>
       )}
 
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <div className="flex items-start gap-3">
-          <Icon name="Info" size={20} className="text-blue-600 mt-0.5" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Как работает озвучка ячеек:</p>
-            <ul className="space-y-1 text-blue-700">
-              <li>• При приемке или выдаче товара из ячейки автоматически проигрывается её аудио</li>
-              <li>• Поддерживаются форматы: MP3, WAV, OGG, M4A, AAC, FLAC</li>
-              <li>• Рекомендуется записывать номер ячейки голосом: "Ячейка А один" для A1</li>
-            </ul>
+      <div className="space-y-3">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="flex items-start gap-3">
+            <Icon name="Info" size={20} className="text-blue-600 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium mb-1">Как работает озвучка ячеек:</p>
+              <ul className="space-y-1 text-blue-700">
+                <li>• При приемке или выдаче товара из ячейки автоматически проигрывается её аудио</li>
+                <li>• Поддерживаются форматы: MP3, WAV, OGG, M4A, AAC, FLAC</li>
+                <li>• Рекомендуется записывать номер ячейки голосом: "Ячейка А один" для A1</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+          <div className="flex items-start gap-3">
+            <Icon name="CheckCircle" size={20} className="text-green-600 mt-0.5" />
+            <div className="text-sm text-green-800">
+              <p className="font-medium mb-1">💾 Где сохраняется озвучка ячеек:</p>
+              <ul className="space-y-1 text-green-700">
+                <li>• Озвучка ячеек сохраняется в разделе <strong>"Выдача товаров"</strong></li>
+                <li>• Файлы сохраняются с префиксом "delivery-cell-" (например: delivery-cell-A1)</li>
+                <li>• Это позволяет использовать их в процессе выдачи товаров клиентам</li>
+                <li>• Совместимость с основной системой озвучки приложения</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

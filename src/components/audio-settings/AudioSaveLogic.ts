@@ -105,6 +105,41 @@ export const saveAudioFiles = async (
     console.error('❌ Ошибка бетонирования:', error);
   }
   
+  // 🎯 СОХРАНЕНИЕ ИНДИВИДУАЛЬНЫХ НАСТРОЕК ЯЧЕЕК КАК ВЫДАЧА
+  if (audioFiles.cellAudios && audioFiles.cellAudios.length > 0) {
+    const cellDeliveryFiles: {[key: string]: string} = {};
+    
+    for (const cellAudio of audioFiles.cellAudios) {
+      if (cellAudio.audioFile && cellAudio.audioUrl) {
+        const cellNumber = cellAudio.cellNumber.toUpperCase();
+        
+        // Сохраняем как файлы для выдачи с префиксом delivery-cell-
+        const deliveryKey = `delivery-cell-${cellNumber}`;
+        cellDeliveryFiles[deliveryKey] = cellAudio.audioUrl;
+        convertedFiles[deliveryKey] = cellAudio.audioUrl;
+        
+        // Также сохраняем без префикса для совместимости
+        cellDeliveryFiles[cellNumber] = cellAudio.audioUrl;
+        convertedFiles[cellNumber] = cellAudio.audioUrl;
+        
+        console.log(`🎯 ЯЧЕЙКА ${cellNumber} ДОБАВЛЕНА В ВЫДАЧУ как ${deliveryKey}`);
+      }
+    }
+    
+    try {
+      // Сохраняем индивидуальные настройки ячеек отдельно
+      localStorage.setItem('wb-pvz-individual-cell-audios', JSON.stringify(cellDeliveryFiles));
+      
+      // Обновляем общий счетчик
+      totalConverted += Object.keys(cellDeliveryFiles).length;
+      
+      console.log(`🎯 СОХРАНЕНО ${Object.keys(cellDeliveryFiles).length / 2} ячеек в разделе ВЫДАЧА`);
+      
+    } catch (error) {
+      console.error('❌ Ошибка сохранения ячеек для выдачи:', error);
+    }
+  }
+
   // 🚀 ДОПОЛНИТЕЛЬНО СОХРАНЯЕМ ЧЕРЕЗ ПРОСТУЮ СИСТЕМУ
   if (audioFiles.cells && audioFiles.cells.length > 0) {
     console.log(`🚀 === СОХРАНЯЮ ${audioFiles.cells.length} ЯЧЕЕК ЧЕРЕЗ ПРОСТУЮ СИСТЕМУ ===`);

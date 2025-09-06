@@ -4,11 +4,35 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
   try {
     console.log(`🔊 Попытка воспроизведения озвучки для ячейки: ${cellNumber}`);
 
-    // Ищем в индивидуальных настройках ячеек (приоритет)
+    // 1. Ищем в основной системе useAudio (раздел выдачи) - ПРИОРИТЕТ
+    const mainAudioFiles = localStorage.getItem('wb-audio-files');
+    if (mainAudioFiles) {
+      const audioFiles = JSON.parse(mainAudioFiles);
+      
+      // Ищем с префиксом выдачи
+      const deliveryKey = `delivery-cell-${cellNumber.toUpperCase()}`;
+      if (audioFiles[deliveryKey]) {
+        const audio = new Audio(audioFiles[deliveryKey]);
+        await audio.play();
+        console.log(`✅ Воспроизведена озвучка ячейки из раздела ВЫДАЧА: ${cellNumber}`);
+        return true;
+      }
+      
+      // Ищем без префикса
+      const simpleKey = cellNumber.toUpperCase();
+      if (audioFiles[simpleKey]) {
+        const audio = new Audio(audioFiles[simpleKey]);
+        await audio.play();
+        console.log(`✅ Воспроизведена озвучка ячейки (простой ключ): ${cellNumber}`);
+        return true;
+      }
+    }
+
+    // 2. Ищем в индивидуальных настройках ячеек (совместимость)
     const individualCells = localStorage.getItem('wb-pvz-individual-cell-audios');
     if (individualCells) {
       const cellAudios = JSON.parse(individualCells);
-      const audioUrl = cellAudios[cellNumber.toUpperCase()];
+      const audioUrl = cellAudios[cellNumber.toUpperCase()] || cellAudios[`delivery-cell-${cellNumber.toUpperCase()}`];
       
       if (audioUrl) {
         const audio = new Audio(audioUrl);
@@ -18,7 +42,7 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
       }
     }
 
-    // Ищем в общих настройках (совместимость)
+    // 3. Ищем в общих настройках (старая система)
     const generalSettings = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
     if (generalSettings) {
       const audioFiles = JSON.parse(generalSettings);
@@ -27,7 +51,7 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
       if (audioUrl) {
         const audio = new Audio(audioUrl);
         await audio.play();
-        console.log(`✅ Воспроизведена общая озвучка для ячейки ${cellNumber}`);
+        console.log(`✅ Воспроизведена озвучка из старой системы для ячейки ${cellNumber}`);
         return true;
       }
     }
@@ -66,16 +90,34 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
 // Функция для проверки наличия озвучки для ячейки
 export const hasCellAudio = (cellNumber: string): boolean => {
   try {
-    // Проверяем индивидуальные настройки
-    const individualCells = localStorage.getItem('wb-pvz-individual-cell-audios');
-    if (individualCells) {
-      const cellAudios = JSON.parse(individualCells);
-      if (cellAudios[cellNumber.toUpperCase()]) {
+    // 1. Проверяем в основной системе useAudio (раздел выдачи) - ПРИОРИТЕТ
+    const mainAudioFiles = localStorage.getItem('wb-audio-files');
+    if (mainAudioFiles) {
+      const audioFiles = JSON.parse(mainAudioFiles);
+      
+      // Проверяем с префиксом выдачи
+      const deliveryKey = `delivery-cell-${cellNumber.toUpperCase()}`;
+      if (audioFiles[deliveryKey]) {
+        return true;
+      }
+      
+      // Проверяем без префикса
+      const simpleKey = cellNumber.toUpperCase();
+      if (audioFiles[simpleKey]) {
         return true;
       }
     }
 
-    // Проверяем общие настройки
+    // 2. Проверяем индивидуальные настройки
+    const individualCells = localStorage.getItem('wb-pvz-individual-cell-audios');
+    if (individualCells) {
+      const cellAudios = JSON.parse(individualCells);
+      if (cellAudios[cellNumber.toUpperCase()] || cellAudios[`delivery-cell-${cellNumber.toUpperCase()}`]) {
+        return true;
+      }
+    }
+
+    // 3. Проверяем общие настройки (старая система)
     const generalSettings = localStorage.getItem('wb-pvz-cell-audio-settings-permanent');
     if (generalSettings) {
       const audioFiles = JSON.parse(generalSettings);
