@@ -52,42 +52,26 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
               }
             };
             
-            // Добавляем обработчик загрузки для диагностики
-            audio.onloadeddata = () => {
-              console.log(`✅ Аудио загружено для ячейки ${cellNumber}, длительность: ${audio.duration}s`);
+            // Проверяем что URL доступен
+            audio.oncanplaythrough = () => {
+              console.log(`✅ Аудио готово к воспроизведению для ячейки ${cellNumber}`);
             };
             
             audio.src = audioUrl;
+            
+            // Пытаемся загрузить и воспроизвести
+            audio.load(); // Принудительная загрузка
             await audio.play();
             console.log(`✅ Воспроизведена озвучка ячейки (cell-префикс): ${cellNumber}`);
             return true;
           } catch (playError) {
             console.error(`❌ Ошибка воспроизведения для ячейки ${cellNumber}:`, playError);
-            console.error(`❌ URL тип: ${typeof audioUrl}, длина: ${audioUrl.length}`);
+            console.error(`❌ URL: ${audioUrl.substring(0, 100)}...`);
+            console.error(`❌ URL тип: ${audioUrl.startsWith('blob:') ? 'BLOB' : audioUrl.startsWith('data:') ? 'BASE64' : 'OTHER'}`);
             
-            // Попробуем переработать файл если это base64
-            if (audioUrl.startsWith('data:')) {
-              console.log(`🔄 Попытка прямого воспроизведения base64...`);
-              try {
-                // Создаем новый blob из base64 и пробуем заново
-                const base64Data = audioUrl.split(',')[1];
-                const mimeType = audioUrl.split(',')[0].split(':')[1].split(';')[0];
-                const byteCharacters = atob(base64Data);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                  byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: mimeType });
-                const newUrl = URL.createObjectURL(blob);
-                
-                const retryAudio = new Audio(newUrl);
-                await retryAudio.play();
-                console.log(`✅ ВОССТАНОВЛЕНО! Воспроизведена озвучка ячейки через blob: ${cellNumber}`);
-                return true;
-              } catch (retryError) {
-                console.error(`❌ Не удалось восстановить base64:`, retryError);
-              }
+            // Простое уведомление пользователю
+            if (audioUrl.startsWith('data:') && audioUrl.includes('base64')) {
+              console.warn(`⚠️ Проблема с base64 файлом - попробуйте перезагрузить файлы заново`);
             }
           }
         } else {

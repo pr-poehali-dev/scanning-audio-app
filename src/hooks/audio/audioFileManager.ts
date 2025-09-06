@@ -10,43 +10,10 @@ export const updateAudioFiles = async (
   console.log(`🔄 Обновляю аудиофайлы. Новые файлы:`, Object.keys(files));
   console.log(`📄 Типы URL в files:`, Object.entries(files).map(([key, url]) => ({ key, isBlob: url.startsWith('blob:') })));
   
-  // Конвертируем blob URL в base64 для постоянного сохранения
-  const permanentFiles: {[key: string]: string} = {};
-  
-  for (const [key, url] of Object.entries(files)) {
-    if (url.startsWith('blob:')) {
-      try {
-        const base64Url = await convertBlobToBase64(url);
-        permanentFiles[key] = base64Url;
-        console.log(`✅ Файл "${key}" конвертирован в base64 для постоянного сохранения`);
-        
-        // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: убеждаемся что base64 валидный
-        if (!base64Url.startsWith('data:')) {
-          console.error(`❌ ВНИМАНИЕ: Файл "${key}" не содержит корректный base64!`);
-        }
-      } catch (error) {
-        console.error(`❌ Ошибка конвертации файла "${key}":`, error);
-        // Попытка повторной конвертации через FileReader
-        try {
-          const response = await fetch(url);
-          const blob = await response.blob();
-          const reader = new FileReader();
-          const base64Promise = new Promise<string>((resolve) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-          });
-          const base64Url = await base64Promise;
-          permanentFiles[key] = base64Url;
-          console.log(`✅ ПОВТОРНАЯ ПОПЫТКА: Файл "${key}" сконвертирован через FileReader`);
-        } catch (retryError) {
-          console.error(`❌ КРИТИЧЕСКАЯ ОШИБКА: Не удалось конвертировать "${key}":`, retryError);
-          permanentFiles[key] = url; // Fallback к blob URL
-        }
-      }
-    } else {
-      permanentFiles[key] = url;
-    }
-  }
+  // ОТКЛЮЧАЕМ ПРОБЛЕМНУЮ КОНВЕРТАЦИЮ В BASE64
+  // Сохраняем blob URL напрямую - они будут работать в текущей сессии
+  console.log(`🚫 КОНВЕРТАЦИЯ В BASE64 ОТКЛЮЧЕНА - используем blob URL напрямую`);
+  const permanentFiles: {[key: string]: string} = { ...files };
   
   const updatedFiles = { ...customAudioFiles, ...permanentFiles };
   

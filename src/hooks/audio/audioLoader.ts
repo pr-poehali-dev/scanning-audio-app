@@ -7,7 +7,33 @@ export const createAudioLoader = (
 ) => {
   const loadAudioFiles = () => {
     try {
-      const finalFiles = loadAudioFilesFromStorage();
+      const rawFiles = loadAudioFilesFromStorage();
+      
+      // 🧹 ОЧИСТКА БИТЫХ BASE64 ФАЙЛОВ
+      console.log('🧹 Очистка битых base64 файлов...');
+      const finalFiles: {[key: string]: string} = {};
+      
+      for (const [key, url] of Object.entries(rawFiles)) {
+        if (url.startsWith('data:') && url.includes('base64')) {
+          // Проверяем валидность base64
+          try {
+            const base64Part = url.split(',')[1];
+            if (!base64Part || base64Part.length < 100) {
+              console.warn(`🗑️ Удаляю битый base64 файл: ${key}`);
+              continue; // Пропускаем битый файл
+            }
+            // Проверяем что можно декодировать
+            atob(base64Part.substring(0, 50)); // Проверяем первые 50 символов
+            finalFiles[key] = url;
+            console.log(`✅ Base64 файл валидный: ${key}`);
+          } catch (error) {
+            console.warn(`🗑️ Удаляю невалидный base64 файл: ${key}`, error);
+            continue; // Пропускаем битый файл
+          }
+        } else {
+          finalFiles[key] = url; // Blob URL или другие сохраняем как есть
+        }
+      }
       
       // 🔧 ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ФАЙЛОВ ЯЧЕЕК
       console.log('🔧 === ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ ===');
