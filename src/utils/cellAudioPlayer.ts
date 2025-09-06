@@ -30,20 +30,96 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
       // Ищем с префиксом cell- (как в настройках)
       const cellKey = `cell-${cellNumber.toUpperCase()}`;
       if (audioFiles[cellKey]) {
-        const audio = new Audio(audioFiles[cellKey]);
-        await audio.play();
-        console.log(`✅ Воспроизведена озвучка ячейки (cell-префикс): ${cellNumber}`);
-        return true;
+        const audioUrl = audioFiles[cellKey];
+        console.log(`🎵 Найден файл для ячейки ${cellNumber} по ключу ${cellKey}: ${audioUrl}`);
+        
+        // Проверяем что URL валидный
+        if (audioUrl && typeof audioUrl === 'string' && audioUrl.trim()) {
+          try {
+            const audio = new Audio();
+            
+            // Добавляем обработчик ошибок ПЕРЕД установкой src
+            audio.onerror = (e) => {
+              console.error(`❌ Ошибка загрузки аудио для ячейки ${cellNumber}:`, e);
+              console.error(`❌ Проблемный URL: ${audioUrl}`);
+              console.error(`❌ URL начинается с: ${audioUrl.substring(0, 50)}...`);
+              
+              // Дополнительная диагностика base64
+              if (audioUrl.startsWith('data:')) {
+                const base64Part = audioUrl.split(',')[1];
+                console.error(`❌ Base64 длина: ${base64Part ? base64Part.length : 'нет base64 части'}`);
+                console.error(`❌ MIME тип: ${audioUrl.split(',')[0]}`);
+              }
+            };
+            
+            // Добавляем обработчик загрузки для диагностики
+            audio.onloadeddata = () => {
+              console.log(`✅ Аудио загружено для ячейки ${cellNumber}, длительность: ${audio.duration}s`);
+            };
+            
+            audio.src = audioUrl;
+            await audio.play();
+            console.log(`✅ Воспроизведена озвучка ячейки (cell-префикс): ${cellNumber}`);
+            return true;
+          } catch (playError) {
+            console.error(`❌ Ошибка воспроизведения для ячейки ${cellNumber}:`, playError);
+            console.error(`❌ URL тип: ${typeof audioUrl}, длина: ${audioUrl.length}`);
+            
+            // Попробуем переработать файл если это base64
+            if (audioUrl.startsWith('data:')) {
+              console.log(`🔄 Попытка прямого воспроизведения base64...`);
+              try {
+                // Создаем новый blob из base64 и пробуем заново
+                const base64Data = audioUrl.split(',')[1];
+                const mimeType = audioUrl.split(',')[0].split(':')[1].split(';')[0];
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                  byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: mimeType });
+                const newUrl = URL.createObjectURL(blob);
+                
+                const retryAudio = new Audio(newUrl);
+                await retryAudio.play();
+                console.log(`✅ ВОССТАНОВЛЕНО! Воспроизведена озвучка ячейки через blob: ${cellNumber}`);
+                return true;
+              } catch (retryError) {
+                console.error(`❌ Не удалось восстановить base64:`, retryError);
+              }
+            }
+          }
+        } else {
+          console.error(`❌ Пустой или некорректный URL для ячейки ${cellNumber}: ${audioUrl}`);
+        }
       }
       
-      // Поиск по всем ключам, содержащим номер ячейки
+      // Поиск по всем ключам, содержащим номер ячейки  
       const cellNum = cellNumber.toUpperCase();
       for (const [key, audioUrl] of Object.entries(audioFiles)) {
         if (key.includes(cellNum) && (key.startsWith('cell-') || key.endsWith(`-${cellNum}`) || key === cellNum)) {
-          const audio = new Audio(audioUrl as string);
-          await audio.play();
-          console.log(`✅ Воспроизведена озвучка ячейки (найден ключ: ${key}): ${cellNumber}`);
-          return true;
+          console.log(`🎵 Найден файл для ячейки ${cellNumber} по ключу ${key}: ${audioUrl}`);
+          
+          if (audioUrl && typeof audioUrl === 'string' && (audioUrl as string).trim()) {
+            try {
+              const audio = new Audio(audioUrl as string);
+              
+              audio.onerror = (e) => {
+                console.error(`❌ Ошибка загрузки аудио для ячейки ${cellNumber} (ключ ${key}):`, e);
+                console.error(`❌ Проблемный URL: ${audioUrl}`);
+              };
+              
+              await audio.play();
+              console.log(`✅ Воспроизведена озвучка ячейки (найден ключ: ${key}): ${cellNumber}`);
+              return true;
+            } catch (playError) {
+              console.error(`❌ Ошибка воспроизведения для ячейки ${cellNumber} (ключ ${key}):`, playError);
+              console.error(`❌ URL: ${audioUrl}`);
+            }
+          } else {
+            console.error(`❌ Пустой или некорректный URL для ячейки ${cellNumber} (ключ ${key}): ${audioUrl}`);
+          }
         }
       }
     }
