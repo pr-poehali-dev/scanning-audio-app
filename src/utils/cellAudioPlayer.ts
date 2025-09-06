@@ -18,13 +18,33 @@ export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
         return true;
       }
       
-      // Ищем без префикса
+      // Ищем простой ключ
       const simpleKey = cellNumber.toUpperCase();
       if (audioFiles[simpleKey]) {
         const audio = new Audio(audioFiles[simpleKey]);
         await audio.play();
         console.log(`✅ Воспроизведена озвучка ячейки (простой ключ): ${cellNumber}`);
         return true;
+      }
+      
+      // Ищем с префиксом cell- (как в настройках)
+      const cellKey = `cell-${cellNumber.toUpperCase()}`;
+      if (audioFiles[cellKey]) {
+        const audio = new Audio(audioFiles[cellKey]);
+        await audio.play();
+        console.log(`✅ Воспроизведена озвучка ячейки (cell-префикс): ${cellNumber}`);
+        return true;
+      }
+      
+      // Поиск по всем ключам, содержащим номер ячейки
+      const cellNum = cellNumber.toUpperCase();
+      for (const [key, audioUrl] of Object.entries(audioFiles)) {
+        if (key.includes(cellNum) && (key.startsWith('cell-') || key.endsWith(`-${cellNum}`) || key === cellNum)) {
+          const audio = new Audio(audioUrl as string);
+          await audio.play();
+          console.log(`✅ Воспроизведена озвучка ячейки (найден ключ: ${key}): ${cellNumber}`);
+          return true;
+        }
       }
     }
 
@@ -101,10 +121,24 @@ export const hasCellAudio = (cellNumber: string): boolean => {
         return true;
       }
       
-      // Проверяем без префикса
+      // Проверяем простой ключ
       const simpleKey = cellNumber.toUpperCase();
       if (audioFiles[simpleKey]) {
         return true;
+      }
+      
+      // Проверяем с префиксом cell-
+      const cellKey = `cell-${cellNumber.toUpperCase()}`;
+      if (audioFiles[cellKey]) {
+        return true;
+      }
+      
+      // Поиск по всем ключам, содержащим номер ячейки
+      const cellNum = cellNumber.toUpperCase();
+      for (const key of Object.keys(audioFiles)) {
+        if (key.includes(cellNum) && (key.startsWith('cell-') || key.endsWith(`-${cellNum}`) || key === cellNum)) {
+          return true;
+        }
       }
     }
 
