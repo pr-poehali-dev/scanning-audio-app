@@ -13,11 +13,18 @@ export interface Product {
   originalPrice: number;
 }
 
+interface CellAudio {
+  cellNumber: string;
+  audioFile: File | null;
+  audioUrl?: string;
+}
+
 export interface AudioFiles {
   delivery: File[];
   receiving: File[];
   return: File[];
   cells: File[];
+  cellAudios?: CellAudio[];
 }
 
 export const useWarehouseApp = () => {
@@ -31,7 +38,8 @@ export const useWarehouseApp = () => {
     delivery: [],
     receiving: [],
     return: [],
-    cells: []
+    cells: [],
+    cellAudios: []
   });
   
   const [isProcessing, setIsProcessing] = useState(false);

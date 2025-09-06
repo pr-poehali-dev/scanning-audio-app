@@ -90,6 +90,39 @@ const DeliveryInterface = ({
           {/* ЭКСТРЕННАЯ ДИАГНОСТИКА ОЗВУЧКИ */}
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="text-sm font-bold text-red-800 mb-2">🚨 ЭКСТРЕННАЯ ДИАГНОСТИКА ОЗВУЧКИ</div>
+            
+            {/* Тест новой системы озвучки ячеек */}
+            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded">
+              <div className="text-xs font-bold text-green-800 mb-1">🆕 ТЕСТ НОВОЙ СИСТЕМЫ ОЗВУЧКИ</div>
+              <button
+                onClick={async () => {
+                  console.log(`🎯 ТЕСТИРУЮ НОВУЮ ОЗВУЧКУ ЯЧЕЙКИ ${order.cellNumber}`);
+                  try {
+                    const played = await playCellAudio(order.cellNumber);
+                    console.log(`✅ Новая система озвучки: ${played ? 'РАБОТАЕТ' : 'НЕТ ФАЙЛА'}`);
+                    if (!played) {
+                      alert(`Озвучка для ячейки ${order.cellNumber} не найдена. Настройте её в разделе "Настройки озвучки".`);
+                    }
+                  } catch (error) {
+                    console.error('❌ Ошибка новой системы:', error);
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold mr-2"
+              >
+                🎯 ТЕСТ НОВОЙ ОЗВУЧКИ {order.cellNumber}
+              </button>
+              
+              <button
+                onClick={() => {
+                  const hasAudio = hasCellAudio(order.cellNumber);
+                  alert(`Ячейка ${order.cellNumber} ${hasAudio ? 'ИМЕЕТ' : 'НЕ ИМЕЕТ'} настроенную озвучку`);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold"
+              >
+                ℹ️ ПРОВЕРИТЬ НАЛИЧИЕ
+              </button>
+            </div>
+            
             <div className="grid grid-cols-2 gap-2">
               
               <button
