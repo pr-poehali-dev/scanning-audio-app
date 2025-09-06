@@ -1,6 +1,6 @@
 import Icon from '@/components/ui/icon';
 import { Order } from '@/data/mockOrders';
-import { playCellAudio, hasCellAudio } from '@/utils/cellAudioPlayer';
+import { hasCellAudio } from '@/utils/cellAudioPlayer';
 
 interface DeliveryCellProps {
   order: Order;
@@ -10,14 +10,10 @@ interface DeliveryCellProps {
 
 export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellProps) => {
   const handleCellClick = async (cellNumber: string) => {
-    onCellClick(cellNumber);
+    console.log(`🎯 DeliveryCell: Клик по ячейке ${cellNumber}`);
     
-    // Воспроизводим озвучку ячейки если она настроена
-    try {
-      await playCellAudio(cellNumber);
-    } catch (error) {
-      console.error('Ошибка воспроизведения озвучки ячейки:', error);
-    }
+    // Вызываем проп onCellClick, который должен содержать логику озвучки
+    onCellClick(cellNumber);
   };
 
   return (
@@ -60,6 +56,72 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
           </div>
         )}
       </div>
+
+      {/* ВРЕМЕННАЯ ДИАГНОСТИКА */}
+      <button
+        onClick={async () => {
+          const cellNum = order.cellNumber;
+          let report = `🔍 ДИАГНОСТИКА ЯЧЕЙКИ ${cellNum}:\n\n`;
+          
+          // Проверяем localStorage
+          const mainFiles = localStorage.getItem('wb-audio-files');
+          if (mainFiles) {
+            const files = JSON.parse(mainFiles);
+            const keys = Object.keys(files);
+            
+            report += `📦 wb-audio-files содержит ${keys.length} файлов:\n`;
+            
+            const cellKeys = keys.filter(k => 
+              k.includes(cellNum) || 
+              k.startsWith('cell-') || 
+              k === cellNum
+            );
+            
+            if (cellKeys.length > 0) {
+              report += `✅ Найдены ключи для ячейки ${cellNum}:\n`;
+              cellKeys.forEach(key => {
+                report += `  - ${key}: ${files[key] ? '✅ URL есть' : '❌ URL пустой'}\n`;
+              });
+              
+              // Пробуем воспроизвести первый найденный
+              const firstKey = cellKeys[0];
+              const audioUrl = files[firstKey];
+              
+              if (audioUrl) {
+                report += `\n🎵 Пробую воспроизвести: ${firstKey}\n`;
+                try {
+                  const audio = new Audio(audioUrl);
+                  await audio.play();
+                  report += `✅ ВОСПРОИЗВЕДЕНИЕ УСПЕШНО!\n`;
+                  setTimeout(() => audio.pause(), 2000);
+                } catch (playError) {
+                  report += `❌ Ошибка воспроизведения: ${playError.message}\n`;
+                }
+              }
+            } else {
+              report += `❌ НЕ найдены файлы для ячейки ${cellNum}\n`;
+              report += `📋 Все ключи: ${keys.slice(0, 10).join(', ')}${keys.length > 10 ? '...' : ''}\n`;
+            }
+          } else {
+            report += `❌ wb-audio-files ПУСТОЕ!\n`;
+          }
+          
+          // Тестируем функцию playCellAudio
+          report += `\n🧪 Тест playCellAudio(${cellNum}):\n`;
+          try {
+            const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+            const success = await playCellAudio(cellNum);
+            report += success ? `✅ playCellAudio РАБОТАЕТ!\n` : `❌ playCellAudio НЕ НАШЕЛ ФАЙЛ\n`;
+          } catch (error) {
+            report += `❌ Ошибка playCellAudio: ${error.message}\n`;
+          }
+          
+          alert(report);
+        }}
+        className="mt-2 px-2 py-1 bg-red-500 text-white text-xs rounded"
+      >
+        🔍 ДИАГНОСТИКА {order.cellNumber}
+      </button>
     </div>
   );
 };
