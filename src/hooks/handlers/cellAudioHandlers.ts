@@ -35,7 +35,22 @@ export const createCellAudioHandlers = (props: CellAudioHandlersProps) => {
       console.warn(`⚠️ Ошибка активации аудио:`, activationError);
     }
     
-    // СНАЧАЛА ПРОБУЕМ OBJECT URL МЕНЕДЖЕР (самый надежный)
+    // СНАЧАЛА ПРОБУЕМ ГЛАВНУЮ СИСТЕМУ (wb-audio-files)
+    console.log(`🔧 Пробую ГЛАВНУЮ СИСТЕМУ (wb-audio-files)...`);
+    try {
+      const { playCellAudioFromMainSystem } = await import('@/utils/cellAudioIntegration');
+      const mainSystemSuccess = await playCellAudioFromMainSystem(cellNumber);
+      if (mainSystemSuccess) {
+        console.log(`✅ ГЛАВНАЯ СИСТЕМА СРАБОТАЛА!`);
+        return; // Успешно воспроизвели
+      } else {
+        console.warn(`❌ ГЛАВНАЯ СИСТЕМА НЕ НАШЛА ФАЙЛ для ячейки "${cellNumber}"`);
+      }
+    } catch (mainSystemError) {
+      console.error(`❌ ОШИБКА ГЛАВНОЙ СИСТЕМЫ:`, mainSystemError);
+    }
+    
+    // ЗАТЕМ ПРОБУЕМ OBJECT URL МЕНЕДЖЕР
     console.log(`🔧 Пробую Object URL менеджер...`);
     try {
       const { objectUrlAudioManager } = await import('@/utils/objectUrlAudioManager');

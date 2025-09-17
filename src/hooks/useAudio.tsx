@@ -13,6 +13,16 @@ export const useAudio = () => {
     
     // СНАЧАЛА МИГРИРУЕМ ДАННЫЕ В НОВЫЙ МЕНЕДЖЕР
     const initializeAudioSystem = async () => {
+      // СНАЧАЛА ИНИЦИАЛИЗИРУЕМ ГЛАВНУЮ СИСТЕМУ
+      try {
+        const { initializeCellAudioSystem } = await import('@/utils/cellAudioIntegration');
+        console.log('🚀 Инициализируем главную систему озвучки ячеек...');
+        await initializeCellAudioSystem();
+      } catch (error) {
+        console.log('⚠️ Главная система недоступна:', error);
+      }
+      
+      // ЗАТЕМ МИГРИРУЕМ ДАННЫЕ В НОВЫЙ МЕНЕДЖЕР
       try {
         const { migrateFromOldSystem, getStorageInfo } = await import('@/utils/simpleAudioManager');
         console.log('📦 Запускаем миграцию из старой системы...');

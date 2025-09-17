@@ -23,7 +23,45 @@ const AudioTestDebug = () => {
         result += `  - ${key}: ${Math.round(size/1024)}KB\n`;
       });
       
-      // 2. Проверяем Object URL менеджер
+      // Детальная проверка wb-audio-files
+      const mainAudioFiles = localStorage.getItem('wb-audio-files');
+      if (mainAudioFiles) {
+        try {
+          const files = JSON.parse(mainAudioFiles);
+          const cellKeys = Object.keys(files).filter(k => 
+            k.includes('cell-') || k.includes('ячейка') || /^\d+$/.test(k)
+          );
+          result += `📁 wb-audio-files содержит ${cellKeys.length} ячеек из ${Object.keys(files).length} файлов\n`;
+          if (cellKeys.length > 0) {
+            result += `Ячейки: ${cellKeys.slice(0, 5).join(', ')}${cellKeys.length > 5 ? '...' : ''}\n`;
+          }
+        } catch (e) {
+          result += `❌ Ошибка парсинга wb-audio-files\n`;
+        }
+      }
+      
+      // 2. Проверяем ГЛАВНУЮ СИСТЕМУ (wb-audio-files)
+      result += '\n🏛️ ПРОВЕРКА ГЛАВНОЙ СИСТЕМЫ:\n';
+      try {
+        const { getCellsFromMainSystem, playCellAudioFromMainSystem } = await import('@/utils/cellAudioIntegration');
+        const mainCells = getCellsFromMainSystem();
+        
+        result += `Ячеек в главной системе: ${mainCells.length}\n`;
+        result += `Доступные ячейки: ${mainCells.slice(0, 5).join(', ')}\n`;
+        
+        // Пробуем воспроизвести первую ячейку
+        if (mainCells.length > 0) {
+          const testCell = mainCells[0];
+          result += `\n🎵 ТЕСТ ГЛАВНОЙ СИСТЕМЫ ${testCell}:\n`;
+          const success = await playCellAudioFromMainSystem(testCell);
+          result += success ? '✅ ГЛАВНАЯ СИСТЕМА РАБОТАЕТ!\n' : '❌ ГЛАВНАЯ СИСТЕМА НЕ РАБОТАЕТ\n';
+        }
+        
+      } catch (error) {
+        result += `❌ Ошибка главной системы: ${error.message}\n`;
+      }
+      
+      // 3. Проверяем Object URL менеджер
       result += '\n🔧 ПРОВЕРКА OBJECT URL МЕНЕДЖЕРА:\n';
       try {
         const { objectUrlAudioManager, getAudioManagerInfo, getCellsWithAudio: getObjectUrlCells } = await import('@/utils/objectUrlAudioManager');

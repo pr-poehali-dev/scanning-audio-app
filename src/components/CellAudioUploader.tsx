@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { audioManager } from '@/utils/simpleAudioManager';
 import { objectUrlAudioManager } from '@/utils/objectUrlAudioManager';
+import { saveCellAudioToMainSystem, getCellsFromMainSystem } from '@/utils/cellAudioIntegration';
 import Icon from '@/components/ui/icon';
 
 interface CellAudioUploaderProps {
@@ -37,19 +38,25 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
         
         const cellNumber = cellMatch[1].toUpperCase();
         
-        // Сохраняем файл в новую систему (Object URL)
-        console.log(`💾 Сохраняю ${file.name} для ячейки ${cellNumber} через Object URL...`);
+        // ГЛАВНАЯ СИСТЕМА - сохраняем в wb-audio-files (как системные озвучки)
+        console.log(`💾 [ГЛАВНАЯ] Сохраняю ${file.name} для ячейки ${cellNumber} в основную систему...`);
+        const mainSystemSuccess = await saveCellAudioToMainSystem(cellNumber, file);
+        
+        // РЕЗЕРВНЫЕ СИСТЕМЫ
+        console.log(`💾 [РЕЗЕРВ] Сохраняю ${file.name} для ячейки ${cellNumber} через Object URL...`);
         const objectUrlSuccess = await objectUrlAudioManager.saveCellAudio(cellNumber, file);
         
-        // Также сохраняем в старую систему для совместимости
-        console.log(`💾 Сохраняю ${file.name} для ячейки ${cellNumber} через Data URL...`);
+        console.log(`💾 [РЕЗЕРВ] Сохраняю ${file.name} для ячейки ${cellNumber} через Data URL менеджер...`);
         const dataUrlSuccess = await audioManager.saveCellAudio(cellNumber, file);
         
-        if (objectUrlSuccess || dataUrlSuccess) {
+        if (mainSystemSuccess || objectUrlSuccess || dataUrlSuccess) {
           successCells.push(cellNumber);
-          console.log(`✅ Загружен файл для ячейки ${cellNumber} (Object URL: ${objectUrlSuccess}, Data URL: ${dataUrlSuccess})`);
+          console.log(`✅ Загружен файл для ячейки ${cellNumber}:`);
+          console.log(`   Главная система: ${mainSystemSuccess ? '✅' : '❌'}`);
+          console.log(`   Object URL: ${objectUrlSuccess ? '✅' : '❌'}`);
+          console.log(`   Data URL: ${dataUrlSuccess ? '✅' : '❌'}`);
         } else {
-          console.error(`❌ Ошибка загрузки файла для ячейки ${cellNumber} в обе системы`);
+          console.error(`❌ Ошибка загрузки файла для ячейки ${cellNumber} во все системы`);
         }
       }
       
