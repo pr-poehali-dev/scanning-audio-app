@@ -62,35 +62,80 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
         <button
           onClick={async () => {
             const cellNum = order.cellNumber;
-            let report = `🔍 ДИАГНОСТИКА ЯЧЕЙКИ ${cellNum}:\n\n`;
+            let report = `🔍 СУПЕР-ДИАГНОСТИКА ЯЧЕЙКИ ${cellNum}:\n\n`;
             
-            // Проверяем localStorage
-            const mainFiles = localStorage.getItem('wb-audio-files');
-            if (mainFiles) {
-              const files = JSON.parse(mainFiles);
-              const keys = Object.keys(files);
-              
-              report += `📦 wb-audio-files содержит ${keys.length} файлов:\n`;
-              
-              const cellKeys = keys.filter(k => 
-                k.includes(cellNum) || 
-                k.startsWith('cell-') || 
-                k === cellNum
-              );
-              
-              if (cellKeys.length > 0) {
-                report += `✅ Найдены ключи для ячейки ${cellNum}:\n`;
-                cellKeys.forEach(key => {
-                  const url = files[key];
-                  const urlType = url ? (url.startsWith('data:') ? 'DATA' : url.startsWith('blob:') ? 'BLOB' : 'OTHER') : 'EMPTY';
-                  report += `  - ${key}: ${urlType} (${url ? url.substring(0, 30) + '...' : 'пустой'})\n`;
-                });
-              } else {
-                report += `❌ НЕ найдены файлы для ячейки ${cellNum}\n`;
-                report += `📋 Все ключи: ${keys.slice(0, 10).join(', ')}${keys.length > 10 ? '...' : ''}\n`;
+            // 1. ПРОВЕРЯЕМ ВСЕ КЛЮЧИ LOCALSTORAGE
+            const allKeys = Object.keys(localStorage).filter(k => k.includes('audio') || k.includes('wb-'));
+            report += `📦 НАЙДЕНО ${allKeys.length} аудио-ключей в localStorage:\n`;
+            
+            let foundAnyFile = false;
+            let testedUrls = [];
+            
+            for (const key of allKeys) {
+              try {
+                const data = localStorage.getItem(key);
+                if (data && data.length > 100) {
+                  const parsed = JSON.parse(data);
+                  
+                  if (typeof parsed === 'object') {
+                    // Это объект с файлами
+                    const fileKeys = Object.keys(parsed);
+                    const cellFiles = fileKeys.filter(fk => 
+                      fk.includes(cellNum) || 
+                      fk === cellNum ||
+                      fk === `cell-${cellNum}` ||
+                      fk === `ячейка-${cellNum}` ||
+                      fk === `delivery-cell-${cellNum}`
+                    );
+                    
+                    if (cellFiles.length > 0) {
+                      report += `✅ ${key}: найдено ${cellFiles.length} файлов для ячейки\n`;
+                      
+                      for (const fileKey of cellFiles) {
+                        const audioUrl = parsed[fileKey];
+                        if (audioUrl && typeof audioUrl === 'string' && audioUrl.length > 50) {
+                          foundAnyFile = true;
+                          const urlType = audioUrl.startsWith('data:') ? 'DATA-URL' : 
+                                         audioUrl.startsWith('blob:') ? 'BLOB-URL' : 'OTHER';
+                          
+                          report += `  → ${fileKey}: ${urlType} (${audioUrl.length} символов)\n`;
+                          
+                          // ПРОБУЕМ ВОСПРОИЗВЕСТИ НАПРЯМУЮ
+                          try {
+                            const audio = new Audio();
+                            audio.volume = 0.7;
+                            audio.src = audioUrl;
+                            
+                            await audio.play();
+                            report += `    🎵 ВОСПРОИЗВЕДЕНИЕ УСПЕШНО!\n`;
+                            testedUrls.push(`${key}[${fileKey}]: ✅ РАБОТАЕТ`);
+                            
+                            setTimeout(() => audio.pause(), 1500);
+                            break; // Нашли рабочий файл, достаточно
+                            
+                          } catch (playError) {
+                            report += `    ❌ Ошибка воспроизведения: ${playError.message}\n`;
+                            testedUrls.push(`${key}[${fileKey}]: ❌ ${playError.message}`);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (err) {
+                // Пропускаем ключи которые не JSON
               }
+            }
+            
+            if (!foundAnyFile) {
+              report += `\n❌ НИ ОДНОГО ФАЙЛА ДЛЯ ЯЧЕЙКИ ${cellNum} НЕ НАЙДЕНО!\n`;
+              report += `\n🔧 НУЖНО ЗАГРУЗИТЬ ФАЙЛ:\n`;
+              report += `- Используйте поле загрузки рядом с этой кнопкой\n`;
+              report += `- Или синюю кнопку в шапке\n`;
+              report += `- Файл должен называться ${cellNum}.mp3 или cell-${cellNum}.mp3\n`;
             } else {
-              report += `❌ wb-audio-files ПУСТОЕ!\n`;
+              report += `\n📊 РЕЗУЛЬТАТЫ ТЕСТОВ:\n`;
+              testedUrls.forEach(test => report += `${test}\n`);
             }
             
             alert(report);
@@ -125,6 +170,65 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
           }}
           className="text-xs w-20"
         />
+        
+        <button
+          onClick={async () => {
+            const cellNum = order.cellNumber;
+            console.log(`🚨 ЭКСТРЕННОЕ ВОСПРОИЗВЕДЕНИЕ ячейки ${cellNum}`);
+            
+            // Ищем ЛЮБОЙ аудио файл в localStorage который может подойти
+            const allKeys = Object.keys(localStorage).filter(k => k.includes('audio') || k.includes('wb-'));
+            
+            for (const key of allKeys) {
+              try {
+                const data = localStorage.getItem(key);
+                if (data && data.length > 100) {
+                  const parsed = JSON.parse(data);
+                  
+                  if (typeof parsed === 'object') {
+                    // Перебираем все ключи в объекте
+                    for (const [fileKey, audioUrl] of Object.entries(parsed)) {
+                      if (typeof audioUrl === 'string' && audioUrl.length > 50) {
+                        // Проверяем что это может быть наша ячейка
+                        const isOurCell = fileKey.includes(cellNum) || 
+                                         fileKey === cellNum ||
+                                         fileKey === `cell-${cellNum}` ||
+                                         fileKey === `ячейка-${cellNum}`;
+                        
+                        if (isOurCell) {
+                          console.log(`🎯 Найден файл: ${key}[${fileKey}]`);
+                          
+                          try {
+                            const audio = new Audio();
+                            audio.volume = 0.8;
+                            audio.src = audioUrl;
+                            
+                            await audio.play();
+                            console.log(`✅ ЭКСТРЕННОЕ ВОСПРОИЗВЕДЕНИЕ УСПЕШНО!`);
+                            
+                            setTimeout(() => audio.pause(), 2000);
+                            return; // Успех!
+                            
+                          } catch (playError) {
+                            console.warn(`❌ Не удалось воспроизвести ${key}[${fileKey}]:`, playError.message);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              } catch (err) {
+                // Пропускаем нечитаемые ключи
+              }
+            }
+            
+            alert(`❌ ЭКСТРЕННОЕ ВОСПРОИЗВЕДЕНИЕ НЕ УДАЛОСЬ!\n\nДля ячейки ${cellNum} не найдено ни одного рабочего аудио файла.\n\nЗагрузите файл через поле рядом.`);
+          }}
+          className="px-2 py-1 bg-green-600 text-white text-xs rounded"
+          title="Экстренное воспроизведение - ищет файл напрямую в localStorage"
+        >
+          🚨
+        </button>
       </div>
     </div>
   );
