@@ -1,4 +1,6 @@
+import React, { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { CellAudioUploader } from '@/components/CellAudioUploader';
 
 interface HeaderProps {
   onMenuOpen: () => void;
@@ -8,6 +10,7 @@ interface HeaderProps {
 }
 
 const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
+  const [isAudioUploaderOpen, setIsAudioUploaderOpen] = useState(false);
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
@@ -101,6 +104,15 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
               <Icon name="MessageCircle" size={20} />
             </button>
             
+            {/* Кнопка загрузки аудио ячеек */}
+            <button 
+              onClick={() => setIsAudioUploaderOpen(true)}
+              className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
+              title="Загрузить аудио файлы ячеек"
+            >
+              <Icon name="VolumeX" size={20} />
+            </button>
+            
             {/* ВРЕМЕННАЯ ДИАГНОСТИКА ОЗВУЧКИ */}
             <button 
               onClick={async () => {
@@ -186,6 +198,12 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
           </div>
         </div>
       </div>
+      
+      {/* Компонент загрузки аудио */}
+      <CellAudioUploader 
+        isOpen={isAudioUploaderOpen}
+        onClose={() => setIsAudioUploaderOpen(false)}
+      />
     </div>
   );
 };
