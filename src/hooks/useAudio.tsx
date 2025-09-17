@@ -10,10 +10,30 @@ export const useAudio = () => {
   // СУПЕР ЗАЩИТА - ЗАГРУЗКА СОХРАНЕННЫХ ФАЙЛОВ С ТРОЙНЫМ ВОССТАНОВЛЕНИЕМ
   useEffect(() => {
     console.log('🚀 ИНИЦИАЛИЗАЦИЯ АУДИО СИСТЕМЫ...');
-    const { setupAudioLoading } = createAudioLoader(setCustomAudioFiles, {});
-    const cleanup = setupAudioLoading();
     
-    return cleanup;
+    // СНАЧАЛА МИГРИРУЕМ ДАННЫЕ В НОВЫЙ МЕНЕДЖЕР
+    const initializeAudioSystem = async () => {
+      try {
+        const { migrateFromOldSystem, getStorageInfo } = await import('@/utils/simpleAudioManager');
+        console.log('📦 Запускаем миграцию из старой системы...');
+        migrateFromOldSystem();
+        
+        const info = getStorageInfo();
+        console.log(`✅ Новый менеджер: ${info.cellsCount} ячеек, ${info.totalFiles} файлов, ${info.totalSize}`);
+      } catch (error) {
+        console.log('⚠️ Новый менеджер недоступен, используем старую систему');
+      }
+      
+      // ЗАТЕМ ИНИЦИАЛИЗИРУЕМ СТАРУЮ СИСТЕМУ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
+      const { setupAudioLoading } = createAudioLoader(setCustomAudioFiles, {});
+      return setupAudioLoading();
+    };
+    
+    const cleanup = initializeAudioSystem();
+    
+    return () => {
+      cleanup.then(fn => fn && fn());
+    };
   }, []); // Без зависимости для избежания бесконечного цикла
 
   // Обертка для playAudio с передачей customAudioFiles

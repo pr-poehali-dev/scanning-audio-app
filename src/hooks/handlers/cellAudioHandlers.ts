@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { playCellAudio } from '@/utils/cellAudioPlayer';
+import { playCellAudio } from '@/utils/simpleAudioManager';
 
 interface CellAudioHandlersProps {
   playAudio: (key: string) => Promise<void>;

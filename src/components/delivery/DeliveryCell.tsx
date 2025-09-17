@@ -106,14 +106,14 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
             report += `❌ wb-audio-files ПУСТОЕ!\n`;
           }
           
-          // Тестируем функцию playCellAudio
-          report += `\n🧪 Тест playCellAudio(${cellNum}):\n`;
+          // Тестируем новый менеджер
+          report += `\n🧪 Тест НОВОГО менеджера:\n`;
           try {
             const { playCellAudio } = await import('@/utils/cellAudioPlayer');
             const success = await playCellAudio(cellNum);
-            report += success ? `✅ playCellAudio РАБОТАЕТ!\n` : `❌ playCellAudio НЕ НАШЕЛ ФАЙЛ\n`;
+            report += success ? `✅ НОВЫЙ МЕНЕДЖЕР РАБОТАЕТ!\n` : `❌ НОВЫЙ МЕНЕДЖЕР НЕ НАШЕЛ ФАЙЛ\n`;
           } catch (error) {
-            report += `❌ Ошибка playCellAudio: ${error.message}\n`;
+            report += `❌ Ошибка нового менеджера: ${error.message}\n`;
           }
           
           alert(report);

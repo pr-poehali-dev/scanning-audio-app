@@ -207,6 +207,21 @@ export const playCellAudio = async (cellNumber: string, customAudioFiles: {[key:
   try {
     console.log(`🔊 === ОЗВУЧКА ЯЧЕЙКИ ===`);
     console.log(`🎯 Ячейка: ${cellNumber}`);
+    
+    // СНАЧАЛА ПРОБУЕМ НОВЫЙ НАДЕЖНЫЙ МЕНЕДЖЕР
+    try {
+      const { playCellAudio: newPlayCellAudio } = await import('@/utils/simpleAudioManager');
+      console.log(`🔧 Пробую новый менеджер аудио...`);
+      const success = await newPlayCellAudio(cellNumber);
+      if (success) {
+        console.log(`✅ НОВЫЙ МЕНЕДЖЕР УСПЕШНО ВОСПРОИЗВЕЛ ЯЧЕЙКУ ${cellNumber}`);
+        return;
+      }
+    } catch (newManagerError) {
+      console.log(`⚠️ Новый менеджер недоступен, используем старую систему:`, newManagerError);
+    }
+    
+    // РЕЗЕРВНАЯ СИСТЕМА (СТАРАЯ)
     console.log(`📊 Всего файлов в памяти: ${Object.keys(customAudioFiles).length}`);
     
     // ПРИНУДИТЕЛЬНАЯ ПОПЫТКА ВОССТАНОВЛЕНИЯ ФАЙЛОВ ЯЧЕЕК
