@@ -100,9 +100,23 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
 
   const handleTestCell = async (cellNumber: string) => {
     try {
-      const success = await audioManager.playCellAudio(cellNumber);
-      if (!success) {
-        console.warn(`❌ Не удалось воспроизвести ячейку ${cellNumber}`);
+      console.log(`🎵 Тестирование ячейки ${cellNumber}...`);
+      
+      // Сначала пробуем главную систему
+      const { playCellAudioFromMainSystem } = await import('@/utils/cellAudioIntegration');
+      const mainSuccess = await playCellAudioFromMainSystem(cellNumber);
+      
+      if (mainSuccess) {
+        console.log(`✅ Ячейка ${cellNumber} воспроизведена через главную систему`);
+        return;
+      }
+      
+      // Если главная система не сработала, пробуем старые
+      console.log(`⚠️ Главная система не сработала, пробую резервные...`);
+      const oldSuccess = await audioManager.playCellAudio(cellNumber);
+      
+      if (!oldSuccess) {
+        console.warn(`❌ Не удалось воспроизвести ячейку ${cellNumber} через все системы`);
       }
     } catch (error) {
       console.error(`❌ Ошибка тестирования ячейки ${cellNumber}:`, error);
@@ -111,7 +125,17 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
 
   const getAllCells = () => {
     try {
-      return audioManager.getCellsWithAudio();
+      // Сначала пробуем получить из главной системы
+      const mainCells = getCellsFromMainSystem();
+      if (mainCells.length > 0) {
+        console.log(`📋 Показываем ${mainCells.length} ячеек из главной системы`);
+        return mainCells;
+      }
+      
+      // Если в главной системе нет, берем из старой
+      const oldCells = audioManager.getCellsWithAudio();
+      console.log(`📋 Показываем ${oldCells.length} ячеек из старой системы`);
+      return oldCells;
     } catch (error) {
       console.error('❌ Ошибка получения списка ячеек:', error);
       return [];
@@ -120,7 +144,15 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
 
   const getStorageInfo = () => {
     try {
-      return audioManager.getStorageInfo();
+      // Комбинируем информацию из всех систем
+      const oldInfo = audioManager.getStorageInfo();
+      const mainCells = getCellsFromMainSystem();
+      
+      return {
+        totalFiles: oldInfo.totalFiles,
+        totalSize: oldInfo.totalSize,
+        cellsCount: Math.max(oldInfo.cellsCount, mainCells.length)
+      };
     } catch (error) {
       console.error('❌ Ошибка получения информации о хранилище:', error);
       return { totalFiles: 0, totalSize: '0 MB', cellsCount: 0 };
