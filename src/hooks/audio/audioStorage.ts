@@ -17,9 +17,42 @@ export const saveAudioFiles = (files: {[key: string]: string}): void => {
     const jsonData = JSON.stringify(files);
     const sizeInMB = (jsonData.length / (1024 * 1024)).toFixed(2);
     
-    localStorage.setItem(STORAGE_KEY, jsonData);
-    localStorage.setItem(`${STORAGE_KEY}-timestamp`, new Date().toISOString());
-    localStorage.setItem(`${STORAGE_KEY}-count`, Object.keys(files).length.toString());
+    console.log(`💾 Попытка сохранения ${Object.keys(files).length} файлов (${sizeInMB} МБ)...`);
+    
+    // Сначала сохраняем в резервные ключи (они меньше и надежнее)
+    CEMENT_SOURCES.forEach(source => {
+      try {
+        localStorage.setItem(source, jsonData);
+      } catch (backupError) {
+        console.warn(`⚠️ Не удалось сохранить в ${source}:`, backupError);
+      }
+    });
+    
+    // Затем пробуем сохранить в основной ключ
+    try {
+      localStorage.setItem(STORAGE_KEY, jsonData);
+      localStorage.setItem(`${STORAGE_KEY}-timestamp`, new Date().toISOString());
+      localStorage.setItem(`${STORAGE_KEY}-count`, Object.keys(files).length.toString());
+      console.log('✅ Основной ключ сохранен успешно');
+    } catch (mainKeyError) {
+      console.error('❌ Ошибка сохранения основного ключа:', mainKeyError);
+      
+      // Если основной ключ не сохранился, убеждаемся что резервы есть
+      const hasBackup = CEMENT_SOURCES.some(source => {
+        try {
+          const test = localStorage.getItem(source);
+          return test && test.length > 100;
+        } catch {
+          return false;
+        }
+      });
+      
+      if (hasBackup) {
+        console.log('✅ Основной ключ не сохранился, но резервные копии есть');
+      } else {
+        throw new Error('Критическая ошибка: ни основной ключ, ни резервные копии не сохранились!');
+      }
+    }
     
     const cellFiles = Object.keys(files).filter(k => /^\d+$/.test(k) || k.includes('cell-') || k.includes('ячейка'));
     
@@ -87,8 +120,40 @@ export const loadAudioFilesFromStorage = (): {[key: string]: string} => {
   // Загружаем основные файлы
   const savedFiles = localStorage.getItem(STORAGE_KEY);
   if (savedFiles) {
-    finalFiles = JSON.parse(savedFiles);
-    console.log('📁 Основные файлы:', Object.keys(finalFiles).length);
+    try {
+      finalFiles = JSON.parse(savedFiles);
+      console.log('📁 Основные файлы:', Object.keys(finalFiles).length);
+    } catch (parseError) {
+      console.error('❌ Ошибка парсинга основного ключа:', parseError);
+      finalFiles = {};
+    }
+  } else {
+    console.warn('⚠️ Основной ключ wb-audio-files ОТСУТСТВУЕТ! Пробую восстановление...');
+    
+    // Аварийное восстановление из резервных копий
+    const backupSources = ['wb-pvz-cell-audio-settings-permanent', 'wb-pvz-cell-audio-cement'];
+    for (const source of backupSources) {
+      try {
+        const backup = localStorage.getItem(source);
+        if (backup) {
+          const backupFiles = JSON.parse(backup);
+          if (Object.keys(backupFiles).length > 0) {
+            console.log(`🚨 АВАРИЙНОЕ ВОССТАНОВЛЕНИЕ из ${source}: ${Object.keys(backupFiles).length} файлов`);
+            
+            // Восстанавливаем основной ключ
+            localStorage.setItem(STORAGE_KEY, backup);
+            localStorage.setItem(`${STORAGE_KEY}-timestamp`, new Date().toISOString());
+            localStorage.setItem(`${STORAGE_KEY}-count`, Object.keys(backupFiles).length.toString());
+            
+            finalFiles = backupFiles;
+            console.log('✅ Основной ключ восстановлен!');
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn(`⚠️ Ошибка восстановления из ${source}:`, err);
+      }
+    }
   }
   
   // ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ЗАБЕТОНИРОВАННЫХ ФАЙЛОВ ИЗ ВСЕХ ИСТОЧНИКОВ

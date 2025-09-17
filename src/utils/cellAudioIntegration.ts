@@ -55,6 +55,11 @@ export const playCellAudioFromMainSystem = async (cellNumber: string): Promise<b
     
     // Загружаем все файлы
     const files = loadAudioFilesFromStorage();
+    console.log(`📦 [ГЛАВНАЯ СИСТЕМА] Загружено ${Object.keys(files).length} файлов`);
+    
+    // Показываем все ключи для отладки
+    const allKeys = Object.keys(files);
+    console.log(`📋 [ГЛАВНАЯ СИСТЕМА] Первые 10 ключей:`, allKeys.slice(0, 10));
     
     // Ищем озвучку ячейки по разным ключам
     const possibleKeys = [
@@ -65,10 +70,16 @@ export const playCellAudioFromMainSystem = async (cellNumber: string): Promise<b
       `delivery-cell-${cellNumber}`,
     ];
     
+    console.log(`🔍 [ГЛАВНАЯ СИСТЕМА] Ищу ключи для ячейки "${cellNumber}":`, possibleKeys);
+    
     let audioUrl: string | null = null;
     let foundKey = '';
     
     for (const key of possibleKeys) {
+      const hasKey = files.hasOwnProperty(key);
+      const fileContent = files[key];
+      console.log(`🔎 [ГЛАВНАЯ СИСТЕМА] Ключ "${key}": ${hasKey ? 'ЕСТЬ' : 'НЕТ'}${hasKey ? ` (${fileContent ? fileContent.substring(0, 30) + '...' : 'ПУСТОЙ'})` : ''}`);
+      
       if (files[key]) {
         audioUrl = files[key];
         foundKey = key;
@@ -111,30 +122,52 @@ export const playCellAudioFromMainSystem = async (cellNumber: string): Promise<b
 export const getCellsFromMainSystem = (): string[] => {
   try {
     const files = loadAudioFilesFromStorage();
+    console.log(`📦 [getCellsFromMainSystem] Всего файлов: ${Object.keys(files).length}`);
+    
     const cellNumbers: Set<string> = new Set();
+    const validCells: Set<string> = new Set();
+    let emptyFiles = 0;
+    let validFiles = 0;
     
     Object.keys(files).forEach(key => {
+      let cellNumber = '';
+      
       // Извлекаем номер ячейки из разных форматов ключей
       if (key.startsWith('cell-')) {
-        cellNumbers.add(key.replace('cell-', ''));
+        cellNumber = key.replace('cell-', '');
       } else if (key.startsWith('ячейка-')) {
-        cellNumbers.add(key.replace('ячейка-', ''));
+        cellNumber = key.replace('ячейка-', '');
       } else if (key.startsWith('Ячейка ')) {
-        cellNumbers.add(key.replace('Ячейка ', ''));
+        cellNumber = key.replace('Ячейка ', '');
       } else if (key.startsWith('delivery-cell-')) {
-        cellNumbers.add(key.replace('delivery-cell-', ''));
+        cellNumber = key.replace('delivery-cell-', '');
       } else if (/^\d+$/.test(key)) {
-        cellNumbers.add(key);
+        cellNumber = key;
+      }
+      
+      if (cellNumber) {
+        cellNumbers.add(cellNumber);
+        
+        // Проверяем что файл не пустой
+        const fileContent = files[key];
+        if (fileContent && fileContent.length > 100) { // Минимальная длина для аудио файла
+          validCells.add(cellNumber);
+          validFiles++;
+        } else {
+          emptyFiles++;
+        }
       }
     });
     
-    const sortedCells = Array.from(cellNumbers).sort((a, b) => {
+    const sortedCells = Array.from(validCells).sort((a, b) => {
       const aNum = parseInt(a) || 0;
       const bNum = parseInt(b) || 0;
       return aNum - bNum;
     });
     
-    console.log(`📋 [ГЛАВНАЯ СИСТЕМА] Найдено ${sortedCells.length} ячеек:`, sortedCells.slice(0, 10));
+    console.log(`📋 [ГЛАВНАЯ СИСТЕМА] Найдено ${cellNumbers.size} ключей ячеек, из них валидных: ${validCells.size}`);
+    console.log(`📊 [ГЛАВНАЯ СИСТЕМА] Валидных файлов: ${validFiles}, пустых: ${emptyFiles}`);
+    console.log(`🎯 [ГЛАВНАЯ СИСТЕМА] Первые 10 валидных:`, sortedCells.slice(0, 10));
     return sortedCells;
     
   } catch (error) {
