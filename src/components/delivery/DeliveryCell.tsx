@@ -173,6 +173,22 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
         
         <button
           onClick={async () => {
+            // ПРОСТЕЙШИЙ ТЕСТ ЗВУКА
+            console.log('🧪 ТЕСТ ПРОСТОГО ЗВУКА...');
+            
+            try {
+              // Тест 1: Встроенный тест-звук
+              const testAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBT2a3/THdiMFl2/W8dVgBgAcVeT2um0eCjGH5+y2ZAUOh8fH3AoOhyAAPFm0u6VAHyA2j8aQWn0MEGWp7O4JKlMK7Ia2+gAjp0h4gNfSRLcGTHexF6bHQjUV1zJKzAa/dVveFTdJKWKcVcRh9W9ZuQNTm8N/bqOu2GQn1cQQa8AckfG9zQfbEZrJUOlZM7DQWr4CuKJ7N5F0LTjYK8AcRaQFUJxLAhO2xmEcuWvqOcqLShO2y2HaKkI0dZJCKm3jBJ1zbpFk/1h7mbQ9FnGFZKKmqfGUBRKTjb04s6ZI4d9hLa2F62wEpfPf6dWQhK6jWOLSvqBNNZJeZjj7eSNGr8DZSkGvFb9wCH+JLCGfU8cgKKGPtaZnqCKHcCqPxQU0jXYGjK8Dg2BnAyJcaZK1bINvLIYfM5PFM8xCfGj5A1uKVcPDfgWKkXcDKpOdKlI/IYYa++5rBFhqcMIzq5QeLhZzKWJXDt0HuKPGcMEL8QV8WUO6EhFdC9P3ZWC/lMYE7xIlJQmPyItI5Y+qJc9ZxKfRGNJ0AySk/BQaAL9Z7zCCcVNwWdOqAMhQoLRSL9NTa6HLjPQQFaP2SQOPhhPYf4xfQ8oQmGZLCKAiI3mOVZsQNHMpYLHqHMFIjP1Hv40+LDg1+uJ2PqJV4A4u2Nau0rPD4LT9yOpSdOfHs3vUAOxL+s3jOILCq3UtqQUuB8QGvNAmJBuFr2vWzQNKsG5lRYkGzAwBqYcx/tLSBTMUmO7+IJ0b0mGh0vCrYKJ3HfADhmMukmkQtfKxEgQCjGMpUF7d1lhYUoEFuUPT7T7xJnXNQrRvp1dqxQNdTdEYLCJJ5xQZxJGd1fNzaKDFj8xqGfHaZLYUVzVeLXXZPMJ1D6pj4lIhHlMkKXDGGI7J8o6Q6JRQP0s8Lj4JSkCa0pOhJSF7Eqxg9+MFX3gKpN2M/rEi3j8H0VSNM9a8Y7CjCCEJXSBM2nDHZqQKsKxzNfuON5r1eCE2kZEZKdGKKaRUgKpjfOqtBvBJLO6FQr4K9YUGJIjHmgwXwTTjJn5Nq4EqL8+CGQRQ2AYfhBQZfk2QaJiJlJYKRSgkzFOlMJOCFPAzBP/1hfRmTe7CaXHfHBPzqOxGZcTFdUVk4L2Fg8TdNjAbJcJJ6kNJrCKB4vGw/NHSvVoO/MFi4BQj0JF8z10KaKnMfYz7a0+BcULJNJL9YCUhJZGUFTwCbhJGnzNbY1M5yCt7sWCPzQAMWGtCd4cNJK1R8+YXKyYGSHUvVoQB8BEJcjWQnTySTJE8YV+8EQV6vCZPJfKCBNE2xOBgr95kKpJJSgP6wPdFJoQCYnJFjRAQg+gVoMJHKGWaKEFNlA9U8Wr5JFZN6BJiw1RjmPRCkTcTjJSmRGQK7ECmZR/+fBKB2zL3pJkEcUJHkRGBJKQ6bGQJH3JCn3VUf3ICY1FmFFdNz2QBbN7n9JdCQEQ7Qr1HFX1FNjLKdJCaZKI7d2MJ8LwFJ9dZJKgB');
+              testAudio.volume = 0.1;
+              await testAudio.play();
+              console.log('✅ Встроенный тест-звук воспроизводится');
+              testAudio.pause();
+            } catch (testError) {
+              console.error('❌ Встроенный тест-звук НЕ РАБОТАЕТ:', testError);
+              alert('❌ ПРОБЛЕМА С БРАУЗЕРОМ!\n\nВстроенный тест-звук не воспроизводится.\n\nВозможные причины:\n- Браузер блокирует автовоспроизведение\n- Нет звуковых устройств\n- Проблемы с аудио-драйверами\n\nПопробуйте:\n1. Включить звук в браузере\n2. Кликнуть где-то на странице сначала\n3. Проверить настройки звука');
+              return;
+            }
+            
             const cellNum = order.cellNumber;
             console.log(`🚨 ЭКСТРЕННОЕ ВОСПРОИЗВЕДЕНИЕ ячейки ${cellNum}`);
             
@@ -230,6 +246,24 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
           🚨
         </button>
       </div>
+      
+      {/* ПРОСТОЙ ТЕСТ ЗВУКА */}
+      <button
+        onClick={async () => {
+          console.log('🔊 ПРОСТОЙ ТЕСТ ЗВУКА');
+          try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBT2a3/THdiMF');
+            audio.volume = 0.8;
+            await audio.play();
+            alert('✅ ЗВУК РАБОТАЕТ!\n\nЕсли вы слышите звуковой сигнал, значит проблема не в браузере, а в системах озвучки ячеек.');
+          } catch (error) {
+            alert(`❌ ЗВУК НЕ РАБОТАЕТ!\n\nОшибка: ${error.message}\n\nПроблема в браузере или настройках звука.\n\nПроверьте:\n1. Включен ли звук в браузере\n2. Работают ли колонки/наушники\n3. Нажмите где-то на странице для активации звука`);
+          }
+        }}
+        className="mt-2 w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700"
+      >
+        🔊 ТЕСТ ЗВУКА В БРАУЗЕРЕ
+      </button>
     </div>
   );
 };
