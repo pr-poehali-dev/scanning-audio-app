@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { CellAudioUploader } from '@/components/CellAudioUploader';
+import AudioTestDebug from '@/components/AudioTestDebug';
 
 interface HeaderProps {
   onMenuOpen: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
   const [isAudioUploaderOpen, setIsAudioUploaderOpen] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
@@ -113,6 +115,15 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
               <Icon name="VolumeX" size={20} />
             </button>
             
+            {/* Кнопка диагностики аудио */}
+            <button 
+              onClick={() => setShowDebug(!showDebug)}
+              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
+              title="Диагностика аудио системы"
+            >
+              <Icon name="Bug" size={20} />
+            </button>
+            
             {/* ВРЕМЕННАЯ ДИАГНОСТИКА ОЗВУЧКИ */}
             <button 
               onClick={async () => {
@@ -204,6 +215,13 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
         isOpen={isAudioUploaderOpen}
         onClose={() => setIsAudioUploaderOpen(false)}
       />
+      
+      {/* Панель диагностики */}
+      {showDebug && (
+        <div className="border-t bg-gray-50 p-4">
+          <AudioTestDebug />
+        </div>
+      )}
     </div>
   );
 };
