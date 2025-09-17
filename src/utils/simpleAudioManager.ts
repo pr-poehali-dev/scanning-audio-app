@@ -182,9 +182,72 @@ class SimpleAudioManager {
    */
   private fileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
+      // Проверяем формат файла
+      const validTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/m4a', 'audio/aac'];
+      const isValidType = validTypes.some(type => file.type === type || file.name.toLowerCase().includes(type.split('/')[1]));
+      
+      if (!isValidType) {
+        console.warn(`⚠️ Неподдерживаемый формат файла: ${file.type} (${file.name})`);
+        // Но все равно пытаемся загрузить
+      }
+      
+      // Проверяем размер (максимум 10MB)
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        reject(new Error(`Файл слишком большой: ${file.size} байт (максимум ${maxSize})`));
+        return;
+      }
+      
+      console.log(`📁 Конвертирую файл: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
+      
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
+      
+      reader.onload = () => {
+        const result = reader.result as string;
+        
+        // Проверяем что Data URL валидный
+        if (!result || !result.startsWith('data:')) {
+          reject(new Error('Не удалось создать Data URL'));
+          return;
+        }
+        
+        console.log(`✅ Data URL создан: ${result.substring(0, 50)}... (${result.length} символов)`);
+        
+        // Тестируем что аудио можно загрузить
+        const testAudio = new Audio();
+        
+        const testPromise = new Promise<void>((testResolve, testReject) => {
+          const timeout = setTimeout(() => {
+            testReject(new Error('Таймаут тестирования аудио'));
+          }, 5000);
+          
+          testAudio.addEventListener('canplaythrough', () => {
+            clearTimeout(timeout);
+            console.log(`✅ Аудио файл валидный и готов к воспроизведению`);
+            testResolve();
+          }, { once: true });
+          
+          testAudio.addEventListener('error', () => {
+            clearTimeout(timeout);
+            testReject(new Error('Аудио файл поврежден или неподдерживаемый формат'));
+          }, { once: true });
+          
+          testAudio.src = result;
+        });
+        
+        testPromise
+          .then(() => resolve(result))
+          .catch(testError => {
+            console.error(`❌ Тест аудио провален:`, testError);
+            // Все равно возвращаем результат, возможно сработает
+            resolve(result);
+          });
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Ошибка чтения файла'));
+      };
+      
       reader.readAsDataURL(file);
     });
   }
@@ -226,25 +289,101 @@ class SimpleAudioManager {
       let audio = this.audioCache.get(foundKey);
       
       if (!audio) {
+        // Проверяем валидность URL перед созданием аудио
+        if (!audioFile.url || !audioFile.url.startsWith('data:audio/')) {
+          console.error(`❌ Невалидный URL аудио для ${foundKey}:`, audioFile.url?.substring(0, 100));
+          return false;
+        }
+        
         // Создаем новый элемент аудио
-        audio = new Audio(audioFile.url);
+        audio = new Audio();
         
         // Кэшируем для быстрого повторного воспроизведения
         this.audioCache.set(foundKey, audio);
         
-        // Логирование событий аудио
-        audio.addEventListener('loadstart', () => console.log(`🔄 Загрузка аудио ${foundKey}...`));
+        // Подробное логирование событий аудио
+        audio.addEventListener('loadstart', () => console.log(`🔄 Начало загрузки аудио ${foundKey}`));
+        audio.addEventListener('loadedmetadata', () => console.log(`📊 Метаданные загружены для ${foundKey}`));
         audio.addEventListener('canplay', () => console.log(`✅ Аудио ${foundKey} готово к воспроизведению`));
-        audio.addEventListener('error', (e) => console.error(`❌ Ошибка аудио ${foundKey}:`, e));
+        audio.addEventListener('canplaythrough', () => console.log(`💯 Аудио ${foundKey} полностью загружено`));
+        audio.addEventListener('error', (e) => {
+          const errorCode = audio?.error?.code;
+          const errorMessage = audio?.error?.message;
+          console.error(`❌ Ошибка аудио ${foundKey}:`, {
+            event: e,
+            errorCode,
+            errorMessage,
+            networkState: audio?.networkState,
+            readyState: audio?.readyState,
+            currentSrc: audio?.currentSrc?.substring(0, 100)
+          });
+        });
         audio.addEventListener('ended', () => console.log(`🏁 Воспроизведение ${foundKey} завершено`));
+        
+        // Устанавливаем источник после добавления слушателей
+        try {
+          audio.src = audioFile.url;
+          console.log(`🔗 URL установлен для ${foundKey}: ${audioFile.url.substring(0, 50)}...`);
+        } catch (srcError) {
+          console.error(`❌ Ошибка установки URL для ${foundKey}:`, srcError);
+          return false;
+        }
       }
       
-      // Останавливаем текущее воспроизведение если есть
-      audio.currentTime = 0;
-      
-      // Воспроизводим
-      await audio.play();
-      console.log(`✅ Аудио ячейки ${cellNumber} воспроизводится`);
+      // Готовим к воспроизведению
+      try {
+        // Останавливаем текущее воспроизведение если есть
+        if (!audio.paused) {
+          audio.pause();
+        }
+        audio.currentTime = 0;
+        
+        // Ждем готовности к воспроизведению
+        if (audio.readyState < 2) { // HAVE_CURRENT_DATA
+          console.log(`⏳ Ждем загрузки аудио ${foundKey}...`);
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Таймаут загрузки аудио'));
+            }, 10000);
+            
+            const onCanPlay = () => {
+              clearTimeout(timeout);
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              resolve();
+            };
+            
+            const onError = () => {
+              clearTimeout(timeout);
+              audio.removeEventListener('canplay', onCanPlay);
+              audio.removeEventListener('error', onError);
+              reject(new Error(`Ошибка загрузки аудио: ${audio.error?.message}`));
+            };
+            
+            audio.addEventListener('canplay', onCanPlay, { once: true });
+            audio.addEventListener('error', onError, { once: true });
+            
+            if (audio.readyState >= 2) {
+              onCanPlay();
+            }
+          });
+        }
+        
+        // Устанавливаем громкость и воспроизводим
+        audio.volume = 0.8;
+        await audio.play();
+        console.log(`✅ Аудио ячейки ${cellNumber} успешно воспроизводится`);
+        
+      } catch (playError) {
+        console.error(`❌ Ошибка воспроизведения аудио ${foundKey}:`, {
+          error: playError,
+          readyState: audio.readyState,
+          networkState: audio.networkState,
+          duration: audio.duration,
+          currentSrc: audio.currentSrc?.substring(0, 100)
+        });
+        return false;
+      }
       
       return true;
     } catch (error) {

@@ -35,18 +35,33 @@ export const createCellAudioHandlers = (props: CellAudioHandlersProps) => {
       console.warn(`⚠️ Ошибка активации аудио:`, activationError);
     }
     
-    // ПРОВЕРЯЕМ НОВЫЙ МЕНЕДЖЕР СНАЧАЛА
-    console.log(`🔧 Пробую НОВЫЙ менеджер...`);
+    // СНАЧАЛА ПРОБУЕМ OBJECT URL МЕНЕДЖЕР (самый надежный)
+    console.log(`🔧 Пробую Object URL менеджер...`);
+    try {
+      const { objectUrlAudioManager } = await import('@/utils/objectUrlAudioManager');
+      const objectUrlSuccess = await objectUrlAudioManager.playCellAudio(cellNumber);
+      if (objectUrlSuccess) {
+        console.log(`✅ OBJECT URL МЕНЕДЖЕР СРАБОТАЛ!`);
+        return; // Успешно воспроизвели
+      } else {
+        console.warn(`❌ OBJECT URL МЕНЕДЖЕР НЕ НАШЕЛ ФАЙЛ для ячейки "${cellNumber}"`);
+      }
+    } catch (objectUrlError) {
+      console.error(`❌ ОШИБКА OBJECT URL МЕНЕДЖЕРА:`, objectUrlError);
+    }
+    
+    // ЗАТЕМ ПРОБУЕМ DATA URL МЕНЕДЖЕР
+    console.log(`🔧 Пробую Data URL менеджер...`);
     try {
       const success = await playCellAudio(cellNumber);
       if (success) {
-        console.log(`✅ НОВЫЙ МЕНЕДЖЕР СРАБОТАЛ!`);
+        console.log(`✅ DATA URL МЕНЕДЖЕР СРАБОТАЛ!`);
         return; // Успешно воспроизвели
       } else {
-        console.warn(`❌ НОВЫЙ МЕНЕДЖЕР НЕ НАШЕЛ ФАЙЛ для ячейки "${cellNumber}"`);
+        console.warn(`❌ DATA URL МЕНЕДЖЕР НЕ НАШЕЛ ФАЙЛ для ячейки "${cellNumber}"`);
       }
-    } catch (newManagerError) {
-      console.error(`❌ ОШИБКА НОВОГО МЕНЕДЖЕРА:`, newManagerError);
+    } catch (dataUrlError) {
+      console.error(`❌ ОШИБКА DATA URL МЕНЕДЖЕРА:`, dataUrlError);
     }
     
     // РЕЗЕРВНЫЙ ПЛАН - ПРЯМАЯ ПРОВЕРКА ЛОКАЛСТОРЕЙДЖА

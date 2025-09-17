@@ -23,8 +23,31 @@ const AudioTestDebug = () => {
         result += `  - ${key}: ${Math.round(size/1024)}KB\n`;
       });
       
-      // 2. Проверяем новый менеджер
-      result += '\n🔧 ПРОВЕРКА НОВОГО МЕНЕДЖЕРА:\n';
+      // 2. Проверяем Object URL менеджер
+      result += '\n🔧 ПРОВЕРКА OBJECT URL МЕНЕДЖЕРА:\n';
+      try {
+        const { objectUrlAudioManager, getAudioManagerInfo, getCellsWithAudio: getObjectUrlCells } = await import('@/utils/objectUrlAudioManager');
+        const info = getAudioManagerInfo();
+        const cells = getObjectUrlCells();
+        
+        result += `Ячеек в Object URL: ${info.cellsCount}\n`;
+        result += `Всего URLs: ${info.totalUrls}\n`;
+        result += `Доступные ячейки: ${cells.slice(0, 5).join(', ')}\n`;
+        
+        // Пробуем воспроизвести первую ячейку
+        if (cells.length > 0) {
+          const testCell = cells[0];
+          result += `\n🎵 ТЕСТ Object URL ЯЧЕЙКИ ${testCell}:\n`;
+          const success = await objectUrlAudioManager.playCellAudio(testCell);
+          result += success ? '✅ OBJECT URL РАБОТАЕТ!\n' : '❌ OBJECT URL НЕ РАБОТАЕТ\n';
+        }
+        
+      } catch (error) {
+        result += `❌ Ошибка Object URL менеджера: ${error.message}\n`;
+      }
+      
+      // 3. Проверяем Data URL менеджер
+      result += '\n🔧 ПРОВЕРКА DATA URL МЕНЕДЖЕРА:\n';
       try {
         const { audioManager, getStorageInfo, getCellsWithAudio } = await import('@/utils/simpleAudioManager');
         const info = getStorageInfo();
@@ -38,13 +61,13 @@ const AudioTestDebug = () => {
         // Пробуем воспроизвести первую ячейку
         if (cells.length > 0) {
           const testCell = cells[0];
-          result += `\n🎵 ТЕСТ ВОСПРОИЗВЕДЕНИЯ ЯЧЕЙКИ ${testCell}:\n`;
+          result += `\n🎵 ТЕСТ DATA URL ЯЧЕЙКИ ${testCell}:\n`;
           const success = await audioManager.playCellAudio(testCell);
-          result += success ? '✅ РАБОТАЕТ!\n' : '❌ НЕ РАБОТАЕТ\n';
+          result += success ? '✅ DATA URL РАБОТАЕТ!\n' : '❌ DATA URL НЕ РАБОТАЕТ\n';
         }
         
       } catch (error) {
-        result += `❌ Ошибка нового менеджера: ${error.message}\n`;
+        result += `❌ Ошибка Data URL менеджера: ${error.message}\n`;
       }
       
       // 3. Проверяем старую систему

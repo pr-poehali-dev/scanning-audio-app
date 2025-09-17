@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { audioManager } from '@/utils/simpleAudioManager';
+import { objectUrlAudioManager } from '@/utils/objectUrlAudioManager';
 import Icon from '@/components/ui/icon';
 
 interface CellAudioUploaderProps {
@@ -36,13 +37,19 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
         
         const cellNumber = cellMatch[1].toUpperCase();
         
-        // Сохраняем файл
-        const success = await audioManager.saveCellAudio(cellNumber, file);
-        if (success) {
+        // Сохраняем файл в новую систему (Object URL)
+        console.log(`💾 Сохраняю ${file.name} для ячейки ${cellNumber} через Object URL...`);
+        const objectUrlSuccess = await objectUrlAudioManager.saveCellAudio(cellNumber, file);
+        
+        // Также сохраняем в старую систему для совместимости
+        console.log(`💾 Сохраняю ${file.name} для ячейки ${cellNumber} через Data URL...`);
+        const dataUrlSuccess = await audioManager.saveCellAudio(cellNumber, file);
+        
+        if (objectUrlSuccess || dataUrlSuccess) {
           successCells.push(cellNumber);
-          console.log(`✅ Загружен файл для ячейки ${cellNumber}`);
+          console.log(`✅ Загружен файл для ячейки ${cellNumber} (Object URL: ${objectUrlSuccess}, Data URL: ${dataUrlSuccess})`);
         } else {
-          console.error(`❌ Ошибка загрузки файла для ячейки ${cellNumber}`);
+          console.error(`❌ Ошибка загрузки файла для ячейки ${cellNumber} в обе системы`);
         }
       }
       
