@@ -11,37 +11,84 @@ import { saveAudioFiles, loadAudioFilesFromStorage, saveCellSettings } from '../
  */
 export const saveCellAudioToMainSystem = async (cellNumber: string, file: File): Promise<boolean> => {
   try {
-    console.log(`💾 [ГЛАВНАЯ СИСТЕМА] Сохраняю ячейку ${cellNumber} в wb-audio-files...`);
+    console.log(`💾 [СУПЕР-СОХРАНЕНИЕ] Начинаю сохранение ${file.name} для ячейки ${cellNumber}`);
+    console.log(`📊 [СУПЕР-СОХРАНЕНИЕ] Размер файла: ${file.size} байт, тип: ${file.type}`);
     
-    // Загружаем существующие файлы
-    const existingFiles = loadAudioFilesFromStorage();
-    
-    // Конвертируем файл в Data URL
+    // ТЕСТ 1: Проверяем что файл читается
     const dataUrl = await fileToDataUrl(file);
+    console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Файл конвертирован в Data URL (${dataUrl.length} символов)`);
     
-    // Создаем ключи для ячейки (аналогично системным озвучкам)
+    // ТЕСТ 2: Проверяем что файл воспроизводится
+    try {
+      const testAudio = new Audio(dataUrl);
+      testAudio.volume = 0.1;
+      await testAudio.play();
+      testAudio.pause();
+      testAudio.currentTime = 0;
+      console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Файл прошел тест воспроизведения`);
+    } catch (testError) {
+      console.error(`❌ [СУПЕР-СОХРАНЕНИЕ] Файл НЕ воспроизводится:`, testError);
+      throw new Error(`Файл поврежден или неподдерживаемый формат: ${testError.message}`);
+    }
+    
+    // ОСНОВНОЕ СОХРАНЕНИЕ: Загружаем существующие файлы
+    const existingFiles = loadAudioFilesFromStorage();
+    console.log(`📦 [СУПЕР-СОХРАНЕНИЕ] Загружено ${Object.keys(existingFiles).length} существующих файлов`);
+    
+    // Создаем ВСЕ возможные ключи для максимальной совместимости
     const cellKeys = [
-      `cell-${cellNumber}`,           // Основной ключ
-      `${cellNumber}`,                // Просто номер
-      `ячейка-${cellNumber}`,         // Русский ключ
-      `Ячейка ${cellNumber}`,         // Красивый русский ключ
-      `delivery-cell-${cellNumber}`,  // С префиксом delivery (как системные)
+      cellNumber,                     // "A1"
+      `cell-${cellNumber}`,           // "cell-A1" (основной)
+      `${cellNumber}`,                // "A1" (дубль для надежности)
+      `ячейка-${cellNumber}`,         // "ячейка-A1"
+      `Ячейка ${cellNumber}`,         // "Ячейка A1"
+      `delivery-cell-${cellNumber}`,  // "delivery-cell-A1"
+      cellNumber.toLowerCase(),       // "a1"
+      `cell_${cellNumber}`,           // "cell_A1"
+      `${cellNumber}.mp3`,            // "A1.mp3"
+      `audio_${cellNumber}`,          // "audio_A1"
     ];
+    
+    console.log(`🔧 [СУПЕР-СОХРАНЕНИЕ] Сохраняю под ${cellKeys.length} ключами:`, cellKeys);
     
     // Добавляем озвучку под всеми ключами
     cellKeys.forEach(key => {
       existingFiles[key] = dataUrl;
+      console.log(`💾 [СУПЕР-СОХРАНЕНИЕ] Сохранен ключ: ${key}`);
     });
     
-    // Сохраняем обновленные файлы
+    // КРИТИЧЕСКИ ВАЖНО: Сохраняем обновленные файлы
     saveAudioFiles(existingFiles);
-    saveCellSettings(existingFiles);
+    console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Вызван saveAudioFiles()`);
     
-    console.log(`✅ [ГЛАВНАЯ СИСТЕМА] Ячейка ${cellNumber} сохранена под ключами:`, cellKeys);
+    saveCellSettings(existingFiles);
+    console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Вызван saveCellSettings()`);
+    
+    // ПРОВЕРКА: Читаем обратно что сохранилось
+    const verification = loadAudioFilesFromStorage();
+    let foundKeys = 0;
+    cellKeys.forEach(key => {
+      if (verification[key] && verification[key] === dataUrl) {
+        foundKeys++;
+      }
+    });
+    
+    console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Проверка: ${foundKeys}/${cellKeys.length} ключей сохранились корректно`);
+    
+    if (foundKeys === 0) {
+      throw new Error('КРИТИЧЕСКАЯ ОШИБКА: НИ ОДИН ключ не сохранился!');
+    }
+    
+    // ДОПОЛНИТЕЛЬНОЕ СОХРАНЕНИЕ в простом формате для совместимости
+    const simpleKey = `audio_${cellNumber}`;
+    localStorage.setItem(simpleKey, dataUrl);
+    console.log(`✅ [СУПЕР-СОХРАНЕНИЕ] Дополнительно сохранен простой ключ: ${simpleKey}`);
+    
+    console.log(`🎉 [СУПЕР-СОХРАНЕНИЕ] УСПЕХ! Ячейка ${cellNumber} сохранена под ${foundKeys} ключами`);
     return true;
     
   } catch (error) {
-    console.error(`❌ [ГЛАВНАЯ СИСТЕМА] Ошибка сохранения ячейки ${cellNumber}:`, error);
+    console.error(`💥 [СУПЕР-СОХРАНЕНИЕ] КРИТИЧЕСКАЯ ОШИБКА для ячейки ${cellNumber}:`, error);
     return false;
   }
 };

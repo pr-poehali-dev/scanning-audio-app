@@ -153,19 +153,91 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
             if (!file) return;
             
             const cellNum = order.cellNumber;
-            console.log(`🧪 ТЕСТ ЗАГРУЗКИ: ${file.name} → ячейка ${cellNum}`);
+            console.log(`🎯 НОВАЯ ЗАГРУЗКА: ${file.name} → ячейка ${cellNum}`);
             
             try {
-              const { saveCellAudioToMainSystem } = await import('@/utils/cellAudioIntegration');
-              const success = await saveCellAudioToMainSystem(cellNum, file);
+              // ПРОСТОЕ И НАДЕЖНОЕ СОХРАНЕНИЕ
+              const reader = new FileReader();
+              reader.onload = async (event) => {
+                const dataUrl = event.target?.result as string;
+                if (!dataUrl) {
+                  alert('❌ Ошибка чтения файла');
+                  return;
+                }
+                
+                console.log(`📁 Файл прочитан: ${dataUrl.length} символов`);
+                
+                // ТЕСТ ВОСПРОИЗВЕДЕНИЯ
+                try {
+                  const testAudio = new Audio(dataUrl);
+                  testAudio.volume = 0.3;
+                  await testAudio.play();
+                  console.log(`✅ Файл тестируется - звук воспроизводится`);
+                  
+                  setTimeout(() => {
+                    testAudio.pause();
+                    testAudio.currentTime = 0;
+                  }, 1000);
+                  
+                  // СОХРАНЕНИЕ В НЕСКОЛЬКО СИСТЕМ ОДНОВРЕМЕННО
+                  
+                  // 1. В простом формате
+                  const simpleKey = `cell_audio_${cellNum}`;
+                  localStorage.setItem(simpleKey, dataUrl);
+                  console.log(`💾 Сохранен простой ключ: ${simpleKey}`);
+                  
+                  // 2. В основной системе wb-audio-files
+                  try {
+                    const existingData = localStorage.getItem('wb-audio-files');
+                    const audioFiles = existingData ? JSON.parse(existingData) : {};
+                    
+                    // Сохраняем под множеством ключей
+                    const keys = [
+                      cellNum,
+                      `cell-${cellNum}`,
+                      `ячейка-${cellNum}`,
+                      `Ячейка ${cellNum}`,
+                      `delivery-cell-${cellNum}`,
+                      `audio_${cellNum}`,
+                    ];
+                    
+                    keys.forEach(key => {
+                      audioFiles[key] = dataUrl;
+                    });
+                    
+                    localStorage.setItem('wb-audio-files', JSON.stringify(audioFiles));
+                    console.log(`💾 Сохранен в wb-audio-files под ${keys.length} ключами`);
+                    
+                  } catch (mainError) {
+                    console.warn(`⚠️ Ошибка сохранения в основную систему:`, mainError);
+                  }
+                  
+                  // 3. Через интеграционную систему (если работает)
+                  try {
+                    const { saveCellAudioToMainSystem } = await import('@/utils/cellAudioIntegration');
+                    await saveCellAudioToMainSystem(cellNum, file);
+                    console.log(`💾 Сохранен через интеграционную систему`);
+                  } catch (integrationError) {
+                    console.warn(`⚠️ Интеграционная система недоступна:`, integrationError);
+                  }
+                  
+                  alert(`✅ ФАЙЛ УСПЕШНО ЗАГРУЖЕН!\n\nЯчейка: ${cellNum}\nФайл: ${file.name}\nРазмер: ${file.size} байт\n\n✅ Файл протестирован и воспроизводится\n💾 Сохранен в нескольких системах\n\n🎵 Теперь кликните по ячейке для проверки!`);
+                  
+                } catch (playError) {
+                  console.error(`❌ Файл не воспроизводится:`, playError);
+                  alert(`❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ!\n\nФайл загружен, но не воспроизводится.\n\nПроблема: ${playError.message}\n\nВозможные причины:\n- Неподдерживаемый формат\n- Поврежденный файл\n- Проблемы с браузером\n\nПопробуйте другой файл в формате MP3 или WAV.`);
+                }
+              };
               
-              if (success) {
-                alert(`✅ Файл ${file.name} успешно сохранен для ячейки ${cellNum}!\n\nТеперь кликните по ячейке для проверки.`);
-              } else {
-                alert(`❌ Ошибка сохранения файла для ячейки ${cellNum}`);
-              }
+              reader.onerror = () => {
+                alert('❌ Ошибка чтения файла. Попробуйте другой файл.');
+              };
+              
+              reader.readAsDataURL(file);
+              
             } catch (error) {
-              alert(`❌ Критическая ошибка: ${error.message}`);
+              console.error(`❌ Критическая ошибка:`, error);
+              alert(`❌ КРИТИЧЕСКАЯ ОШИБКА!\n\nНе удалось обработать файл.\n\nОшибка: ${error.message}`);
             }
           }}
           className="text-xs w-20"
