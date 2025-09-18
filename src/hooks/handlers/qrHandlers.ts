@@ -19,24 +19,97 @@ export const playCellAudioSafely = async (
   cellNumber: string, 
   playAudio: (key: string) => Promise<void>
 ): Promise<boolean> => {
+  console.log(`🏠 === НАЧИНАЮ ОЗВУЧКУ ЯЧЕЙКИ ${cellNumber} ===`);
+  
+  // РАСШИРЕННЫЙ СПИСОК ВСЕХ ВОЗМОЖНЫХ КЛЮЧЕЙ ДЛЯ ЯЧЕЙКИ
   const cellAudioKeys = [
-    'cell-number',        // Универсальная озвучка (приоритет!)
-    cellNumber,           // Конкретный номер
-    `cell-${cellNumber}`, // cell-123
-    `ячейка-${cellNumber}` // ячейка-123
+    // Универсальные (если есть общая озвучка)
+    'cell-number',           // Универсальная озвучка (приоритет!)
+    
+    // Основные варианты для конкретной ячейки
+    cellNumber,              // "A1", "123"  
+    `cell-${cellNumber}`,    // "cell-A1", "cell-123"
+    `ячейка-${cellNumber}`,  // "ячейка-A1", "ячейка-123"
+    `Ячейка ${cellNumber}`,  // "Ячейка A1", "Ячейка 123"
+    `delivery-cell-${cellNumber}`, // "delivery-cell-A1"
+    `audio_${cellNumber}`,   // "audio_A1", "audio_123"
+    `cell_${cellNumber}`,    // "cell_A1", "cell_123"
+    `${cellNumber}.mp3`,     // "A1.mp3", "123.mp3"
+    cellNumber.toLowerCase(), // "a1"
+    `cell_audio_${cellNumber}`, // "cell_audio_A1" (наш новый формат)
+    
+    // Дополнительные варианты
+    `${cellNumber}-cell`,    // "A1-cell", "123-cell"
+    `номер-${cellNumber}`,   // "номер-A1"
+    `ящик-${cellNumber}`,    // "ящик-A1"
   ];
+  
+  console.log(`🔍 Проверяю ${cellAudioKeys.length} вариантов ключей:`, cellAudioKeys);
   
   for (const key of cellAudioKeys) {
     try {
+      console.log(`🧪 Пробую ключ: "${key}"`);
       await playAudio(key);
-      console.log(`✅ ОЗВУЧКА ЯЧЕЙКИ НАЙДЕНА: ${key}`);
+      console.log(`✅ УСПЕХ! ОЗВУЧКА ЯЧЕЙКИ НАЙДЕНА ПОД КЛЮЧОМ: "${key}"`);
       return true;
     } catch (error) {
-      console.log(`⚠️ Не найден ключ: ${key}`);
+      console.log(`❌ Ключ "${key}" не найден или не воспроизводится`);
     }
   }
   
-  console.warn(`❌ ОЗВУЧКА ДЛЯ ЯЧЕЙКИ "${cellNumber}" НЕ НАЙДЕНА!`);
+  // ДОПОЛНИТЕЛЬНАЯ ПОПЫТКА - ПРЯМОЙ ПОИСК В LOCALSTORAGE
+  console.log(`🔧 ДОПОЛНИТЕЛЬНЫЙ ПОИСК: ищу файлы в localStorage...`);
+  
+  try {
+    // Ищем в wb-audio-files
+    const wbAudioData = localStorage.getItem('wb-audio-files');
+    if (wbAudioData) {
+      const audioFiles = JSON.parse(wbAudioData);
+      const allKeys = Object.keys(audioFiles);
+      
+      // Ищем ключи содержащие номер ячейки
+      const matchingKeys = allKeys.filter(key => 
+        key.includes(cellNumber) || 
+        key.includes(cellNumber.toLowerCase()) ||
+        key.includes(cellNumber.toUpperCase())
+      );
+      
+      console.log(`🔍 Найдено ${matchingKeys.length} подходящих ключей в wb-audio-files:`, matchingKeys);
+      
+      for (const matchingKey of matchingKeys) {
+        try {
+          console.log(`🧪 Пробую найденный ключ: "${matchingKey}"`);
+          await playAudio(matchingKey);
+          console.log(`✅ УСПЕХ! НАЙДЕН ФАЙЛ ПОД КЛЮЧОМ: "${matchingKey}"`);
+          return true;
+        } catch (error) {
+          console.log(`❌ Ключ "${matchingKey}" не воспроизводится`);
+        }
+      }
+    }
+    
+    // Ищем в простых ключах localStorage
+    const simpleKey = `cell_audio_${cellNumber}`;
+    const simpleData = localStorage.getItem(simpleKey);
+    if (simpleData) {
+      console.log(`🔍 Найден простой ключ: ${simpleKey}`);
+      try {
+        const audio = new Audio(simpleData);
+        audio.volume = 0.8;
+        await audio.play();
+        console.log(`✅ УСПЕХ! ПРОСТОЙ КЛЮЧ СРАБОТАЛ: "${simpleKey}"`);
+        return true;
+      } catch (error) {
+        console.log(`❌ Простой ключ "${simpleKey}" не воспроизводится:`, error);
+      }
+    }
+    
+  } catch (storageError) {
+    console.log(`⚠️ Ошибка поиска в localStorage:`, storageError);
+  }
+  
+  console.warn(`❌ КРИТИЧНО: ОЗВУЧКА ДЛЯ ЯЧЕЙКИ "${cellNumber}" НЕ НАЙДЕНА НИГДЕ!`);
+  console.log(`💡 РЕШЕНИЕ: Загрузите аудиофайл для ячейки ${cellNumber} через поле загрузки в компоненте ячейки`);
   return false;
 };
 

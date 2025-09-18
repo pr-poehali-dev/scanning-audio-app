@@ -12,7 +12,64 @@ export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellP
   const handleCellClick = async (cellNumber: string) => {
     console.log(`🎯 DeliveryCell: Клик по ячейке ${cellNumber}`);
     
-    // Вызываем проп onCellClick, который должен содержать логику озвучки
+    // ИНТЕГРАЦИЯ С ОСНОВНОЙ СИСТЕМОЙ ОЗВУЧКИ
+    console.log(`🔊 === КЛИК ПО ЯЧЕЙКЕ ${cellNumber} - ЗАПУСК ОСНОВНОЙ СИСТЕМЫ ===`);
+    
+    try {
+      // 1. Попытка через основную систему playAudio (как остальные озвучки)
+      const { playAudio } = await import('@/hooks/audio/audioPlayer');
+      const { loadAudioFilesFromStorage } = await import('@/hooks/audio/audioStorage');
+      
+      console.log(`🔧 Загружаю файлы из основной системы...`);
+      const audioFiles = loadAudioFilesFromStorage();
+      console.log(`📦 Загружено ${Object.keys(audioFiles).length} файлов из основной системы`);
+      
+      // Пробуем воспроизвести через основную систему
+      await playAudio(cellNumber, audioFiles);
+      console.log(`✅ ОСНОВНАЯ СИСТЕМА: Ячейка ${cellNumber} озвучена!`);
+      
+    } catch (mainSystemError) {
+      console.log(`⚠️ Основная система недоступна, пробую альтернативные методы:`, mainSystemError);
+      
+      try {
+        // 2. Попытка через новый улучшенный обработчик
+        const { playCellAudioSafely } = await import('@/hooks/handlers/qrHandlers');
+        
+        // Создаем фиктивную функцию playAudio для совместимости
+        const mockPlayAudio = async (key: string) => {
+          const { playAudio } = await import('@/hooks/audio/audioPlayer');
+          const { loadAudioFilesFromStorage } = await import('@/hooks/audio/audioStorage');
+          const audioFiles = loadAudioFilesFromStorage();
+          await playAudio(key, audioFiles);
+        };
+        
+        const success = await playCellAudioSafely(cellNumber, mockPlayAudio);
+        if (success) {
+          console.log(`✅ АЛЬТЕРНАТИВНАЯ СИСТЕМА: Ячейка ${cellNumber} озвучена!`);
+        } else {
+          console.log(`❌ АЛЬТЕРНАТИВНАЯ СИСТЕМА: Не удалось озвучить ячейку ${cellNumber}`);
+        }
+        
+      } catch (altSystemError) {
+        console.log(`⚠️ Альтернативная система недоступна:`, altSystemError);
+        
+        // 3. Попытка через интеграционную систему
+        try {
+          const { playCellAudioFromMainSystem } = await import('@/utils/cellAudioIntegration');
+          const success = await playCellAudioFromMainSystem(cellNumber);
+          if (success) {
+            console.log(`✅ ИНТЕГРАЦИОННАЯ СИСТЕМА: Ячейка ${cellNumber} озвучена!`);
+          } else {
+            console.log(`❌ ИНТЕГРАЦИОННАЯ СИСТЕМА: Не удалось озвучить ячейку ${cellNumber}`);
+          }
+        } catch (integrationError) {
+          console.log(`⚠️ Интеграционная система недоступна:`, integrationError);
+          console.log(`💡 Загрузите аудиофайл для ячейки ${cellNumber} через поле загрузки ниже`);
+        }
+      }
+    }
+    
+    // Вызываем оригинальный проп для обновления UI
     onCellClick(cellNumber);
   };
 

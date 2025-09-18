@@ -1,5 +1,34 @@
 import { getPlaybackRate, diagnoseCellAudio, isCellKey } from './audioUtils';
 
+// Функция для генерации маппинга ячеек динамически
+const generateCellMappings = (): {[key: string]: string[]} => {
+  const cellMappings: {[key: string]: string[]} = {};
+  
+  // Генерируем маппинги для ячеек A1-A99, B1-B99, C1-C99
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const numbers = Array.from({length: 99}, (_, i) => i + 1);
+  
+  letters.forEach(letter => {
+    numbers.forEach(number => {
+      const cellNumber = `${letter}${number}`;
+      cellMappings[`cell-${cellNumber}`] = [
+        cellNumber,                           // "A1"
+        `cell-${cellNumber}`,                // "cell-A1"
+        `ячейка-${cellNumber}`,              // "ячейка-A1" 
+        `Ячейка ${cellNumber}`,              // "Ячейка A1"
+        `delivery-cell-${cellNumber}`,       // "delivery-cell-A1"
+        `audio_${cellNumber}`,               // "audio_A1"
+        `cell_${cellNumber}`,                // "cell_A1"
+        `${cellNumber}.mp3`,                 // "A1.mp3"
+        cellNumber.toLowerCase()             // "a1"
+      ];
+    });
+  });
+  
+  console.log(`🔧 Сгенерирован маппинг для ${Object.keys(cellMappings).length} ячеек`);
+  return cellMappings;
+};
+
 // Маппинг системных ключей на реальные файлы
 const KEY_MAPPINGS: {[key: string]: string[]} = {
   // === МАППИНГ НА РЕАЛЬНЫЕ РУССКИЕ НАЗВАНИЯ ===
@@ -33,7 +62,10 @@ const KEY_MAPPINGS: {[key: string]: string[]} = {
   'receiving-start': ['приемка', 'начало'],
   'receiving-complete': ['приемка', 'завершена'],
   'return-start': ['возврат', 'начало'],
-  'return-complete': ['возврат', 'завершен']
+  'return-complete': ['возврат', 'завершен'],
+  
+  // === ДИНАМИЧЕСКИЕ ЯЧЕЙКИ ===
+  ...generateCellMappings()
 };
 
 // Русские ключевые слова для поиска
@@ -56,6 +88,31 @@ const getPossibleKeys = (audioKey: string): string[] => {
   // Добавляем альтернативы для текущего ключа
   if (KEY_MAPPINGS[audioKey]) {
     possibleKeys.push(...KEY_MAPPINGS[audioKey]);
+  }
+  
+  // СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ ЯЧЕЕК
+  // Если ключ похож на ячейку (например "A1", "B5", etc.)
+  const cellMatch = audioKey.match(/^([A-Z])(\d+)$/i);
+  if (cellMatch) {
+    const cellNumber = cellMatch[0].toUpperCase();
+    console.log(`🏠 ОБНАРУЖЕНА ЯЧЕЙКА: ${cellNumber}`);
+    
+    // Добавляем все варианты для ячейки
+    const cellVariants = [
+      cellNumber,                           // "A1"
+      `cell-${cellNumber}`,                // "cell-A1"
+      `ячейка-${cellNumber}`,              // "ячейка-A1" 
+      `Ячейка ${cellNumber}`,              // "Ячейка A1"
+      `delivery-cell-${cellNumber}`,       // "delivery-cell-A1"
+      `audio_${cellNumber}`,               // "audio_A1"
+      `cell_${cellNumber}`,                // "cell_A1"
+      `${cellNumber}.mp3`,                 // "A1.mp3"
+      cellNumber.toLowerCase(),            // "a1"
+      `cell_audio_${cellNumber}`,          // "cell_audio_A1" (наш новый формат)
+    ];
+    
+    possibleKeys.push(...cellVariants);
+    console.log(`🔧 Добавлено ${cellVariants.length} вариантов для ячейки ${cellNumber}`);
   }
   
   return possibleKeys;
