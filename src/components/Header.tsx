@@ -106,13 +106,15 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
               <Icon name="MessageCircle" size={20} />
             </button>
             
-            {/* Кнопка загрузки аудио ячеек */}
+            {/* Кнопка загрузки аудио ячеек - БОЛЬШАЯ И ЗАМЕТНАЯ */}
             <button 
               onClick={() => setIsAudioUploaderOpen(true)}
-              className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
-              title="Загрузить аудио файлы ячеек"
+              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
+              title="Загрузить MP3 файлы для озвучки ячеек"
             >
-              <Icon name="VolumeX" size={20} />
+              <Icon name="Upload" size={16} />
+              <span className="hidden sm:inline">Озвучка ячеек</span>
+              <span className="sm:hidden">🔊</span>
             </button>
             
             {/* Кнопка диагностики аудио */}

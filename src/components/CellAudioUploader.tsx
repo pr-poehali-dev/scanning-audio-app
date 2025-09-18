@@ -29,14 +29,69 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
           continue;
         }
         
-        // Извлекаем номер ячейки из имени файла
-        const cellMatch = file.name.match(/(?:cell-)?(\w+\d+)(?:\.mp3|\.wav|\.m4a|\.ogg)?$/i);
-        if (!cellMatch) {
-          console.warn(`⚠️ Не удалось определить номер ячейки из файла: ${file.name}`);
-          continue;
+        // УМНОЕ ИЗВЛЕЧЕНИЕ НОМЕРА ЯЧЕЙКИ ИЗ ИМЕНИ ФАЙЛА
+        let cellNumber = '';
+        const fileName = file.name.toLowerCase();
+        
+        console.log(`🔍 Анализирую файл: ${file.name}`);
+        
+        // Список всех возможных паттернов
+        const patterns = [
+          // Основные форматы
+          /(?:cell[-_]?)([a-z]\d+)/i,           // cell-A1, cell_A1, cellA1
+          /(?:ячейка[-_]?)([a-z]\d+)/i,         // ячейка-A1, ячейка_A1
+          /^([a-z]\d+)/i,                       // A1.mp3, B15.wav
+          /(?:номер[-_]?)(\d+)/i,               // номер-126, номер_126
+          /(?:number[-_]?)(\d+)/i,              // number-126, number_126
+          /(?:cell[-_]?)(\d+)/i,                // cell-126, cell_126
+          /(?:ячейка[-_]?)(\d+)/i,              // ячейка-126, ячейка_126
+          /^(\d+)/,                             // 126.mp3, 999.wav
+          
+          // Дополнительные форматы
+          /(?:box[-_]?)([a-z]\d+)/i,            // box-A1, box_A1
+          /(?:slot[-_]?)([a-z]\d+)/i,           // slot-A1, slot_A1
+          /(?:compartment[-_]?)([a-z]\d+)/i,    // compartment-A1
+          /(?:locker[-_]?)([a-z]\d+)/i,         // locker-A1
+          
+          // Для числовых ячеек
+          /(?:box[-_]?)(\d+)/i,                 // box-126, box_126
+          /(?:slot[-_]?)(\d+)/i,                // slot-126, slot_126
+          /(?:compartment[-_]?)(\d+)/i,         // compartment-126
+          /(?:locker[-_]?)(\d+)/i,              // locker-126
+        ];
+        
+        // Пробуем каждый паттерн
+        for (const pattern of patterns) {
+          const match = fileName.match(pattern);
+          if (match && match[1]) {
+            cellNumber = match[1].toUpperCase();
+            console.log(`✅ Найден номер ячейки "${cellNumber}" по паттерну: ${pattern}`);
+            break;
+          }
         }
         
-        const cellNumber = cellMatch[1].toUpperCase();
+        // Если ничего не найдено - пробуем извлечь любые буквы+цифры или просто цифры
+        if (!cellNumber) {
+          // Ищем комбинацию буква+цифры
+          const letterNumberMatch = fileName.match(/([a-z]\d+)/i);
+          if (letterNumberMatch) {
+            cellNumber = letterNumberMatch[1].toUpperCase();
+            console.log(`✅ Найден номер ячейки "${cellNumber}" как буква+цифры`);
+          } else {
+            // Ищем просто цифры
+            const numberMatch = fileName.match(/(\d+)/);
+            if (numberMatch) {
+              cellNumber = numberMatch[1];
+              console.log(`✅ Найден номер ячейки "${cellNumber}" как числовой`);
+            }
+          }
+        }
+        
+        if (!cellNumber) {
+          console.warn(`⚠️ Не удалось определить номер ячейки из файла: ${file.name}`);
+          console.warn(`💡 Переименуйте файл в формат: A1.mp3, cell-126.mp3, или 999.mp3`);
+          continue;
+        }
         
         // ГЛАВНАЯ СИСТЕМА - сохраняем в wb-audio-files (как системные озвучки)
         console.log(`💾 [ГЛАВНАЯ] Сохраняю ${file.name} для ячейки ${cellNumber} в основную систему...`);
@@ -64,6 +119,12 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
       
       if (successCells.length > 0) {
         console.log(`🎉 Успешно загружено ${successCells.length} файлов ячеек`);
+        
+        // Показываем успешное сообщение с кнопкой тестирования
+        const message = `✅ Успешно загружено ${successCells.length} файлов!\n\nЯчейки: ${successCells.join(', ')}\n\nХотите протестировать первую ячейку?`;
+        if (window.confirm(message)) {
+          handleTestCell(successCells[0]);
+        }
       }
       
     } catch (error) {
@@ -244,13 +305,48 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
           </div>
 
           {/* Инструкция */}
-          <div className="bg-yellow-50 rounded-lg p-4 mt-6">
-            <h4 className="font-medium text-yellow-800 mb-2">📋 Инструкция:</h4>
-            <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
-              <li>Именуйте файлы как <code className="bg-yellow-200 px-1 rounded">cell-A1.mp3</code> или <code className="bg-yellow-200 px-1 rounded">B15.mp3</code></li>
-              <li>Поддерживаются форматы: MP3, WAV, M4A, OGG</li>
-              <li>Можно загружать несколько файлов одновременно</li>
-              <li>Файлы сохраняются в localStorage браузера</li>
+          <div className="bg-green-50 rounded-lg p-4 mt-6">
+            <h4 className="font-medium text-green-800 mb-3">📋 Как загрузить озвучку ячеек:</h4>
+            
+            <div className="space-y-3 text-sm text-green-700">
+              <div>
+                <div className="font-medium mb-1">🎯 Правила именования файлов:</div>
+                <div className="bg-green-100 rounded p-2 font-mono text-xs space-y-1">
+                  <div>✅ <code>A1.mp3</code> - ячейка A1</div>
+                  <div>✅ <code>cell-B15.mp3</code> - ячейка B15</div>
+                  <div>✅ <code>126.mp3</code> - ячейка 126</div>
+                  <div>✅ <code>ячейка-A25.mp3</code> - ячейка A25</div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="font-medium mb-1">🎵 Что должно содержать аудио:</div>
+                <div className="bg-green-100 rounded p-2 text-xs">
+                  Файл должен произносить номер ячейки, например:<br/>
+                  <strong>"Ячейка А один"</strong> или <strong>"Номер сто двадцать шесть"</strong>
+                </div>
+              </div>
+              
+              <div>
+                <div className="font-medium mb-1">⚙️ Технические требования:</div>
+                <ul className="list-disc list-inside text-xs space-y-1">
+                  <li>Форматы: MP3, WAV, M4A, OGG</li>
+                  <li>Размер: до 2 МБ на файл</li>
+                  <li>Длительность: желательно до 3 секунд</li>
+                  <li>Качество: 44.1 кГц, 128 кбит/с достаточно</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          {/* Полезные советы */}
+          <div className="bg-blue-50 rounded-lg p-4 mt-4">
+            <h4 className="font-medium text-blue-800 mb-2">💡 Полезные советы:</h4>
+            <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+              <li>Можно перетащить папку с файлами прямо в окно</li>
+              <li>Система автоматически определит номер ячейки из имени файла</li>
+              <li>После загрузки нажмите на номер ячейки для проверки</li>
+              <li>Файлы сохраняются в браузере и будут доступны при следующем запуске</li>
             </ul>
           </div>
 
