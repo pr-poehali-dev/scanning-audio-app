@@ -1,39 +1,37 @@
 import { audioManager } from './simpleAudioManager';
+import { voiceAssistantManager } from './voiceAssistantManager';
 
 /**
  * Воспроизведение аудио файла ячейки
- * Теперь использует упрощенный и надежный audioManager
+ * Теперь использует систему голосовых помощников с выбором между старым и новым
  */
 export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
   try {
-    console.log(`🔊 [NEW SYSTEM] Воспроизведение озвучки для ячейки: ${cellNumber}`);
+    console.log(`🔊 Воспроизведение озвучки для ячейки: ${cellNumber}`);
     
-    // Пытаемся мигрировать данные из старой системы если это первый запуск
-    const hasFiles = audioManager.getCellsWithAudio().length > 0;
-    if (!hasFiles) {
-      console.log('🔄 Данных нет, пытаемся мигрировать из старой системы...');
-      audioManager.migrateFromOldSystem();
-    }
-    
-    // Используем новый менеджер
-    const success = await audioManager.playCellAudio(cellNumber);
+    // Используем систему голосовых помощников
+    const success = await voiceAssistantManager.playCellAudio(cellNumber);
     
     if (success) {
-      console.log(`✅ [NEW SYSTEM] Аудио ячейки ${cellNumber} воспроизводится`);
+      console.log(`✅ Аудио ячейки ${cellNumber} воспроизводится через ${voiceAssistantManager.getCurrentAssistant()} помощника`);
     } else {
-      console.warn(`❌ [NEW SYSTEM] Аудио для ячейки ${cellNumber} не найдено`);
+      console.warn(`❌ Аудио для ячейки ${cellNumber} не найдено в системе ${voiceAssistantManager.getCurrentAssistant()} помощника`);
       
-      // Показываем информацию о доступных ячейках
-      const availableCells = audioManager.getCellsWithAudio();
-      console.log(`📋 Доступные ячейки с аудио (${availableCells.length}):`, availableCells.slice(0, 10));
-      
-      const storageInfo = audioManager.getStorageInfo();
-      console.log(`💽 Информация о хранилище:`, storageInfo);
+      // Для fallback показываем информацию о доступных ячейках
+      if (voiceAssistantManager.getCurrentAssistant() === 'old') {
+        // Для старого помощника показываем ячейки из audioManager
+        const availableCells = audioManager.getCellsWithAudio();
+        console.log(`📋 Доступные ячейки в старой системе (${availableCells.length}):`, availableCells.slice(0, 10));
+      } else {
+        // Для нового помощника показываем загруженные звуки
+        const loadedSounds = voiceAssistantManager.getLoadedSounds();
+        console.log(`📋 Загруженные звуки в новой системе (${loadedSounds.length}):`, loadedSounds);
+      }
     }
     
     return success;
   } catch (error) {
-    console.error(`❌ [NEW SYSTEM] Ошибка воспроизведения ячейки "${cellNumber}":`, error);
+    console.error(`❌ Ошибка воспроизведения ячейки "${cellNumber}":`, error);
     return false;
   }
 };
