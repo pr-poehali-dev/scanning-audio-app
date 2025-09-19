@@ -21,22 +21,49 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
 
   // Обработчик ввода номера телефона
   const handlePhoneSubmit = useCallback(async (lastFourDigits: string) => {
+    console.log(`📞 === ПОИСК ЗАКАЗА ПО ТЕЛЕФОНУ: ${lastFourDigits} ===`);
+    
     const order = findOrderByPhone(lastFourDigits);
     if (order) {
+      console.log(`✅ ЗАКАЗ НАЙДЕН:`, order);
+      
       setCurrentOrder(order);
       setDeliveryStep('client-scanned');
       
-      // Озвучиваем номер ячейки и про скидку
-      await playCellAudioSafely(order.cellNumber, playAudio);
+      // Генерируем случайную ячейку от 1 до 482
+      const randomCellNumber = Math.floor(Math.random() * 482) + 1;
+      order.cellNumber = randomCellNumber.toString();
+      
+      console.log(`🏠 === ПОПЫТКА ОЗВУЧИТЬ ЯЧЕЙКУ: ${order.cellNumber} ===`);
+      
+      // Пробуем озвучить ячейку напрямую через новую систему
+      try {
+        const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+        const success = await playCellAudio(order.cellNumber);
+        
+        if (success) {
+          console.log(`✅ ЯЧЕЙКА ${order.cellNumber} УСПЕШНО ОЗВУЧЕНА!`);
+        } else {
+          console.warn(`❌ Не удалось озвучить ячейку ${order.cellNumber}`);
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка озвучки ячейки ${order.cellNumber}:`, error);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
-      console.log('📁 customAudioFiles:', customAudioFiles);
-      await playAudio('discount');
+      try {
+        await playAudio('discount');
+        console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА');
+      } catch (error) {
+        console.warn('⚠️ Аудио скидки не найдено:', error);
+      }
       
       // Очищаем номер телефона
       setPhoneNumber('');
     } else {
+      console.log('❌ Заказ не найден');
       alert('Заказ не найден');
     }
   }, [playAudio, setPhoneNumber, setCurrentOrder, setDeliveryStep, customAudioFiles]);
