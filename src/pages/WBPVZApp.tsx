@@ -9,8 +9,7 @@ import { useAudio } from '@/hooks/useAudio';
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
 import { useAudioHelpers } from '@/hooks/useAudioHelpers';
-import { autoTestOnStart } from '@/utils/audioSystemTest';
-import { useEffect } from 'react';
+
 
 const WBPVZApp = () => {
   // Используем разделенные хуки для управления состоянием
@@ -42,10 +41,7 @@ const WBPVZApp = () => {
   // Создаем вспомогательные функции для аудио
   const audioHelpers = useAudioHelpers(updateAudioFiles, customAudioFiles);
 
-  // Автоматическое тестирование системы при старте
-  useEffect(() => {
-    autoTestOnStart();
-  }, []);
+
 
   // Функция для смены вкладки с сбросом состояния
   const handleTabChange = (tab: string) => {
