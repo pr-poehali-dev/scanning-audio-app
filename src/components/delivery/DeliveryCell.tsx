@@ -9,19 +9,33 @@ interface DeliveryCellProps {
 
 export const DeliveryCell = ({ order, selectedCell, onCellClick }: DeliveryCellProps) => {
   const handleCellClick = async (cellNumber: string) => {
-    console.log(`Клик по ячейке ${cellNumber}`);
+    console.log(`🎯 Клик по ячейке ${cellNumber} - запуск системы озвучки ячеек`);
     
     try {
-      // Интеграция с основной системой озвучки
-      const { playAudio } = await import('@/hooks/audio/audioPlayer');
-      const { loadAudioFilesFromStorage } = await import('@/hooks/audio/audioStorage');
+      // ПРАВИЛЬНАЯ СИСТЕМА ОЗВУЧКИ ЯЧЕЕК
+      const { playCellAudio } = await import('@/utils/cellAudioPlayer');
       
-      const audioFiles = loadAudioFilesFromStorage();
-      await playAudio(cellNumber, audioFiles);
-      console.log(`Ячейка ${cellNumber} озвучена!`);
+      console.log(`🔊 Попытка озвучить ячейку ${cellNumber}...`);
+      const success = await playCellAudio(cellNumber);
+      
+      if (success) {
+        console.log(`✅ Ячейка ${cellNumber} успешно озвучена!`);
+      } else {
+        console.warn(`⚠️ Озвучка для ячейки ${cellNumber} не найдена`);
+        
+        // Показываем подсказку пользователю
+        const { getAudioEnabledCells } = await import('@/utils/cellAudioPlayer');
+        const availableCells = getAudioEnabledCells();
+        
+        if (availableCells.length === 0) {
+          console.warn(`💡 Нет загруженных файлов ячеек. Используйте синюю кнопку "Озвучка ячеек" в шапке для загрузки MP3 файлов.`);
+        } else {
+          console.warn(`💡 Доступные ячейки с озвучкой: ${availableCells.slice(0, 5).join(', ')}`);
+        }
+      }
       
     } catch (error) {
-      console.warn(`Ошибка озвучки ячейки ${cellNumber}:`, error);
+      console.error(`❌ Ошибка озвучки ячейки ${cellNumber}:`, error);
     }
     
     // Вызываем основной обработчик

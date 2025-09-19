@@ -383,6 +383,75 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
               <p className="text-xs text-gray-500 mt-2">
                 💡 Нажмите на ячейку для проверки воспроизведения
               </p>
+              
+              {/* ДИАГНОСТИЧЕСКАЯ КНОПКА */}
+              <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <button
+                  onClick={async () => {
+                    console.log('🔍 === ДИАГНОСТИКА СИСТЕМЫ ОЗВУЧКИ ЯЧЕЕК ===');
+                    
+                    let report = 'ДИАГНОСТИКА СИСТЕМЫ ОЗВУЧКИ ЯЧЕЕК:\n\n';
+                    
+                    try {
+                      // 1. Проверяем Data URL менеджер
+                      const { audioManager, getStorageInfo } = await import('@/utils/simpleAudioManager');
+                      const info = getStorageInfo();
+                      const cells = audioManager.getCellsWithAudio();
+                      
+                      report += `📊 DATA URL СИСТЕМА:\n`;
+                      report += `  Файлов: ${info.totalFiles}\n`;
+                      report += `  Ячеек: ${info.cellsCount}\n`;
+                      report += `  Размер: ${info.totalSize}\n`;
+                      report += `  Доступные ячейки: ${cells.slice(0, 10).join(', ')}\n\n`;
+                      
+                      // 2. Проверяем Object URL менеджер
+                      const { objectUrlAudioManager, getAudioManagerInfo } = await import('@/utils/objectUrlAudioManager');
+                      const objInfo = getAudioManagerInfo();
+                      const objCells = objectUrlAudioManager.getCellsWithAudio();
+                      
+                      report += `📊 OBJECT URL СИСТЕМА:\n`;
+                      report += `  Ячеек: ${objInfo.cellsCount}\n`;
+                      report += `  URLs: ${objInfo.totalUrls}\n`;
+                      report += `  Доступные ячейки: ${objCells.slice(0, 10).join(', ')}\n\n`;
+                      
+                      // 3. Проверяем главную систему
+                      const { getCellsFromMainSystem } = await import('@/utils/cellAudioIntegration');
+                      const mainCells = getCellsFromMainSystem();
+                      
+                      report += `📊 ГЛАВНАЯ СИСТЕМА (wb-audio-files):\n`;
+                      report += `  Ячеек: ${mainCells.length}\n`;
+                      report += `  Доступные ячейки: ${mainCells.slice(0, 10).join(', ')}\n\n`;
+                      
+                      // 4. Тестируем первую ячейку через все системы
+                      if (cells.length > 0) {
+                        const testCell = cells[0];
+                        report += `🧪 ТЕСТ ВОСПРОИЗВЕДЕНИЯ ЯЧЕЙКИ "${testCell}":\n`;
+                        
+                        // Тест через основную функцию
+                        try {
+                          const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+                          const success = await playCellAudio(testCell);
+                          report += `  Основная функция: ${success ? 'РАБОТАЕТ ✅' : 'НЕ РАБОТАЕТ ❌'}\n`;
+                        } catch (e) {
+                          report += `  Основная функция: ОШИБКА ❌ - ${e.message}\n`;
+                        }
+                      } else {
+                        report += `❌ НЕТ ЯЧЕЕК ДЛЯ ТЕСТИРОВАНИЯ!\n`;
+                        report += `💡 Загрузите MP3 файлы через кнопку "Выбрать файлы" выше\n`;
+                      }
+                      
+                    } catch (error) {
+                      report += `❌ КРИТИЧЕСКАЯ ОШИБКА: ${error.message}\n`;
+                    }
+                    
+                    alert(report);
+                    console.log(report);
+                  }}
+                  className="w-full px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-sm font-medium"
+                >
+                  🔍 Диагностика системы озвучки
+                </button>
+              </div>
             </div>
           )}
         </div>
