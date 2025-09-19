@@ -1,9 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Icon from '@/components/ui/icon';
-import { CellAudioUploader } from '@/components/CellAudioUploader';
-import { VoiceSettings } from '@/components/VoiceSettings';
-import { VoiceDemo } from '@/components/VoiceDemo';
-import { VoiceTestUpload } from '@/components/VoiceTestUpload';
 
 interface HeaderProps {
   onMenuOpen: () => void;
@@ -13,10 +9,6 @@ interface HeaderProps {
 }
 
 const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
-  const [isAudioUploaderOpen, setIsAudioUploaderOpen] = useState(false);
-  const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
-  const [isVoiceDemoOpen, setIsVoiceDemoOpen] = useState(false);
-  const [isVoiceTestOpen, setIsVoiceTestOpen] = useState(false);
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
@@ -110,77 +102,13 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
               <Icon name="MessageCircle" size={20} />
             </button>
             
-            {/* Кнопка теста загрузки */}
-            <button 
-              onClick={() => setIsVoiceTestOpen(true)}
-              className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
-              title="Тест загрузки звуков"
-            >
-              <Icon name="TestTube" size={16} />
-              <span className="hidden sm:inline">Тест</span>
-            </button>
 
-            {/* Кнопка демонстрации голоса */}
-            <button 
-              onClick={() => setIsVoiceDemoOpen(true)}
-              className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
-              title="Демонстрация голосовой озвучки"
-            >
-              <Icon name="Play" size={16} />
-              <span className="hidden sm:inline">Демо</span>
-            </button>
-
-            {/* Кнопка настроек голоса */}
-            <button 
-              onClick={() => setIsVoiceSettingsOpen(true)}
-              className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
-              title="Настройки голосовой озвучки"
-            >
-              <Icon name="Mic" size={16} />
-              <span className="hidden sm:inline">Голос</span>
-            </button>
-
-            {/* Кнопка загрузки аудио ячеек - БОЛЬШАЯ И ЗАМЕТНАЯ */}
-            <button 
-              onClick={() => setIsAudioUploaderOpen(true)}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
-              title="Загрузить MP3 файлы для озвучки ячеек"
-            >
-              <Icon name="Upload" size={16} />
-              <span className="hidden sm:inline">Озвучка ячеек</span>
-              <span className="sm:hidden">Озвучка</span>
-            </button>
             
 
           </div>
         </div>
       </div>
       
-      {/* Компонент загрузки аудио */}
-      <CellAudioUploader 
-        isOpen={isAudioUploaderOpen}
-        onClose={() => setIsAudioUploaderOpen(false)}
-      />
-      
-      {/* Компонент настроек голоса */}
-      <VoiceSettings 
-        isOpen={isVoiceSettingsOpen}
-        onClose={() => setIsVoiceSettingsOpen(false)}
-      />
-      
-      {/* Компонент демонстрации голоса */}
-      <VoiceDemo 
-        isOpen={isVoiceDemoOpen}
-        onClose={() => setIsVoiceDemoOpen(false)}
-      />
-      
-      {/* Компонент тестовой загрузки */}
-      <VoiceTestUpload 
-        isOpen={isVoiceTestOpen}
-        onClose={() => setIsVoiceTestOpen(false)}
-      />
-      
-
     </div>
   );
 };
