@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { CellAudioUploader } from '@/components/CellAudioUploader';
-import AudioTestDebug from '@/components/AudioTestDebug';
 
 interface HeaderProps {
   onMenuOpen: () => void;
@@ -12,7 +11,6 @@ interface HeaderProps {
 
 const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
   const [isAudioUploaderOpen, setIsAudioUploaderOpen] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
@@ -114,100 +112,10 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
             >
               <Icon name="Upload" size={16} />
               <span className="hidden sm:inline">Озвучка ячеек</span>
-              <span className="sm:hidden">🔊</span>
+              <span className="sm:hidden">Озвучка</span>
             </button>
             
-            {/* Кнопка диагностики аудио */}
-            <button 
-              onClick={() => setShowDebug(!showDebug)}
-              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md"
-              title="Диагностика аудио системы"
-            >
-              <Icon name="Bug" size={20} />
-            </button>
-            
-            {/* ВРЕМЕННАЯ ДИАГНОСТИКА ОЗВУЧКИ */}
-            <button 
-              onClick={async () => {
-                console.log('🚀 === ПОЛНАЯ ДИАГНОСТИКА СИСТЕМЫ ОЗВУЧКИ ===');
-                
-                // 1. Проверяем localStorage
-                const storages = [
-                  'wb-audio-files',
-                  'wb-audio-files-backup',
-                  'wb-audio-files-cells-backup',
-                  'customAudioFiles',
-                  'audioFiles'
-                ];
-                
-                let report = '🔍 ДИАГНОСТИКА LOCALSTORAGE:\n\n';
-                let foundCellFiles = [];
-                
-                storages.forEach(key => {
-                  const data = localStorage.getItem(key);
-                  if (data) {
-                    try {
-                      const files = JSON.parse(data);
-                      const keys = Object.keys(files);
-                      const cellKeys = keys.filter(k => k.includes('cell-') || /^\d+$/.test(k));
-                      
-                      report += `📦 ${key}: ${keys.length} файлов (${cellKeys.length} ячеек)\n`;
-                      if (cellKeys.length > 0) {
-                        report += `   🏠 Ячейки: ${cellKeys.slice(0, 3).join(', ')}${cellKeys.length > 3 ? '...' : ''}\n`;
-                        foundCellFiles.push(...cellKeys.map(k => ({ storage: key, key: k, url: files[k] })));
-                      }
-                    } catch (e) {
-                      report += `❌ ${key}: Ошибка парсинга\n`;
-                    }
-                  } else {
-                    report += `❌ ${key}: НЕТ ДАННЫХ\n`;
-                  }
-                });
-                
-                report += `\n🎯 ВСЕГО НАЙДЕНО ФАЙЛОВ ЯЧЕЕК: ${foundCellFiles.length}\n\n`;
-                
-                // 2. Тестируем функцию playCellAudio
-                if (foundCellFiles.length > 0) {
-                  report += '🧪 ТЕСТ ВОСПРОИЗВЕДЕНИЯ:\n';
-                  const testFile = foundCellFiles[0];
-                  report += `Тестирую файл: ${testFile.key} из ${testFile.storage}\n`;
-                  
-                  try {
-                    // Прямое воспроизведение
-                    const audio = new Audio(testFile.url);
-                    await audio.play();
-                    report += `✅ ПРЯМОЕ ВОСПРОИЗВЕДЕНИЕ РАБОТАЕТ!\n`;
-                    setTimeout(() => audio.pause(), 1000);
-                  } catch (directError) {
-                    report += `❌ Прямое воспроизведение: ${directError.message}\n`;
-                    report += `❌ URL тип: ${testFile.url.startsWith('blob:') ? 'BLOB' : testFile.url.startsWith('data:') ? 'BASE64' : 'OTHER'}\n`;
-                  }
-                  
-                  // Тестируем через систему
-                  try {
-                    const { playCellAudio } = await import('/src/utils/cellAudioPlayer');
-                    const cellNumber = testFile.key.replace('cell-', '');
-                    const success = await playCellAudio(cellNumber);
-                    report += success ? `✅ playCellAudio РАБОТАЕТ для ${cellNumber}!\n` : `❌ playCellAudio НЕ РАБОТАЕТ для ${cellNumber}\n`;
-                  } catch (systemError) {
-                    report += `❌ Ошибка системы: ${systemError.message}\n`;
-                  }
-                } else {
-                  report += '❌ НЕТ ФАЙЛОВ ДЛЯ ТЕСТА!\n';
-                  report += '\n📋 ИНСТРУКЦИЯ:\n';
-                  report += '1. Настройки → Фразы для озвучки → Выдача\n';
-                  report += '2. Загрузите файл с именем cell-126.mp3\n';
-                  report += '3. Сохраните и повторите диагностику\n';
-                }
-                
-                alert(report);
-                console.log(report);
-              }}
-              className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md text-xs font-bold"
-              title="Диагностика озвучки ячеек"
-            >
-              🔍
-            </button>
+
           </div>
         </div>
       </div>
@@ -218,12 +126,7 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
         onClose={() => setIsAudioUploaderOpen(false)}
       />
       
-      {/* Панель диагностики */}
-      {showDebug && (
-        <div className="border-t bg-gray-50 p-4">
-          <AudioTestDebug />
-        </div>
-      )}
+
     </div>
   );
 };

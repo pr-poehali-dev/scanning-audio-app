@@ -121,7 +121,7 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
         console.log(`🎉 Успешно загружено ${successCells.length} файлов ячеек`);
         
         // Показываем успешное сообщение с кнопкой тестирования
-        const message = `✅ Успешно загружено ${successCells.length} файлов!\n\nЯчейки: ${successCells.join(', ')}\n\nХотите протестировать первую ячейку?`;
+        const message = `Успешно загружено ${successCells.length} файлов!\n\nЯчейки: ${successCells.join(', ')}\n\nХотите протестировать первую ячейку?`;
         if (window.confirm(message)) {
           handleTestCell(successCells[0]);
         }
@@ -306,21 +306,21 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
 
           {/* Инструкция */}
           <div className="bg-green-50 rounded-lg p-4 mt-6">
-            <h4 className="font-medium text-green-800 mb-3">📋 Как загрузить озвучку ячеек:</h4>
+            <h4 className="font-medium text-green-800 mb-3">Как загрузить озвучку ячеек:</h4>
             
             <div className="space-y-3 text-sm text-green-700">
               <div>
-                <div className="font-medium mb-1">🎯 Правила именования файлов:</div>
+                <div className="font-medium mb-1">Правила именования файлов:</div>
                 <div className="bg-green-100 rounded p-2 font-mono text-xs space-y-1">
-                  <div>✅ <code>A1.mp3</code> - ячейка A1</div>
-                  <div>✅ <code>cell-B15.mp3</code> - ячейка B15</div>
-                  <div>✅ <code>126.mp3</code> - ячейка 126</div>
-                  <div>✅ <code>ячейка-A25.mp3</code> - ячейка A25</div>
+                  <div><code>A1.mp3</code> - ячейка A1</div>
+                  <div><code>cell-B15.mp3</code> - ячейка B15</div>
+                  <div><code>126.mp3</code> - ячейка 126</div>
+                  <div><code>ячейка-A25.mp3</code> - ячейка A25</div>
                 </div>
               </div>
               
               <div>
-                <div className="font-medium mb-1">🎵 Что должно содержать аудио:</div>
+                <div className="font-medium mb-1">Что должно содержать аудио:</div>
                 <div className="bg-green-100 rounded p-2 text-xs">
                   Файл должен произносить номер ячейки, например:<br/>
                   <strong>"Ячейка А один"</strong> или <strong>"Номер сто двадцать шесть"</strong>
@@ -328,7 +328,7 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
               </div>
               
               <div>
-                <div className="font-medium mb-1">⚙️ Технические требования:</div>
+                <div className="font-medium mb-1">Технические требования:</div>
                 <ul className="list-disc list-inside text-xs space-y-1">
                   <li>Форматы: MP3, WAV, M4A, OGG</li>
                   <li>Размер: до 2 МБ на файл</li>
@@ -341,7 +341,7 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
           
           {/* Полезные советы */}
           <div className="bg-blue-50 rounded-lg p-4 mt-4">
-            <h4 className="font-medium text-blue-800 mb-2">💡 Полезные советы:</h4>
+            <h4 className="font-medium text-blue-800 mb-2">Полезные советы:</h4>
             <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
               <li>Можно перетащить папку с файлами прямо в окно</li>
               <li>Система автоматически определит номер ячейки из имени файла</li>
