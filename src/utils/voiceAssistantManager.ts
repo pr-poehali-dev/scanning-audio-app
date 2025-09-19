@@ -180,10 +180,10 @@ class VoiceAssistantManager {
     try {
       console.log(`🎤 [NEW ASSISTANT] Воспроизведение звука: ${soundId}`, params);
 
-      // Для номера ячейки используем существующую систему
+      // Для номера ячейки используем прямой доступ к старой системе без цикла
       if (soundId === 'cell_number' && params?.cellNumber) {
-        const { playCellAudio } = await import('./cellAudioPlayer');
-        return playCellAudio(params.cellNumber);
+        const { audioManager } = await import('./simpleAudioManager');
+        return audioManager.playCellAudio(params.cellNumber);
       }
 
       // Для других звуков проверяем наличие в хранилище
