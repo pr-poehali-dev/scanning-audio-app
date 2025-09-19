@@ -14,46 +14,46 @@ interface QRHandlersProps {
   setIsProductScanned: (value: boolean) => void;
 }
 
-// ПРАВИЛЬНАЯ функция для озвучки ячейки через новую систему
+// 🎯 ЕДИНАЯ БЕТОНИРОВАННАЯ функция для озвучки ячейки
 export const playCellAudioSafely = async (
   cellNumber: string, 
   playAudio: (key: string) => Promise<void>
 ): Promise<boolean> => {
-  console.log(`🏠 === ОЗВУЧКА ЯЧЕЙКИ ${cellNumber} ЧЕРЕЗ НОВУЮ СИСТЕМУ ===`);
+  console.log(`🎯 === ЕДИНАЯ СИСТЕМА: ОЗВУЧКА ЯЧЕЙКИ ${cellNumber} ===`);
   
   try {
-    // ИСПОЛЬЗУЕМ ПРАВИЛЬНУЮ СИСТЕМУ ОЗВУЧКИ ЯЧЕЕК
-    const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+    // ИСПОЛЬЗУЕМ ЕДИНУЮ БЕТОНИРОВАННУЮ СИСТЕМУ
+    const { playCellAudio } = await import('@/utils/unifiedAudioSystem');
     
     const success = await playCellAudio(cellNumber);
     
     if (success) {
-      console.log(`✅ УСПЕХ! Ячейка ${cellNumber} озвучена через новую систему!`);
+      console.log(`✅ УСПЕХ! Ячейка ${cellNumber} озвучена через ЕДИНУЮ систему!`);
       return true;
     } else {
-      console.warn(`⚠️ Файл для ячейки ${cellNumber} не найден в новой системе`);
+      console.warn(`⚠️ Файл для ячейки ${cellNumber} не найден даже в ЕДИНОЙ системе`);
       
       // Показываем информацию о доступных ячейках
-      const { getAudioEnabledCells } = await import('@/utils/cellAudioPlayer');
-      const availableCells = getAudioEnabledCells();
+      const { getCellsWithAudio } = await import('@/utils/unifiedAudioSystem');
+      const availableCells = getCellsWithAudio();
       
       if (availableCells.length === 0) {
         console.warn(`💡 РЕШЕНИЕ: Используйте синюю кнопку "Озвучка ячеек" в шапке для загрузки MP3 файлов`);
       } else {
-        console.warn(`💡 Доступные ячейки с озвучкой: ${availableCells.slice(0, 10).join(', ')}`);
+        console.warn(`💡 ЕДИНАЯ СИСТЕМА: Доступно ${availableCells.length} ячеек с озвучкой`);
+        console.warn(`💡 Первые 10 ячеек: ${availableCells.slice(0, 10).join(', ')}`);
       }
       
       return false;
     }
     
   } catch (error) {
-    console.error(`❌ Ошибка новой системы озвучки ячеек:`, error);
+    console.error(`❌ Ошибка ЕДИНОЙ системы озвучки ячеек:`, error);
     
-    // FALLBACK: пробуем старую систему как резерв
-    console.log(`🔄 РЕЗЕРВ: Пробуем старую систему озвучки...`);
+    // FALLBACK: пробуем старую систему как последний резерв
+    console.log(`🔄 ЭКСТРЕННЫЙ РЕЗЕРВ: Пробуем старую систему...`);
     
     const fallbackKeys = [
-      'cell-number',
       cellNumber,
       `cell-${cellNumber}`,
       `ячейка-${cellNumber}`
@@ -69,7 +69,7 @@ export const playCellAudioSafely = async (
       }
     }
     
-    console.warn(`❌ КРИТИЧНО: Ячейка "${cellNumber}" не найдена ни в одной системе!`);
+    console.warn(`❌ КРИТИЧНО: Ячейка "${cellNumber}" не найдена НИГДЕ!`);
     return false;
   }
 };
@@ -112,12 +112,24 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           await playCellAudioSafely(order.cellNumber, playAudio);
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Озвучиваем скидку
-          console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+          // Озвучиваем скидку через ЕДИНУЮ систему
+          console.log('🔊 ЕДИНАЯ СИСТЕМА: ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
           try {
-            await playAudio('discount');
+            const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+            const discountSuccess = await playSystemAudio('discount');
+            if (discountSuccess) {
+              console.log('✅ ЕДИНАЯ СИСТЕМА: Скидка воспроизведена!');
+            } else {
+              console.log('⚠️ ЕДИНАЯ СИСТЕМА: Скидка не найдена, пробуем старую систему...');
+              await playAudio('discount');
+            }
           } catch (error) {
-            console.log('⚠️ Аудио скидки не найдено');
+            console.log('⚠️ Ошибка воспроизведения скидки:', error);
+            try {
+              await playAudio('discount');
+            } catch (fallbackError) {
+              console.log('⚠️ Аудио скидки не найдено вообще');
+            }
           }
           
           // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
@@ -262,12 +274,24 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           await playCellAudioSafely(order.cellNumber, playAudio);
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Озвучиваем скидку
-          console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+          // Озвучиваем скидку через ЕДИНУЮ систему
+          console.log('🔊 ЕДИНАЯ СИСТЕМА: ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
           try {
-            await playAudio('discount');
+            const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+            const discountSuccess = await playSystemAudio('discount');
+            if (discountSuccess) {
+              console.log('✅ ЕДИНАЯ СИСТЕМА: Скидка воспроизведена!');
+            } else {
+              console.log('⚠️ ЕДИНАЯ СИСТЕМА: Скидка не найдена, пробуем старую систему...');
+              await playAudio('discount');
+            }
           } catch (error) {
-            console.log('⚠️ Аудио скидки не найдено');
+            console.log('⚠️ Ошибка воспроизведения скидки:', error);
+            try {
+              await playAudio('discount');
+            } catch (fallbackError) {
+              console.log('⚠️ Аудио скидки не найдено вообще');
+            }
           }
           
           // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
@@ -302,14 +326,25 @@ export const createQRHandlers = (props: QRHandlersProps) => {
         setDeliveryStep('product-scanned');
         setIsProductScanned(true);
         
-        // Озвучиваем "Проверьте товар под камерой"
+        // Озвучиваем "Проверьте товар под камерой" через ЕДИНУЮ систему
         try {
-          await playAudio('check-product-camera');
+          const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+          const checkSuccess = await playSystemAudio('check-product');
+          if (checkSuccess) {
+            console.log('✅ ЕДИНАЯ СИСТЕМА: "Проверьте товар" воспроизведено!');
+          } else {
+            console.log('⚠️ ЕДИНАЯ СИСТЕМА: "Проверьте товар" не найдено, пробуем старую систему...');
+            await playAudio('check-product-camera');
+          }
         } catch (error) {
           try {
-            await playAudio('check-product');
+            await playAudio('check-product-camera');
           } catch (error2) {
-            console.log('⚠️ Аудио проверки товара не найдено');
+            try {
+              await playAudio('check-product');
+            } catch (error3) {
+              console.log('⚠️ Аудио проверки товара не найдено вообще');
+            }
           }
         }
         
