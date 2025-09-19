@@ -315,12 +315,23 @@ class SimpleAudioManager {
    */
   async playCellAudio(cellNumber: string): Promise<boolean> {
     try {
-      const storage = this.getStorage();
+      console.log(`🔊 === ВОСПРОИЗВЕДЕНИЕ ЯЧЕЙКИ ${cellNumber} ===`);
+      
+      let storage = this.getStorage();
+      
+      // ПРИНУДИТЕЛЬНАЯ МИГРАЦИЯ ПЕРЕД КАЖДЫМ ВОСПРОИЗВЕДЕНИЕМ
+      const cellsCount = Object.keys(storage.cells).length;
+      if (cellsCount === 0) {
+        console.log(`⚠️ Нет ячеек в новой системе (${cellsCount}), принудительно мигрирую...`);
+        this.migrateFromOldSystem();
+        storage = this.getStorage(); // Перечитываем после миграции
+      }
       
       // Ищем файл по разным вариантам ключа
       const possibleKeys = [
         cellNumber,
         `cell-${cellNumber}`,
+        `ячейка-${cellNumber}`,
         cellNumber.toString()
       ];
       
@@ -331,13 +342,54 @@ class SimpleAudioManager {
         if (storage.cells[key]) {
           audioFile = storage.cells[key];
           foundKey = key;
+          console.log(`✅ Найден аудио файл для ячейки ${cellNumber} по ключу "${key}"`);
           break;
         }
       }
       
       if (!audioFile) {
-        console.warn(`❌ Аудио файл для ячейки ${cellNumber} не найден`);
-        return false;
+        console.warn(`❌ Аудио файл для ячейки ${cellNumber} не найден в новой системе`);
+        
+        // ЭКСТРЕННАЯ МИГРАЦИЯ - ищем в старых ключах прямо сейчас
+        console.log(`🚨 ЭКСТРЕННАЯ МИГРАЦИЯ для ячейки ${cellNumber}...`);
+        const oldKeys = ['wb-pvz-cell-audio-settings-permanent', 'wb-audio-files'];
+        
+        for (const oldKey of oldKeys) {
+          const oldData = localStorage.getItem(oldKey);
+          if (oldData) {
+            try {
+              const parsed = JSON.parse(oldData);
+              for (const key of possibleKeys) {
+                if (parsed[key] && parsed[key].startsWith('data:audio/')) {
+                  // НЕМЕДЛЕННО сохраняем в новую систему
+                  const emergencyFile = {
+                    url: parsed[key],
+                    name: `cell-${cellNumber}.mp3`,
+                    size: 0,
+                    uploadDate: new Date().toISOString()
+                  };
+                  
+                  storage.cells[cellNumber] = emergencyFile;
+                  storage.cells[`cell-${cellNumber}`] = emergencyFile;
+                  this.saveStorage(storage);
+                  
+                  audioFile = emergencyFile;
+                  foundKey = key;
+                  console.log(`🚨 ЭКСТРЕННО мигрирована ячейка ${cellNumber} из ${oldKey}!`);
+                  break;
+                }
+              }
+              if (audioFile) break;
+            } catch (e) {
+              console.warn(`⚠️ Ошибка экстренной миграции из ${oldKey}:`, e);
+            }
+          }
+        }
+        
+        if (!audioFile) {
+          console.error(`❌ КРИТИЧНО: Ячейка ${cellNumber} не найдена даже после экстренной миграции!`);
+          return false;
+        }
       }
       
       // Простое воспроизведение без кэширования
@@ -454,17 +506,17 @@ class SimpleAudioManager {
    */
   migrateFromOldSystem(): boolean {
     try {
-      console.log('🔄 Начинаю миграцию из старой системы...');
+      console.log('🔄 === ПРИНУДИТЕЛЬНАЯ МИГРАЦИЯ ИЗ СТАРОЙ СИСТЕМЫ ===');
       
       const storage = this.getStorage();
       let migratedCount = 0;
       
-      // Список старых ключей для миграции
+      // Список старых ключей для миграции (в порядке приоритета)
       const oldKeys = [
-        'wb-audio-files',
+        'wb-pvz-cell-audio-settings-permanent', // ГЛАВНЫЙ ключ с файлами ячеек
+        'wb-audio-files', // Резервный ключ
         'wb-audio-files-backup', 
         'wb-audio-files-cells-backup',
-        'wb-pvz-cell-audio-settings-permanent',
         'customAudioFiles',
         'audioFiles',
         'cellAudios'
@@ -475,7 +527,7 @@ class SimpleAudioManager {
           const oldData = localStorage.getItem(oldKey);
           if (oldData) {
             const parsed = JSON.parse(oldData);
-            console.log(`🔄 Миграция из ${oldKey}: найдено ${Object.keys(parsed).length} файлов`);
+            console.log(`🔄 МИГРАЦИЯ из ${oldKey}: найдено ${Object.keys(parsed).length} файлов`);
             
             Object.keys(parsed).forEach(key => {
               const fileUrl = parsed[key];
@@ -483,24 +535,30 @@ class SimpleAudioManager {
               // Пропускаем если файла нет или он битый
               if (!fileUrl || typeof fileUrl !== 'string') return;
               
-              // Определяем тип файла по ключу
-              if (key.includes('cell-') || /^\d+$/.test(key) || key.includes('ячейка')) {
-                // Это файл ячейки
-                let cellNumber = key.replace('cell-', '').replace('ячейка-', '');
+              // ПРИНУДИТЕЛЬНАЯ МИГРАЦИЯ ВСЕХ ФАЙЛОВ ЯЧЕЕК
+              if (key.includes('cell-') || /^\d+$/.test(key) || key.includes('ячейка') || key.includes('коробка') || key.includes('box')) {
+                // Извлекаем номер ячейки из ключа
+                let cellNumber = key.replace(/cell-|ячейка-|коробка-|box-/g, '');
                 
-                if (!storage.cells[cellNumber] && fileUrl.startsWith('data:audio/')) {
-                  storage.cells[cellNumber] = {
+                // Проверяем что это действительно номер
+                if (/^\d+$/.test(cellNumber) && fileUrl.startsWith('data:audio/')) {
+                  // ПРИНУДИТЕЛЬНО сохраняем во все варианты ключей
+                  const audioFile = {
                     url: fileUrl,
                     name: `cell-${cellNumber}.mp3`,
                     size: 0,
                     uploadDate: new Date().toISOString()
                   };
-                  // Сохраняем также с префиксом для совместимости
-                  storage.cells[`cell-${cellNumber}`] = storage.cells[cellNumber];
+                  
+                  // Сохраняем под всеми возможными ключами для надёжности
+                  storage.cells[cellNumber] = audioFile;
+                  storage.cells[`cell-${cellNumber}`] = audioFile;
+                  storage.cells[`ячейка-${cellNumber}`] = audioFile;
+                  
                   migratedCount++;
-                  console.log(`✅ Мигрирована ячейка ${cellNumber}`);
+                  console.log(`✅ ПРИНУДИТЕЛЬНО мигрирована ячейка ${cellNumber} из ключа "${key}"`);
                 }
-              } else if (key.includes('скидк') || key.includes('кошелек') || key.includes('discount')) {
+              } else if (key.includes('скидк') || key.includes('кошелек') || key.includes('discount') || key.includes('Товары со со скидкой')) {
                 // Системные звуки - сохраняем в delivery
                 if (!storage.delivery[key] && fileUrl.startsWith('data:audio/')) {
                   storage.delivery[key] = {
