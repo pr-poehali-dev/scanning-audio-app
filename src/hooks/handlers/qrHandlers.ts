@@ -14,62 +14,29 @@ interface QRHandlersProps {
   setIsProductScanned: (value: boolean) => void;
 }
 
-// 🎯 ЕДИНАЯ БЕТОНИРОВАННАЯ функция для озвучки ячейки
+// 🛡️ ПУЛЕНЕПРОБИВАЕМАЯ функция для озвучки ячейки
 export const playCellAudioSafely = async (
   cellNumber: string, 
   playAudio: (key: string) => Promise<void>
 ): Promise<boolean> => {
-  console.log(`🎯 === ЕДИНАЯ СИСТЕМА: ОЗВУЧКА ЯЧЕЙКИ ${cellNumber} ===`);
+  console.log(`🛡️ === ПУЛЕНЕПРОБИВАЕМАЯ ОЗВУЧКА ЯЧЕЙКИ ${cellNumber} ===`);
   
   try {
-    // ИСПОЛЬЗУЕМ ЕДИНУЮ БЕТОНИРОВАННУЮ СИСТЕМУ
-    const { playCellAudio } = await import('@/utils/unifiedAudioSystem');
+    // ИСПОЛЬЗУЕМ ПУЛЕНЕПРОБИВАЕМУЮ СИСТЕМУ
+    const { playCellAudio } = await import('@/utils/bulletproofAudio');
     
     const success = await playCellAudio(cellNumber);
     
     if (success) {
-      console.log(`✅ УСПЕХ! Ячейка ${cellNumber} озвучена через ЕДИНУЮ систему!`);
+      console.log(`✅ УСПЕХ! Ячейка ${cellNumber} озвучена ПУЛЕНЕПРОБИВАЕМО!`);
       return true;
     } else {
-      console.warn(`⚠️ Файл для ячейки ${cellNumber} не найден даже в ЕДИНОЙ системе`);
-      
-      // Показываем информацию о доступных ячейках
-      const { getCellsWithAudio } = await import('@/utils/unifiedAudioSystem');
-      const availableCells = getCellsWithAudio();
-      
-      if (availableCells.length === 0) {
-        console.warn(`💡 РЕШЕНИЕ: Используйте синюю кнопку "Озвучка ячеек" в шапке для загрузки MP3 файлов`);
-      } else {
-        console.warn(`💡 ЕДИНАЯ СИСТЕМА: Доступно ${availableCells.length} ячеек с озвучкой`);
-        console.warn(`💡 Первые 10 ячеек: ${availableCells.slice(0, 10).join(', ')}`);
-      }
-      
+      console.warn(`❌ КРИТИЧНО: Ячейка ${cellNumber} не найдена даже в пуленепробиваемой системе!`);
       return false;
     }
     
   } catch (error) {
-    console.error(`❌ Ошибка ЕДИНОЙ системы озвучки ячеек:`, error);
-    
-    // FALLBACK: пробуем старую систему как последний резерв
-    console.log(`🔄 ЭКСТРЕННЫЙ РЕЗЕРВ: Пробуем старую систему...`);
-    
-    const fallbackKeys = [
-      cellNumber,
-      `cell-${cellNumber}`,
-      `ячейка-${cellNumber}`
-    ];
-    
-    for (const key of fallbackKeys) {
-      try {
-        await playAudio(key);
-        console.log(`✅ РЕЗЕРВ: Озвучено через старую систему с ключом "${key}"`);
-        return true;
-      } catch (fallbackError) {
-        // Игнорируем ошибки резервной системы
-      }
-    }
-    
-    console.warn(`❌ КРИТИЧНО: Ячейка "${cellNumber}" не найдена НИГДЕ!`);
+    console.error(`❌ Критическая ошибка пуленепробиваемой системы:`, error);
     return false;
   }
 };
@@ -112,24 +79,18 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           await playCellAudioSafely(order.cellNumber, playAudio);
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Озвучиваем скидку через ЕДИНУЮ систему
-          console.log('🔊 ЕДИНАЯ СИСТЕМА: ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+          // Озвучиваем скидку ПУЛЕНЕПРОБИВАЕМО
+          console.log('🛡️ ПУЛЕНЕПРОБИВАЕМАЯ СКИДКА...');
           try {
-            const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+            const { playSystemAudio } = await import('@/utils/bulletproofAudio');
             const discountSuccess = await playSystemAudio('discount');
             if (discountSuccess) {
-              console.log('✅ ЕДИНАЯ СИСТЕМА: Скидка воспроизведена!');
+              console.log('✅ ПУЛЕНЕПРОБИВАЕМО: Скидка воспроизведена!');
             } else {
-              console.log('⚠️ ЕДИНАЯ СИСТЕМА: Скидка не найдена, пробуем старую систему...');
-              await playAudio('discount');
+              console.log('❌ КРИТИЧНО: Скидка не найдена даже пуленепробиваемо');
             }
           } catch (error) {
-            console.log('⚠️ Ошибка воспроизведения скидки:', error);
-            try {
-              await playAudio('discount');
-            } catch (fallbackError) {
-              console.log('⚠️ Аудио скидки не найдено вообще');
-            }
+            console.error('❌ Критическая ошибка воспроизведения скидки:', error);
           }
           
           // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
@@ -274,24 +235,18 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           await playCellAudioSafely(order.cellNumber, playAudio);
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Озвучиваем скидку через ЕДИНУЮ систему
-          console.log('🔊 ЕДИНАЯ СИСТЕМА: ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
+          // Озвучиваем скидку ПУЛЕНЕПРОБИВАЕМО
+          console.log('🛡️ ПУЛЕНЕПРОБИВАЕМАЯ СКИДКА...');
           try {
-            const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+            const { playSystemAudio } = await import('@/utils/bulletproofAudio');
             const discountSuccess = await playSystemAudio('discount');
             if (discountSuccess) {
-              console.log('✅ ЕДИНАЯ СИСТЕМА: Скидка воспроизведена!');
+              console.log('✅ ПУЛЕНЕПРОБИВАЕМО: Скидка воспроизведена!');
             } else {
-              console.log('⚠️ ЕДИНАЯ СИСТЕМА: Скидка не найдена, пробуем старую систему...');
-              await playAudio('discount');
+              console.log('❌ КРИТИЧНО: Скидка не найдена даже пуленепробиваемо');
             }
           } catch (error) {
-            console.log('⚠️ Ошибка воспроизведения скидки:', error);
-            try {
-              await playAudio('discount');
-            } catch (fallbackError) {
-              console.log('⚠️ Аудио скидки не найдено вообще');
-            }
+            console.error('❌ Критическая ошибка воспроизведения скидки:', error);
           }
           
           // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
@@ -326,26 +281,17 @@ export const createQRHandlers = (props: QRHandlersProps) => {
         setDeliveryStep('product-scanned');
         setIsProductScanned(true);
         
-        // Озвучиваем "Проверьте товар под камерой" через ЕДИНУЮ систему
+        // Озвучиваем "Проверьте товар под камерой" ПУЛЕНЕПРОБИВАЕМО
         try {
-          const { playSystemAudio } = await import('@/utils/unifiedAudioSystem');
+          const { playSystemAudio } = await import('@/utils/bulletproofAudio');
           const checkSuccess = await playSystemAudio('check-product');
           if (checkSuccess) {
-            console.log('✅ ЕДИНАЯ СИСТЕМА: "Проверьте товар" воспроизведено!');
+            console.log('✅ ПУЛЕНЕПРОБИВАЕМО: "Проверьте товар" воспроизведено!');
           } else {
-            console.log('⚠️ ЕДИНАЯ СИСТЕМА: "Проверьте товар" не найдено, пробуем старую систему...');
-            await playAudio('check-product-camera');
+            console.log('❌ КРИТИЧНО: "Проверьте товар" не найдено даже пуленепробиваемо');
           }
         } catch (error) {
-          try {
-            await playAudio('check-product-camera');
-          } catch (error2) {
-            try {
-              await playAudio('check-product');
-            } catch (error3) {
-              console.log('⚠️ Аудио проверки товара не найдено вообще');
-            }
-          }
+          console.error('❌ Критическая ошибка проверки товара:', error);
         }
         
         // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС

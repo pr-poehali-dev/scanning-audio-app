@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { createAudioLoader } from './audio/audioLoader';
-import { playAudio, playCellAudio } from './audio/audioPlayer';
 import { updateAudioFiles, removeAudioFile, clearAllAudio, getLoadedFiles } from './audio/audioFileManager';
 
 export const useAudio = () => {
@@ -83,41 +82,41 @@ export const useAudio = () => {
     };
   }, []); // Без зависимости для избежания бесконечного цикла
 
-  // Обертка для playAudio с передачей customAudioFiles
+  // ПУЛЕНЕПРОБИВАЕМАЯ обертка для playAudio
   const playAudioCallback = useCallback(async (audioKey: string) => {
     try {
-      console.log(`🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ: "${audioKey}"`);
+      console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМОЕ ВОСПРОИЗВЕДЕНИЕ: "${audioKey}"`);
       
-      // Сначала пробуем новую систему голосовых помощников
-      const { voiceAssistantManager } = await import('@/utils/voiceAssistantManager');
+      // ИСПОЛЬЗУЕМ ТОЛЬКО ПУЛЕНЕПРОБИВАЕМУЮ СИСТЕМУ
+      const { playAudio } = await import('@/utils/bulletproofAudio');
+      const success = await playAudio(audioKey);
       
-      // Для discount пробуем напрямую через новую систему
-      if (audioKey === 'discount') {
-        console.log('🎯 Озвучка скидки через новую систему...');
-        const success = await voiceAssistantManager.playNewAssistantSound('discount');
-        if (success) {
-          console.log('✅ Скидка воспроизведена через новую систему');
-          return;
-        }
+      if (success) {
+        console.log(`✅ ПУЛЕНЕПРОБИВАЕМО: "${audioKey}" воспроизведено!`);
+      } else {
+        console.error(`❌ КРИТИЧНО: "${audioKey}" не найдено даже пуленепробиваемо`);
       }
-      
-      // Fallback на старую систему
-      await playAudio(audioKey, customAudioFiles);
     } catch (error) {
-      console.error(`❌ Ошибка воспроизведения "${audioKey}":`, error);
+      console.error(`❌ Критическая ошибка воспроизведения "${audioKey}":`, error);
     }
   }, [customAudioFiles]);
 
-  // Обертка для playCellAudio с передачей customAudioFiles
+  // ПУЛЕНЕПРОБИВАЕМАЯ обертка для playCellAudio
   const playCellAudioCallback = useCallback(async (cellNumber: string) => {
     try {
-      console.log(`🔊 ПОПЫТКА ОЗВУЧИТЬ ЯЧЕЙКУ: "${cellNumber}"`);
+      console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМАЯ ОЗВУЧКА ЯЧЕЙКИ: "${cellNumber}"`);
       
-      // Используем новую систему напрямую без циклов
-      const { playCellAudio: newPlayCellAudio } = await import('@/utils/cellAudioPlayer');
-      await newPlayCellAudio(cellNumber);
+      // ИСПОЛЬЗУЕМ ТОЛЬКО ПУЛЕНЕПРОБИВАЕМУЮ СИСТЕМУ
+      const { playCellAudio } = await import('@/utils/bulletproofAudio');
+      const success = await playCellAudio(cellNumber);
+      
+      if (success) {
+        console.log(`✅ ПУЛЕНЕПРОБИВАЕМО: Ячейка "${cellNumber}" воспроизведена!`);
+      } else {
+        console.error(`❌ КРИТИЧНО: Ячейка "${cellNumber}" не найдена даже пуленепробиваемо`);
+      }
     } catch (error) {
-      console.error(`❌ Ошибка озвучки ячейки "${cellNumber}":`, error);
+      console.error(`❌ Критическая ошибка озвучки ячейки "${cellNumber}":`, error);
     }
   }, [customAudioFiles]);
 
