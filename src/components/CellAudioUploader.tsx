@@ -26,42 +26,65 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
 
   const handleTestCell = async (cellNumber: string) => {
     try {
-      console.log(`🎵 Тестирование ячейки ${cellNumber}...`);
+      console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМОЕ ТЕСТИРОВАНИЕ ячейки ${cellNumber}...`);
       
-      // ИСПОЛЬЗУЕМ ПРАВИЛЬНУЮ СИСТЕМУ ОЗВУЧКИ ЯЧЕЕК
-      const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+      // ИСПОЛЬЗУЕМ ТОЛЬКО ПУЛЕНЕПРОБИВАЕМУЮ СИСТЕМУ
+      const { playCellAudio } = await import('@/utils/bulletproofAudio');
       const success = await playCellAudio(cellNumber);
       
       if (success) {
-        console.log(`✅ Ячейка ${cellNumber} успешно воспроизведена!`);
+        console.log(`✅ ПУЛЕНЕПРОБИВАЕМО: Ячейка ${cellNumber} успешно воспроизведена!`);
       } else {
-        console.warn(`❌ Не удалось воспроизвести ячейку ${cellNumber}`);
+        console.warn(`❌ КРИТИЧНО: Не удалось воспроизвести ячейку ${cellNumber} даже пуленепробиваемо`);
         
         // Показываем диагностическую информацию
-        const { getAudioEnabledCells } = await import('@/utils/cellAudioPlayer');
-        const availableCells = getAudioEnabledCells();
-        console.log(`📋 Доступные ячейки:`, availableCells);
+        const { getAudioStats } = await import('@/utils/bulletproofAudio');
+        const stats = getAudioStats();
+        console.log(`📊 ПУЛЕНЕПРОБИВАЕМАЯ СТАТИСТИКА:`, stats);
       }
     } catch (error) {
-      console.error(`❌ Ошибка тестирования ячейки ${cellNumber}:`, error);
+      console.error(`❌ Критическая ошибка тестирования ячейки ${cellNumber}:`, error);
     }
   };
 
   const getAllCells = () => {
     try {
-      // Сначала пробуем получить из главной системы
-      const mainCells = getCellsFromMainSystem();
-      if (mainCells.length > 0) {
-        console.log(`📋 Показываем ${mainCells.length} ячеек из главной системы`);
-        return mainCells;
-      }
+      // ПУЛЕНЕПРОБИВАЕМОЕ получение списка ячеек
+      console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМОЕ получение списка ячеек...`);
       
-      // Если в главной системе нет, берем из старой
-      const oldCells = audioManager.getCellsWithAudio();
-      console.log(`📋 Показываем ${oldCells.length} ячеек из старой системы`);
-      return oldCells;
+      // Загружаем все файлы и извлекаем ячейки
+      const storageKeys = [
+        'bulletproof-audio-system',
+        'wb-pvz-cell-audio-settings-permanent',
+        'wb-audio-files', 
+        'wb-audio-files-backup'
+      ];
+      
+      const allCells = new Set<string>();
+      
+      storageKeys.forEach(key => {
+        try {
+          const data = localStorage.getItem(key);
+          if (data) {
+            const parsed = JSON.parse(data);
+            Object.keys(parsed).forEach(fileKey => {
+              // Извлекаем номера ячеек из ключей
+              const cellMatch = fileKey.match(/^(\d+)$/) || fileKey.match(/cell-(\d+)/) || fileKey.match(/ячейка-(\d+)/);
+              if (cellMatch && cellMatch[1]) {
+                allCells.add(cellMatch[1]);
+              }
+            });
+          }
+        } catch (error) {
+          console.warn(`⚠️ Ошибка чтения ${key}:`, error);
+        }
+      });
+      
+      const cellsArray = Array.from(allCells).sort((a, b) => parseInt(a) - parseInt(b));
+      console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМО: Найдено ${cellsArray.length} уникальных ячеек`);
+      return cellsArray;
     } catch (error) {
-      console.error('❌ Ошибка получения списка ячеек:', error);
+      console.error('❌ Критическая ошибка получения списка ячеек:', error);
       return [];
     }
   };

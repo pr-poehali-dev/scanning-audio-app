@@ -62,28 +62,89 @@ export const extractCellNumberFromFileName = (fileName: string): string => {
 };
 
 export const saveCellAudioToAllSystems = async (cellNumber: string, file: File): Promise<boolean> => {
-  console.log(`💾 Сохраняю ${file.name} для ячейки ${cellNumber}...`);
+  console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМОЕ СОХРАНЕНИЕ ${file.name} для ячейки ${cellNumber}...`);
   
-  // ГЛАВНАЯ СИСТЕМА - сохраняем в wb-audio-files (как системные озвучки)
-  console.log(`💾 [ГЛАВНАЯ] Сохраняю ${file.name} для ячейки ${cellNumber} в основную систему...`);
-  const mainSystemSuccess = await saveCellAudioToMainSystem(cellNumber, file);
+  let hasAnySuccess = false;
   
-  // РЕЗЕРВНЫЕ СИСТЕМЫ
-  console.log(`💾 [РЕЗЕРВ] Сохраняю ${file.name} для ячейки ${cellNumber} через Object URL...`);
-  const objectUrlSuccess = await objectUrlAudioManager.saveCellAudio(cellNumber, file);
+  try {
+    // 1. ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА (ПРИОРИТЕТ!)
+    console.log(`🛡️ [ПУЛЕНЕПРОБИВАЕМО] Сохраняю файл для ячейки ${cellNumber}...`);
+    
+    // Конвертируем файл в DataURL для пуленепробиваемой системы
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    
+    // Сохраняем напрямую в localStorage под всеми ключами
+    const allKeys = [
+      'bulletproof-audio-system',
+      'wb-audio-files', 
+      'wb-pvz-cell-audio-settings-permanent',
+      'wb-audio-files-backup'
+    ];
+    
+    for (const storageKey of allKeys) {
+      try {
+        const existingData = localStorage.getItem(storageKey);
+        let storageData: any = {};
+        
+        if (existingData) {
+          storageData = JSON.parse(existingData);
+        }
+        
+        // Сохраняем под всеми возможными ключами ячейки
+        const cellKeys = [cellNumber, `cell-${cellNumber}`, `ячейка-${cellNumber}`];
+        cellKeys.forEach(key => {
+          storageData[key] = dataUrl;
+        });
+        
+        localStorage.setItem(storageKey, JSON.stringify(storageData));
+        hasAnySuccess = true;
+        console.log(`✅ ПУЛЕНЕПРОБИВАЕМО: Сохранено в ${storageKey}`);
+      } catch (error) {
+        console.warn(`⚠️ Не удалось сохранить в ${storageKey}:`, error);
+      }
+    }
+    
+  } catch (error) {
+    console.error(`❌ КРИТИЧЕСКАЯ ошибка пуленепробиваемого сохранения:`, error);
+  }
   
-  console.log(`💾 [РЕЗЕРВ] Сохраняю ${file.name} для ячейки ${cellNumber} через Data URL менеджер...`);
-  const dataUrlSuccess = await audioManager.saveCellAudio(cellNumber, file);
-  
-  const hasAnySuccess = mainSystemSuccess || objectUrlSuccess || dataUrlSuccess;
-  
-  if (hasAnySuccess) {
-    console.log(`✅ Загружен файл для ячейки ${cellNumber}:`);
+  // 2. РЕЗЕРВНЫЕ СИСТЕМЫ (для совместимости)
+  try {
+    console.log(`💾 [РЕЗЕРВ] Дублирую в старые системы...`);
+    
+    const mainSystemSuccess = await saveCellAudioToMainSystem(cellNumber, file);
+    const objectUrlSuccess = await objectUrlAudioManager.saveCellAudio(cellNumber, file);
+    const dataUrlSuccess = await audioManager.saveCellAudio(cellNumber, file);
+    
+    const reserveSuccess = mainSystemSuccess || objectUrlSuccess || dataUrlSuccess;
+    hasAnySuccess = hasAnySuccess || reserveSuccess;
+    
+    console.log(`💾 РЕЗЕРВНЫЕ СИСТЕМЫ:`);
     console.log(`   Главная система: ${mainSystemSuccess ? '✅' : '❌'}`);
     console.log(`   Object URL: ${objectUrlSuccess ? '✅' : '❌'}`);
     console.log(`   Data URL: ${dataUrlSuccess ? '✅' : '❌'}`);
+  } catch (error) {
+    console.warn(`⚠️ Ошибка резервных систем:`, error);
+  }
+  
+  if (hasAnySuccess) {
+    console.log(`🛡️ ПУЛЕНЕПРОБИВАЕМО: Файл ячейки ${cellNumber} сохранен и готов к использованию!`);
+    
+    // НЕМЕДЛЕННО ТЕСТИРУЕМ что файл доступен
+    try {
+      const { playAudio } = await import('@/utils/bulletproofAudio');
+      const testSuccess = await playAudio(cellNumber);
+      console.log(`🎯 Тест воспроизведения ячейки ${cellNumber}: ${testSuccess ? '✅ Работает' : '❌ Не работает'}`);
+    } catch (testError) {
+      console.warn(`⚠️ Не удалось протестировать ячейку ${cellNumber}:`, testError);
+    }
   } else {
-    console.error(`❌ Ошибка загрузки файла для ячейки ${cellNumber} во все системы`);
+    console.error(`❌ КРИТИЧНО: Не удалось сохранить файл ячейки ${cellNumber} ни в одну систему!`);
   }
   
   return hasAnySuccess;
