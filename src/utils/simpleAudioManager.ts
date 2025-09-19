@@ -257,9 +257,10 @@ class SimpleAudioManager {
    */
   async playCellAudio(cellNumber: string): Promise<boolean> {
     try {
-      console.log(`🎵 Воспроизводим аудио для ячейки ${cellNumber}`);
+      console.log(`🎵 === НАЧИНАЕМ ВОСПРОИЗВЕДЕНИЕ ЯЧЕЙКИ ${cellNumber} ===`);
       
       const storage = this.getStorage();
+      console.log(`📊 Всего ячеек в хранилище: ${Object.keys(storage.cells).length}`);
       
       // Ищем файл по разным вариантам ключа
       const possibleKeys = [
@@ -268,20 +269,38 @@ class SimpleAudioManager {
         cellNumber.toString()
       ];
       
+      console.log(`🔍 Ищем файл по ключам:`, possibleKeys);
+      
       let audioFile: AudioFile | null = null;
       let foundKey = '';
       
       for (const key of possibleKeys) {
+        console.log(`🔎 Проверяем ключ: "${key}"`);
         if (storage.cells[key]) {
           audioFile = storage.cells[key];
           foundKey = key;
+          console.log(`✅ НАЙДЕН файл по ключу: "${foundKey}"`);
+          console.log(`📁 Размер файла: ${audioFile.size} байт`);
+          console.log(`📅 Дата загрузки: ${audioFile.uploadDate}`);
           break;
+        } else {
+          console.log(`❌ Ключ "${key}" не найден`);
         }
       }
       
       if (!audioFile) {
-        console.warn(`❌ Аудио файл для ячейки ${cellNumber} не найден`);
-        console.log(`📋 Доступные ячейки:`, Object.keys(storage.cells));
+        console.warn(`❌ === ФАЙЛ НЕ НАЙДЕН ДЛЯ ЯЧЕЙКИ ${cellNumber} ===`);
+        const availableCells = Object.keys(storage.cells).slice(0, 20);
+        console.log(`📋 Первые 20 доступных ячеек:`, availableCells);
+        
+        // Покажем, есть ли похожие ячейки
+        const similarCells = Object.keys(storage.cells).filter(key => 
+          key.includes(cellNumber) || cellNumber.includes(key)
+        );
+        if (similarCells.length > 0) {
+          console.log(`🔍 Похожие ячейки найдены:`, similarCells);
+        }
+        
         return false;
       }
       

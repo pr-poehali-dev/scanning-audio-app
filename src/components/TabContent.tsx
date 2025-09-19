@@ -114,8 +114,64 @@ const TabContent = ({
             />
             
             <button
-              onClick={() => {
-                console.log(`🔘 КНОПКА "НАЙТИ ЗАКАЗ" НАЖАТА! Номер: ${phoneNumber}`);
+              onClick={async () => {
+                console.log(`🔘 === КНОПКА "НАЙТИ ЗАКАЗ" НАЖАТА! ===`);
+                console.log(`📱 Введен номер: "${phoneNumber}"`);
+                console.log(`🔍 Длина введенного номера: ${phoneNumber.length} символов`);
+                
+                if (phoneNumber.length === 0) {
+                  console.warn('⚠️ Пустое поле номера!');
+                  return;
+                }
+                
+                console.log('🔎 ВЫЗЫВАЕМ findOrderByPhone...');
+                const order = findOrderByPhone(phoneNumber);
+                console.log('📋 РЕЗУЛЬТАТ findOrderByPhone:', order);
+                
+                if (order) {
+                  console.log(`✅ === ЗАКАЗ НАЙДЕН! ===`);
+                  console.log(`👤 Имя клиента: ${order.customerName}`);
+                  console.log(`🏠 Ячейка: ${order.cellNumber}`);
+                  console.log(`📞 Телефон заказа: ${order.phone}`);
+                  
+                  // Озвучиваем ячейку
+                  console.log(`🔊 === НАЧИНАЕМ ОЗВУЧКУ ЯЧЕЙКИ ${order.cellNumber} ===`);
+                  try {
+                    const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+                    console.log('📦 playCellAudio импортирован успешно');
+                    
+                    const success = await playCellAudio(order.cellNumber);
+                    console.log(`🎵 === РЕЗУЛЬТАТ ОЗВУЧКИ: ${success ? '✅ УСПЕХ' : '❌ НЕУДАЧА'} ===`);
+                    
+                    if (!success) {
+                      console.log('🔍 Проверяем доступные ячейки...');
+                      const { audioManager } = await import('@/utils/simpleAudioManager');
+                      const availableCells = audioManager.getCellsWithAudio();
+                      console.log(`📋 Всего озвученных ячеек: ${availableCells.length}`);
+                      console.log(`📋 Первые 10 ячеек:`, availableCells.slice(0, 10));
+                      
+                      // Проверяем похожие ячейки
+                      const similarCells = availableCells.filter(cell => 
+                        cell.includes(order.cellNumber) || order.cellNumber.includes(cell)
+                      );
+                      if (similarCells.length > 0) {
+                        console.log(`🔍 Похожие ячейки найдены:`, similarCells);
+                      }
+                    }
+                    
+                  } catch (error) {
+                    console.error('❌ === ОШИБКА ПРИ ОЗВУЧКЕ ===', error);
+                    console.error('📍 Место ошибки:', error.stack);
+                  }
+                  
+                } else {
+                  console.log(`❌ === ЗАКАЗ НЕ НАЙДЕН ===`);
+                  console.log(`📱 Искали по номеру: "${phoneNumber}"`);
+                }
+                
+                console.log('🏁 === ОБРАБОТКА ПОИСКА ЗАВЕРШЕНА ===');
+                
+                // Вызываем оригинальную функцию
                 onPhoneSubmit(phoneNumber);
               }}
               disabled={phoneNumber.length !== 4}

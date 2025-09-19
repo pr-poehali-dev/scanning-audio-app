@@ -404,6 +404,45 @@ class VoiceAssistantManager {
       return { soundsCount: 0, totalSize: '0 KB', assistant: 'Ошибка' };
     }
   }
+
+  /**
+   * Воспроизведение ячейки через выбранного помощника
+   */
+  async playCellAudio(cellNumber: string): Promise<boolean> {
+    try {
+      console.log(`🎤 [VOICE ASSISTANT MANAGER] Воспроизведение ячейки ${cellNumber} через ${this.currentAssistant} помощника`);
+      
+      if (this.currentAssistant === 'old') {
+        // Используем старую систему через audioManager
+        const { audioManager } = await import('./simpleAudioManager');
+        const success = await audioManager.playCellAudio(cellNumber);
+        console.log(`${success ? '✅' : '❌'} [OLD ASSISTANT] Результат воспроизведения ячейки ${cellNumber}: ${success}`);
+        return success;
+      } else {
+        // Используем новую систему 
+        console.log(`🔊 [NEW ASSISTANT] Пробуем воспроизвести ячейку ${cellNumber} из нового хранилища`);
+        
+        // Сначала пробуем найти в новом хранилище
+        const soundData = this.getNewSoundData(`cell-${cellNumber}`);
+        if (soundData) {
+          const audio = new Audio(soundData);
+          await audio.play();
+          console.log(`✅ [NEW ASSISTANT] Ячейка ${cellNumber} воспроизведена из нового хранилища`);
+          return true;
+        }
+        
+        // Если не найдено в новом, пробуем старое хранилище как fallback
+        console.log(`🔄 [NEW ASSISTANT] Ячейка ${cellNumber} не найдена в новом хранилище, пробуем старое...`);
+        const { audioManager } = await import('./simpleAudioManager');
+        const success = await audioManager.playCellAudio(cellNumber);
+        console.log(`${success ? '✅' : '❌'} [NEW ASSISTANT FALLBACK] Результат воспроизведения ячейки ${cellNumber}: ${success}`);
+        return success;
+      }
+    } catch (error) {
+      console.error(`❌ [VOICE ASSISTANT MANAGER] Ошибка воспроизведения ячейки ${cellNumber}:`, error);
+      return false;
+    }
+  }
 }
 
 // Экспортируем единственный экземпляр
