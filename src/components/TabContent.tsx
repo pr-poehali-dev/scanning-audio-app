@@ -2,6 +2,7 @@ import Icon from '@/components/ui/icon';
 import DeliveryInterface from './DeliveryInterface';
 import AcceptanceTab from './AcceptanceTab';
 import ReturnsTab from './ReturnsTab';
+import { AudioTestButton } from './AudioTestButton';
 import { findOrderByPhone } from '@/data/mockOrders';
 
 interface TabContentProps {
@@ -113,7 +114,10 @@ const TabContent = ({
             />
             
             <button
-              onClick={() => onPhoneSubmit(phoneNumber)}
+              onClick={() => {
+                console.log(`🔘 КНОПКА "НАЙТИ ЗАКАЗ" НАЖАТА! Номер: ${phoneNumber}`);
+                onPhoneSubmit(phoneNumber);
+              }}
               disabled={phoneNumber.length !== 4}
               className={`w-full py-3 rounded-lg font-medium transition-colors ${
                 phoneNumber.length === 4
@@ -125,6 +129,9 @@ const TabContent = ({
             </button>
           </div>
         </div>
+        
+        {/* Кнопки диагностики озвучки */}
+        <AudioTestButton />
       </div>
     );
   }
