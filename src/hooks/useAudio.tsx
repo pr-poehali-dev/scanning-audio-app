@@ -48,12 +48,40 @@ export const useAudio = () => {
 
   // Обертка для playAudio с передачей customAudioFiles
   const playAudioCallback = useCallback(async (audioKey: string) => {
-    await playAudio(audioKey, customAudioFiles);
+    try {
+      console.log(`🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ: "${audioKey}"`);
+      
+      // Сначала пробуем новую систему голосовых помощников
+      const { voiceAssistantManager } = await import('@/utils/voiceAssistantManager');
+      
+      // Для discount пробуем напрямую через новую систему
+      if (audioKey === 'discount') {
+        console.log('🎯 Озвучка скидки через новую систему...');
+        const success = await voiceAssistantManager.playNewAssistantSound('discount');
+        if (success) {
+          console.log('✅ Скидка воспроизведена через новую систему');
+          return;
+        }
+      }
+      
+      // Fallback на старую систему
+      await playAudio(audioKey, customAudioFiles);
+    } catch (error) {
+      console.error(`❌ Ошибка воспроизведения "${audioKey}":`, error);
+    }
   }, [customAudioFiles]);
 
   // Обертка для playCellAudio с передачей customAudioFiles
   const playCellAudioCallback = useCallback(async (cellNumber: string) => {
-    await playCellAudio(cellNumber, customAudioFiles);
+    try {
+      console.log(`🔊 ПОПЫТКА ОЗВУЧИТЬ ЯЧЕЙКУ: "${cellNumber}"`);
+      
+      // Используем новую систему напрямую без циклов
+      const { playCellAudio: newPlayCellAudio } = await import('@/utils/cellAudioPlayer');
+      await newPlayCellAudio(cellNumber);
+    } catch (error) {
+      console.error(`❌ Ошибка озвучки ячейки "${cellNumber}":`, error);
+    }
   }, [customAudioFiles]);
 
   // Обертка для updateAudioFiles

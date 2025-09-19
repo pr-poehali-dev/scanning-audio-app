@@ -164,9 +164,9 @@ class VoiceAssistantManager {
    */
   async playCellAudio(cellNumber: string): Promise<boolean> {
     if (this.currentAssistant === 'old') {
-      // Используем старую систему
-      const { playCellAudio } = await import('./cellAudioPlayer');
-      return playCellAudio(cellNumber);
+      // Используем старую систему напрямую без цикла
+      const { audioManager } = await import('./simpleAudioManager');
+      return audioManager.playCellAudio(cellNumber);
     } else {
       // Используем новую систему с дополнительной логикой
       return this.playNewAssistantSound('cell_number', { cellNumber });
@@ -189,7 +189,37 @@ class VoiceAssistantManager {
       // Для других звуков проверяем наличие в хранилище
       const audioData = this.getNewSoundData(soundId);
       if (!audioData) {
-        console.warn(`⚠️ [NEW ASSISTANT] Звук "${soundId}" не найден`);
+        console.warn(`⚠️ [NEW ASSISTANT] Звук "${soundId}" не найден в новой системе`);
+        
+        // Пробуем найти в старой системе
+        console.log(`🔍 Ищем "${soundId}" в старой системе...`);
+        const oldAudioFiles = JSON.parse(localStorage.getItem('wb-audio-files') || '{}');
+        
+        // Для discount ищем в разных вариантах
+        if (soundId === 'discount') {
+          const possibleKeys = [
+            'discount',
+            'Товары со со скидкой проверьте ВБ кошелек',
+            'delivery-Товары со со скидкой проверьте ВБ кошелек',
+            'скидка',
+            'кошелек',
+            'check-discount-wallet'
+          ];
+          
+          for (const key of possibleKeys) {
+            if (oldAudioFiles[key]) {
+              console.log(`✅ Найден "${soundId}" в старой системе как "${key}"`);
+              const audio = new Audio(oldAudioFiles[key]);
+              await new Promise((resolve, reject) => {
+                audio.onended = () => resolve(true);
+                audio.onerror = () => reject(new Error('Ошибка воспроизведения'));
+                audio.play().catch(reject);
+              });
+              return true;
+            }
+          }
+        }
+        
         return false;
       }
 
