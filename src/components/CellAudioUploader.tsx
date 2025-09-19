@@ -163,21 +163,19 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
     try {
       console.log(`🎵 Тестирование ячейки ${cellNumber}...`);
       
-      // Сначала пробуем главную систему
-      const { playCellAudioFromMainSystem } = await import('@/utils/cellAudioIntegration');
-      const mainSuccess = await playCellAudioFromMainSystem(cellNumber);
+      // ИСПОЛЬЗУЕМ ПРАВИЛЬНУЮ СИСТЕМУ ОЗВУЧКИ ЯЧЕЕК
+      const { playCellAudio } = await import('@/utils/cellAudioPlayer');
+      const success = await playCellAudio(cellNumber);
       
-      if (mainSuccess) {
-        console.log(`✅ Ячейка ${cellNumber} воспроизведена через главную систему`);
-        return;
-      }
-      
-      // Если главная система не сработала, пробуем старые
-      console.log(`⚠️ Главная система не сработала, пробую резервные...`);
-      const oldSuccess = await audioManager.playCellAudio(cellNumber);
-      
-      if (!oldSuccess) {
-        console.warn(`❌ Не удалось воспроизвести ячейку ${cellNumber} через все системы`);
+      if (success) {
+        console.log(`✅ Ячейка ${cellNumber} успешно воспроизведена!`);
+      } else {
+        console.warn(`❌ Не удалось воспроизвести ячейку ${cellNumber}`);
+        
+        // Показываем диагностическую информацию
+        const { getAudioEnabledCells } = await import('@/utils/cellAudioPlayer');
+        const availableCells = getAudioEnabledCells();
+        console.log(`📋 Доступные ячейки:`, availableCells);
       }
     } catch (error) {
       console.error(`❌ Ошибка тестирования ячейки ${cellNumber}:`, error);
@@ -302,6 +300,84 @@ export const CellAudioUploader: React.FC<CellAudioUploaderProps> = ({
                 </label>
               </>
             )}
+          </div>
+
+          {/* ЭКСТРЕННАЯ ДИАГНОСТИКА */}
+          <div className="bg-red-50 rounded-lg p-4 mt-4 border border-red-200">
+            <h4 className="font-medium text-red-800 mb-2">Экстренная диагностика:</h4>
+            <button
+              onClick={async () => {
+                console.log('🚨 === ЭКСТРЕННАЯ ДИАГНОСТИКА СИСТЕМЫ ===');
+                
+                // 1. Проверяем localStorage напрямую
+                console.log('📦 ПРОВЕРКА LOCALSTORAGE:');
+                const keys = Object.keys(localStorage);
+                const audioKeys = keys.filter(k => k.includes('audio') || k.includes('cell') || k.includes('wb-'));
+                console.log(`Всего ключей: ${keys.length}`);
+                console.log(`Аудио ключей: ${audioKeys.length}`);
+                audioKeys.forEach(key => {
+                  const data = localStorage.getItem(key);
+                  const size = data ? Math.round(data.length / 1024) : 0;
+                  console.log(`  - ${key}: ${size}KB`);
+                  
+                  // Детальная проверка новой системы
+                  if (key === 'wb-audio-files-unified') {
+                    try {
+                      const parsed = JSON.parse(data);
+                      console.log(`    📊 Структура:`, parsed);
+                      console.log(`    🏠 Ячейки:`, Object.keys(parsed.cells || {}));
+                    } catch (e) {
+                      console.log(`    ❌ Ошибка парсинга: ${e.message}`);
+                    }
+                  }
+                });
+                
+                // 2. Тестируем новую систему
+                console.log('\n🧪 ТЕСТ НОВОЙ СИСТЕМЫ:');
+                try {
+                  const { audioManager } = await import('@/utils/simpleAudioManager');
+                  const cells = audioManager.getCellsWithAudio();
+                  const info = audioManager.getStorageInfo();
+                  
+                  console.log(`Ячеек в новой системе: ${cells.length}`);
+                  console.log(`Доступные ячейки:`, cells);
+                  console.log(`Информация о хранилище:`, info);
+                  
+                  // Тест воспроизведения
+                  if (cells.length > 0) {
+                    const testCell = cells[0];
+                    console.log(`🎵 Тестирую воспроизведение ячейки ${testCell}...`);
+                    const success = await audioManager.playCellAudio(testCell);
+                    console.log(`Результат теста: ${success ? 'УСПЕХ ✅' : 'ПРОВАЛ ❌'}`);
+                  }
+                } catch (error) {
+                  console.error('❌ Ошибка новой системы:', error);
+                }
+                
+                // 3. Проверяем основную функцию
+                console.log('\n🎯 ТЕСТ ОСНОВНОЙ ФУНКЦИИ:');
+                try {
+                  const { playCellAudio, getAudioEnabledCells } = await import('@/utils/cellAudioPlayer');
+                  const enabledCells = getAudioEnabledCells();
+                  console.log(`Ячейки через основную функцию: ${enabledCells.length}`);
+                  console.log(`Список:`, enabledCells);
+                  
+                  if (enabledCells.length > 0) {
+                    const testCell = enabledCells[0];
+                    console.log(`🎵 Тестирую основную функцию с ячейкой ${testCell}...`);
+                    const success = await playCellAudio(testCell);
+                    console.log(`Результат основной функции: ${success ? 'УСПЕХ ✅' : 'ПРОВАЛ ❌'}`);
+                  }
+                } catch (error) {
+                  console.error('❌ Ошибка основной функции:', error);
+                }
+                
+                alert('Диагностика завершена! Проверьте консоль (F12) для подробностей.');
+              }}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium"
+            >
+              🚨 ЭКСТРЕННАЯ ДИАГНОСТИКА
+            </button>
           </div>
 
           {/* Инструкция */}
