@@ -65,8 +65,8 @@ export const useAudio = () => {
           }
         }
         
-        const info = getStorageInfo();
-        console.log(`✅ Новый менеджер: ${info.cellsCount} ячеек, ${info.totalFiles} файлов, ${info.totalSize}`);
+        const finalInfo = audioManager.getStorageInfo();
+        console.log(`✅ Новый менеджер: ${finalInfo.cellsCount} ячеек, ${finalInfo.totalFiles} файлов, ${finalInfo.totalSize}`);
       } catch (error) {
         console.log('⚠️ Новый менеджер недоступен, используем старую систему');
       }
