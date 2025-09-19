@@ -1,37 +1,25 @@
 import { audioManager } from './simpleAudioManager';
-import { voiceAssistantManager } from './voiceAssistantManager';
 
 /**
  * Воспроизведение аудио файла ячейки
- * Теперь использует систему голосовых помощников с выбором между старым и новым
+ * ПРОСТОЕ И НАДЕЖНОЕ РЕШЕНИЕ - только audioManager
  */
 export const playCellAudio = async (cellNumber: string): Promise<boolean> => {
   try {
-    console.log(`🔊 Воспроизведение озвучки для ячейки: ${cellNumber}`);
+    console.log(`🔊 ПРЯМОЕ воспроизведение ячейки: ${cellNumber}`);
     
-    // Используем систему голосовых помощников
-    const success = await voiceAssistantManager.playCellAudio(cellNumber);
+    // ТОЛЬКО audioManager - никаких сложных систем
+    const success = await audioManager.playCellAudio(cellNumber);
     
     if (success) {
-      console.log(`✅ Аудио ячейки ${cellNumber} воспроизводится через ${voiceAssistantManager.getCurrentAssistant()} помощника`);
+      console.log(`✅ Ячейка ${cellNumber} воспроизведена УСПЕШНО`);
     } else {
-      console.warn(`❌ Аудио для ячейки ${cellNumber} не найдено в системе ${voiceAssistantManager.getCurrentAssistant()} помощника`);
-      
-      // Для fallback показываем информацию о доступных ячейках
-      if (voiceAssistantManager.getCurrentAssistant() === 'old') {
-        // Для старого помощника показываем ячейки из audioManager
-        const availableCells = audioManager.getCellsWithAudio();
-        console.log(`📋 Доступные ячейки в старой системе (${availableCells.length}):`, availableCells.slice(0, 10));
-      } else {
-        // Для нового помощника показываем загруженные звуки
-        const loadedSounds = voiceAssistantManager.getLoadedSounds();
-        console.log(`📋 Загруженные звуки в новой системе (${loadedSounds.length}):`, loadedSounds);
-      }
+      console.warn(`❌ Ячейка ${cellNumber} НЕ НАЙДЕНА`);
     }
     
     return success;
   } catch (error) {
-    console.error(`❌ Ошибка воспроизведения ячейки "${cellNumber}":`, error);
+    console.error(`❌ ОШИБКА воспроизведения ячейки "${cellNumber}":`, error);
     return false;
   }
 };

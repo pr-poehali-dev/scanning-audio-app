@@ -257,10 +257,7 @@ class SimpleAudioManager {
    */
   async playCellAudio(cellNumber: string): Promise<boolean> {
     try {
-      console.log(`🎵 === НАЧИНАЕМ ВОСПРОИЗВЕДЕНИЕ ЯЧЕЙКИ ${cellNumber} ===`);
-      
       const storage = this.getStorage();
-      console.log(`📊 Всего ячеек в хранилище: ${Object.keys(storage.cells).length}`);
       
       // Ищем файл по разным вариантам ключа
       const possibleKeys = [
@@ -269,138 +266,30 @@ class SimpleAudioManager {
         cellNumber.toString()
       ];
       
-      console.log(`🔍 Ищем файл по ключам:`, possibleKeys);
-      
       let audioFile: AudioFile | null = null;
       let foundKey = '';
       
       for (const key of possibleKeys) {
-        console.log(`🔎 Проверяем ключ: "${key}"`);
         if (storage.cells[key]) {
           audioFile = storage.cells[key];
           foundKey = key;
-          console.log(`✅ НАЙДЕН файл по ключу: "${foundKey}"`);
-          console.log(`📁 Размер файла: ${audioFile.size} байт`);
-          console.log(`📅 Дата загрузки: ${audioFile.uploadDate}`);
           break;
-        } else {
-          console.log(`❌ Ключ "${key}" не найден`);
         }
       }
       
       if (!audioFile) {
-        console.warn(`❌ === ФАЙЛ НЕ НАЙДЕН ДЛЯ ЯЧЕЙКИ ${cellNumber} ===`);
-        const availableCells = Object.keys(storage.cells).slice(0, 20);
-        console.log(`📋 Первые 20 доступных ячеек:`, availableCells);
-        
-        // Покажем, есть ли похожие ячейки
-        const similarCells = Object.keys(storage.cells).filter(key => 
-          key.includes(cellNumber) || cellNumber.includes(key)
-        );
-        if (similarCells.length > 0) {
-          console.log(`🔍 Похожие ячейки найдены:`, similarCells);
-        }
-        
+        console.warn(`❌ Аудио файл для ячейки ${cellNumber} не найден`);
         return false;
       }
       
-      // Проверяем кэш
-      let audio = this.audioCache.get(foundKey);
-      
-      if (!audio) {
-        // Проверяем валидность URL перед созданием аудио
-        if (!audioFile.url || !audioFile.url.startsWith('data:audio/')) {
-          console.error(`❌ Невалидный URL аудио для ${foundKey}:`, audioFile.url?.substring(0, 100));
-          return false;
-        }
-        
-        // Создаем новый элемент аудио
-        audio = new Audio();
-        
-        // Кэшируем для быстрого повторного воспроизведения
-        this.audioCache.set(foundKey, audio);
-        
-        // Подробное логирование событий аудио
-        audio.addEventListener('loadstart', () => console.log(`🔄 Начало загрузки аудио ${foundKey}`));
-        audio.addEventListener('loadedmetadata', () => console.log(`📊 Метаданные загружены для ${foundKey}`));
-        audio.addEventListener('canplay', () => console.log(`✅ Аудио ${foundKey} готово к воспроизведению`));
-        audio.addEventListener('canplaythrough', () => console.log(`💯 Аудио ${foundKey} полностью загружено`));
-        audio.addEventListener('error', (e) => {
-          const errorCode = audio?.error?.code;
-          const errorMessage = audio?.error?.message;
-          console.error(`❌ Ошибка аудио ${foundKey}:`, {
-            event: e,
-            errorCode,
-            errorMessage,
-            networkState: audio?.networkState,
-            readyState: audio?.readyState,
-            currentSrc: audio?.currentSrc?.substring(0, 100)
-          });
-        });
-        audio.addEventListener('ended', () => console.log(`🏁 Воспроизведение ${foundKey} завершено`));
-        
-        // Устанавливаем источник после добавления слушателей
-        try {
-          audio.src = audioFile.url;
-          console.log(`🔗 URL установлен для ${foundKey}: ${audioFile.url.substring(0, 50)}...`);
-        } catch (srcError) {
-          console.error(`❌ Ошибка установки URL для ${foundKey}:`, srcError);
-          return false;
-        }
-      }
-      
-      // Готовим к воспроизведению
+      // Простое воспроизведение без кэширования
       try {
-        // Останавливаем текущее воспроизведение если есть
-        if (!audio.paused) {
-          audio.pause();
-        }
-        audio.currentTime = 0;
-        
-        // Ждем готовности к воспроизведению
-        if (audio.readyState < 2) { // HAVE_CURRENT_DATA
-          console.log(`⏳ Ждем загрузки аудио ${foundKey}...`);
-          await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              reject(new Error('Таймаут загрузки аудио'));
-            }, 10000);
-            
-            const onCanPlay = () => {
-              clearTimeout(timeout);
-              audio.removeEventListener('canplay', onCanPlay);
-              audio.removeEventListener('error', onError);
-              resolve();
-            };
-            
-            const onError = () => {
-              clearTimeout(timeout);
-              audio.removeEventListener('canplay', onCanPlay);
-              audio.removeEventListener('error', onError);
-              reject(new Error(`Ошибка загрузки аудио: ${audio.error?.message}`));
-            };
-            
-            audio.addEventListener('canplay', onCanPlay, { once: true });
-            audio.addEventListener('error', onError, { once: true });
-            
-            if (audio.readyState >= 2) {
-              onCanPlay();
-            }
-          });
-        }
-        
-        // Устанавливаем громкость и воспроизводим
+        const audio = new Audio(audioFile.url);
         audio.volume = 0.8;
         await audio.play();
-        console.log(`✅ Аудио ячейки ${cellNumber} успешно воспроизводится`);
-        
+        console.log(`✅ Ячейка ${cellNumber} воспроизводится`);
       } catch (playError) {
-        console.error(`❌ Ошибка воспроизведения аудио ${foundKey}:`, {
-          error: playError,
-          readyState: audio.readyState,
-          networkState: audio.networkState,
-          duration: audio.duration,
-          currentSrc: audio.currentSrc?.substring(0, 100)
-        });
+        console.error(`❌ Ошибка воспроизведения ячейки ${cellNumber}:`, playError);
         return false;
       }
       
