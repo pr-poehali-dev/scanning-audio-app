@@ -24,9 +24,46 @@ export const useAudio = () => {
       
       // ЗАТЕМ МИГРИРУЕМ ДАННЫЕ В НОВЫЙ МЕНЕДЖЕР
       try {
-        const { migrateFromOldSystem, getStorageInfo } = await import('@/utils/simpleAudioManager');
+        const { audioManager } = await import('@/utils/simpleAudioManager');
         console.log('📦 Запускаем миграцию из старой системы...');
-        migrateFromOldSystem();
+        audioManager.migrateFromOldSystem();
+        
+        // ПРИНУДИТЕЛЬНО ПРОВЕРЯЕМ ЧТО ДАННЫЕ ЗАГРУЗИЛИСЬ
+        const info = audioManager.getStorageInfo();
+        console.log('📊 После миграции:', info);
+        
+        if (info.cellsCount === 0) {
+          console.log('⚠️ Ячейки не загрузились, пробуем экстренное восстановление...');
+          // Пробуем загрузить из старых ключей localStorage
+          const oldKeys = ['wb-audio-files', 'wb-pvz-cell-audio-settings-permanent'];
+          for (const key of oldKeys) {
+            const oldData = localStorage.getItem(key);
+            if (oldData) {
+              try {
+                const parsedData = JSON.parse(oldData);
+                console.log(`🔄 Найдены данные в ${key}:`, Object.keys(parsedData).length, 'файлов');
+                
+                // Пытаемся сохранить файлы ячеек
+                for (const [cellKey, audioUrl] of Object.entries(parsedData)) {
+                  if (typeof audioUrl === 'string' && audioUrl.startsWith('data:audio/')) {
+                    const match = cellKey.match(/(\d+)/);
+                    if (match) {
+                      const cellNumber = match[1];
+                      console.log(`💾 Восстанавливаем ячейку ${cellNumber}`);
+                      // Создаем File object для сохранения
+                      const blob = await fetch(audioUrl).then(r => r.blob());
+                      const file = new File([blob], `cell-${cellNumber}.mp3`, { type: 'audio/mp3' });
+                      await audioManager.saveCellAudio(cellNumber, file);
+                    }
+                  }
+                }
+                break;
+              } catch (err) {
+                console.warn(`❌ Ошибка восстановления из ${key}:`, err);
+              }
+            }
+          }
+        }
         
         const info = getStorageInfo();
         console.log(`✅ Новый менеджер: ${info.cellsCount} ячеек, ${info.totalFiles} файлов, ${info.totalSize}`);

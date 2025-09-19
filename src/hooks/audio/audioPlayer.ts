@@ -267,9 +267,9 @@ export const playCellAudio = async (cellNumber: string, customAudioFiles: {[key:
     
     // СНАЧАЛА ПРОБУЕМ НОВЫЙ НАДЕЖНЫЙ МЕНЕДЖЕР
     try {
-      const { playCellAudio: newPlayCellAudio } = await import('@/utils/simpleAudioManager');
+      const { audioManager } = await import('@/utils/simpleAudioManager');
       console.log(`🔧 Пробую новый менеджер аудио...`);
-      const success = await newPlayCellAudio(cellNumber);
+      const success = await audioManager.playCellAudio(cellNumber);
       if (success) {
         console.log(`✅ НОВЫЙ МЕНЕДЖЕР УСПЕШНО ВОСПРОИЗВЕЛ ЯЧЕЙКУ ${cellNumber}`);
         return;

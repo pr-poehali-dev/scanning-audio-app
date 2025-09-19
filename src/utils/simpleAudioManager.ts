@@ -253,6 +253,64 @@ class SimpleAudioManager {
   }
 
   /**
+   * Воспроизвести системный звук (discount, check-product и т.д.)
+   */
+  async playSystemAudio(soundKey: string): Promise<boolean> {
+    try {
+      const storage = this.getStorage();
+      
+      // Маппинг системных звуков на реальные ключи
+      const soundMappings: Record<string, string[]> = {
+        'discount': [
+          'Товары со со скидкой проверьте ВБ кошелек',
+          'delivery-Товары со со скидкой проверьте ВБ кошелек',
+          'скидка',
+          'кошелек',
+          'check-discount-wallet'
+        ],
+        'check-product': [
+          'Проверьте товар под камерой',
+          'delivery-Проверьте товар под камерой',
+          'камера',
+          'товар',
+          'check-product-camera'
+        ]
+      };
+      
+      const possibleKeys = soundMappings[soundKey] || [soundKey];
+      
+      // Ищем в разных секциях хранилища
+      const allFiles = {
+        ...storage.cells,
+        ...storage.delivery,
+        ...storage.acceptance,
+        ...storage.returns
+      };
+      
+      for (const key of possibleKeys) {
+        if (allFiles[key]) {
+          try {
+            const audio = new Audio(allFiles[key].url);
+            audio.volume = 0.8;
+            await audio.play();
+            console.log(`✅ Системный звук ${soundKey} воспроизведен как ${key}`);
+            return true;
+          } catch (error) {
+            console.warn(`❌ Ошибка воспроизведения ${key}:`, error);
+            continue;
+          }
+        }
+      }
+      
+      console.warn(`❌ Системный звук ${soundKey} не найден`);
+      return false;
+    } catch (error) {
+      console.error(`❌ Ошибка воспроизведения системного звука ${soundKey}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Воспроизвести аудио ячейки
    */
   async playCellAudio(cellNumber: string): Promise<boolean> {
@@ -404,8 +462,9 @@ class SimpleAudioManager {
       // Список старых ключей для миграции
       const oldKeys = [
         'wb-audio-files',
-        'wb-audio-files-backup',
+        'wb-audio-files-backup', 
         'wb-audio-files-cells-backup',
+        'wb-pvz-cell-audio-settings-permanent',
         'customAudioFiles',
         'audioFiles',
         'cellAudios'
@@ -416,26 +475,48 @@ class SimpleAudioManager {
           const oldData = localStorage.getItem(oldKey);
           if (oldData) {
             const parsed = JSON.parse(oldData);
+            console.log(`🔄 Миграция из ${oldKey}: найдено ${Object.keys(parsed).length} файлов`);
             
             Object.keys(parsed).forEach(key => {
+              const fileUrl = parsed[key];
+              
+              // Пропускаем если файла нет или он битый
+              if (!fileUrl || typeof fileUrl !== 'string') return;
+              
               // Определяем тип файла по ключу
-              if (key.includes('cell-') || /^\d+$/.test(key)) {
+              if (key.includes('cell-') || /^\d+$/.test(key) || key.includes('ячейка')) {
                 // Это файл ячейки
-                const cellNumber = key.replace('cell-', '');
-                if (!storage.cells[cellNumber] && parsed[key]) {
+                let cellNumber = key.replace('cell-', '').replace('ячейка-', '');
+                
+                if (!storage.cells[cellNumber] && fileUrl.startsWith('data:audio/')) {
                   storage.cells[cellNumber] = {
-                    url: parsed[key],
+                    url: fileUrl,
                     name: `cell-${cellNumber}.mp3`,
                     size: 0,
                     uploadDate: new Date().toISOString()
                   };
+                  // Сохраняем также с префиксом для совместимости
+                  storage.cells[`cell-${cellNumber}`] = storage.cells[cellNumber];
                   migratedCount++;
+                  console.log(`✅ Мигрирована ячейка ${cellNumber}`);
+                }
+              } else if (key.includes('скидк') || key.includes('кошелек') || key.includes('discount')) {
+                // Системные звуки - сохраняем в delivery
+                if (!storage.delivery[key] && fileUrl.startsWith('data:audio/')) {
+                  storage.delivery[key] = {
+                    url: fileUrl,
+                    name: key,
+                    size: 0,
+                    uploadDate: new Date().toISOString()
+                  };
+                  migratedCount++;
+                  console.log(`✅ Мигрирован системный звук ${key}`);
                 }
               }
             });
           }
         } catch (e) {
-          console.log(`⚠️ Не удалось мигрировать ${oldKey}`);
+          console.log(`⚠️ Не удалось мигрировать ${oldKey}:`, e);
         }
       });
       

@@ -54,8 +54,17 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       
       console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
       try {
-        await playAudio('discount');
-        console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА');
+        // Сначала пробуем новую систему
+        const { audioManager } = await import('@/utils/simpleAudioManager');
+        const success = await audioManager.playSystemAudio('discount');
+        
+        if (success) {
+          console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА через новую систему');
+        } else {
+          // Fallback на старую систему
+          await playAudio('discount');
+          console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА через старую систему');
+        }
       } catch (error) {
         console.warn('⚠️ Аудио скидки не найдено:', error);
       }
