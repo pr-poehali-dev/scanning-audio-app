@@ -3,6 +3,7 @@ import Icon from '@/components/ui/icon';
 import { CellAudioUploader } from '@/components/CellAudioUploader';
 import { VoiceSettings } from '@/components/VoiceSettings';
 import { VoiceDemo } from '@/components/VoiceDemo';
+import { VoiceTestUpload } from '@/components/VoiceTestUpload';
 
 interface HeaderProps {
   onMenuOpen: () => void;
@@ -15,6 +16,7 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
   const [isAudioUploaderOpen, setIsAudioUploaderOpen] = useState(false);
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
   const [isVoiceDemoOpen, setIsVoiceDemoOpen] = useState(false);
+  const [isVoiceTestOpen, setIsVoiceTestOpen] = useState(false);
   return (
     <div className="bg-white shadow-sm border-b">
       <div className="max-w-6xl mx-auto px-6">
@@ -108,6 +110,16 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
               <Icon name="MessageCircle" size={20} />
             </button>
             
+            {/* Кнопка теста загрузки */}
+            <button 
+              onClick={() => setIsVoiceTestOpen(true)}
+              className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center space-x-2 text-sm font-medium shadow-sm"
+              title="Тест загрузки звуков"
+            >
+              <Icon name="TestTube" size={16} />
+              <span className="hidden sm:inline">Тест</span>
+            </button>
+
             {/* Кнопка демонстрации голоса */}
             <button 
               onClick={() => setIsVoiceDemoOpen(true)}
@@ -160,6 +172,12 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
       <VoiceDemo 
         isOpen={isVoiceDemoOpen}
         onClose={() => setIsVoiceDemoOpen(false)}
+      />
+      
+      {/* Компонент тестовой загрузки */}
+      <VoiceTestUpload 
+        isOpen={isVoiceTestOpen}
+        onClose={() => setIsVoiceTestOpen(false)}
       />
       
 

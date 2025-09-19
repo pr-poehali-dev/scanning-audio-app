@@ -36,18 +36,48 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
   };
 
   const handleSoundUpload = async (soundId: string, file: File) => {
+    console.log(`🚀 [DEBUG] Начинаем загрузку звука "${soundId}" для файла:`, file);
     setUploading(true);
     setUploadingSoundId(soundId);
     
     try {
+      // Проверяем файл
+      console.log(`📋 [DEBUG] Файл "${file.name}": размер ${file.size} байт, тип ${file.type}`);
+      
+      if (!file.type.startsWith('audio/')) {
+        throw new Error(`Неподдерживаемый тип файла: ${file.type}. Нужен аудио файл.`);
+      }
+      
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        throw new Error(`Файл слишком большой: ${Math.round(file.size / 1024 / 1024)}MB. Максимум 5MB.`);
+      }
+      
+      console.log(`💾 [DEBUG] Сохраняем звук "${soundId}"...`);
       const success = await voiceAssistantManager.saveNewSound(soundId, file);
+      
       if (success) {
-        setLoadedSounds(voiceAssistantManager.getLoadedSounds());
-        setStorageInfo(voiceAssistantManager.getStorageInfo());
-        console.log(`✅ Звук "${soundId}" успешно загружен`);
+        console.log(`✅ [DEBUG] Звук "${soundId}" успешно сохранен`);
+        
+        // Обновляем состояние
+        const newLoadedSounds = voiceAssistantManager.getLoadedSounds();
+        const newStorageInfo = voiceAssistantManager.getStorageInfo();
+        
+        console.log(`📊 [DEBUG] Обновленный список звуков:`, newLoadedSounds);
+        console.log(`📊 [DEBUG] Обновленная информация о хранилище:`, newStorageInfo);
+        
+        setLoadedSounds(newLoadedSounds);
+        setStorageInfo(newStorageInfo);
+        
+        // Проверяем, что звук действительно загружен
+        const hasSound = voiceAssistantManager.hasSound(soundId);
+        console.log(`🔍 [DEBUG] Проверка наличия звука "${soundId}": ${hasSound}`);
+        
+        alert(`Звук "${getSoundName(soundId)}" успешно загружен!`);
+      } else {
+        throw new Error('Неизвестная ошибка при сохранении');
       }
     } catch (error) {
-      console.error(`❌ Ошибка загрузки звука "${soundId}":`, error);
+      console.error(`❌ [DEBUG] Ошибка загрузки звука "${soundId}":`, error);
       alert(`Ошибка загрузки звука: ${error.message}`);
     } finally {
       setUploading(false);
@@ -177,7 +207,49 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
 
           {/* Информация о хранилище */}
           <div className="bg-blue-50 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-blue-900 mb-2">Текущие настройки</h4>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-blue-900">Текущие настройки</h4>
+              <button
+                onClick={() => {
+                  console.log('🔍 === ДИАГНОСТИКА ГОЛОСОВОГО ПОМОЩНИКА ===');
+                  
+                  // Проверяем localStorage напрямую
+                  const storageKey = 'wb-new-voice-sounds';
+                  const data = localStorage.getItem(storageKey);
+                  console.log(`📦 Ключ хранилища: ${storageKey}`);
+                  console.log(`📦 Данные в localStorage:`, data);
+                  
+                  if (data) {
+                    try {
+                      const parsed = JSON.parse(data);
+                      console.log(`📊 Распарсенные данные:`, parsed);
+                      console.log(`🔊 Звуки в хранилище:`, Object.keys(parsed));
+                    } catch (e) {
+                      console.error(`❌ Ошибка парсинга:`, e);
+                    }
+                  } else {
+                    console.log(`⚠️ Данные в localStorage отсутствуют`);
+                  }
+                  
+                  // Проверяем через менеджер
+                  const managerSounds = voiceAssistantManager.getLoadedSounds();
+                  const managerInfo = voiceAssistantManager.getStorageInfo();
+                  console.log(`🎤 Менеджер - загруженные звуки:`, managerSounds);
+                  console.log(`🎤 Менеджер - информация:`, managerInfo);
+                  
+                  // Проверяем каждый звук отдельно
+                  NEW_VOICE_SOUNDS.forEach(sound => {
+                    const hasSound = voiceAssistantManager.hasSound(sound.id);
+                    console.log(`🔍 Звук "${sound.id}" (${sound.name}): ${hasSound ? 'ЕСТЬ' : 'НЕТ'}`);
+                  });
+                  
+                  alert('Диагностика завершена! Проверьте консоль (F12) для подробностей.');
+                }}
+                className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                🔍 Диагностика
+              </button>
+            </div>
             <div className="text-sm text-blue-700 space-y-1">
               <div>🎤 Активный помощник: {storageInfo.assistant}</div>
               <div>🔊 Загружено звуков: {storageInfo.soundsCount}</div>
@@ -190,14 +262,25 @@ export const VoiceSettings: React.FC<VoiceSettingsProps> = ({
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">Звуки интерактивного помощника</h3>
-                {loadedSounds.length > 0 && (
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={handleClearAll}
-                    className="text-sm text-red-600 hover:text-red-800"
+                    onClick={() => {
+                      console.log('🔄 Обновляем состояние интерфейса...');
+                      loadCurrentSettings();
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    Очистить все
+                    🔄 Обновить
                   </button>
-                )}
+                  {loadedSounds.length > 0 && (
+                    <button
+                      onClick={handleClearAll}
+                      className="text-sm text-red-600 hover:text-red-800"
+                    >
+                      Очистить все
+                    </button>
+                  )}
+                </div>
               </div>
 
               {Object.entries(groupedSounds).map(([category, sounds]) => (

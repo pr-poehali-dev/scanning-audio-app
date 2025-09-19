@@ -214,12 +214,19 @@ class VoiceAssistantManager {
    */
   saveNewSound(soundId: string, file: File): Promise<boolean> {
     return new Promise((resolve, reject) => {
+      console.log(`💾 [MANAGER] Начинаем сохранение звука "${soundId}"`);
+      console.log(`📋 [MANAGER] Файл: "${file.name}", размер: ${file.size} байт, тип: "${file.type}"`);
+      
       const reader = new FileReader();
       
       reader.onload = () => {
         try {
           const audioData = reader.result as string;
+          console.log(`📊 [MANAGER] Данные прочитаны, размер: ${audioData.length} символов`);
+          
           const sounds = this.getNewSoundsStorage();
+          console.log(`📦 [MANAGER] Текущее хранилище:`, Object.keys(sounds));
+          
           sounds[soundId] = {
             data: audioData,
             name: file.name,
@@ -228,20 +235,39 @@ class VoiceAssistantManager {
             timestamp: Date.now()
           };
           
-          localStorage.setItem(this.NEW_SOUNDS_KEY, JSON.stringify(sounds));
-          console.log(`✅ Звук "${soundId}" сохранен для нового помощника`);
-          resolve(true);
+          const jsonString = JSON.stringify(sounds);
+          console.log(`💽 [MANAGER] Сохраняем в localStorage под ключом "${this.NEW_SOUNDS_KEY}"`);
+          console.log(`📊 [MANAGER] Размер JSON: ${jsonString.length} символов`);
+          
+          localStorage.setItem(this.NEW_SOUNDS_KEY, jsonString);
+          
+          // Проверяем, что сохранение прошло успешно
+          const savedData = localStorage.getItem(this.NEW_SOUNDS_KEY);
+          if (savedData) {
+            const savedSounds = JSON.parse(savedData);
+            if (savedSounds[soundId]) {
+              console.log(`✅ [MANAGER] Звук "${soundId}" успешно сохранен и проверен`);
+              resolve(true);
+            } else {
+              console.error(`❌ [MANAGER] Звук "${soundId}" не найден после сохранения`);
+              reject(new Error('Звук не сохранился'));
+            }
+          } else {
+            console.error(`❌ [MANAGER] Данные не найдены в localStorage после сохранения`);
+            reject(new Error('Ошибка записи в localStorage'));
+          }
         } catch (error) {
-          console.error(`❌ Ошибка сохранения звука "${soundId}":`, error);
+          console.error(`❌ [MANAGER] Ошибка сохранения звука "${soundId}":`, error);
           reject(error);
         }
       };
 
       reader.onerror = () => {
-        console.error(`❌ Ошибка чтения файла для звука "${soundId}"`);
+        console.error(`❌ [MANAGER] Ошибка чтения файла для звука "${soundId}"`);
         reject(new Error('Ошибка чтения файла'));
       };
 
+      console.log(`📖 [MANAGER] Начинаем чтение файла как Data URL...`);
       reader.readAsDataURL(file);
     });
   }
