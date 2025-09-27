@@ -115,7 +115,7 @@ export const loadAudioFilesFromStorage = (): {[key: string]: string} => {
   console.log('🔄 === МОЩНАЯ ЗАГРУЗКА АУДИОФАЙЛОВ ===');
   
   let finalFiles = {};
-  let cementedFiles = {};
+  const cementedFiles = {};
   
   // Загружаем основные файлы
   const savedFiles = localStorage.getItem(STORAGE_KEY);
@@ -211,11 +211,71 @@ export const emergencyRestore = (): {[key: string]: string} | null => {
   return null;
 };
 
-// Очистка всех данных
+// Полная очистка всех аудио данных
 export const clearAudioStorage = (): void => {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.error('Ошибка очистки аудиофайлов из localStorage:', error);
+  console.log('🗑️ === ПОЛНАЯ ОЧИСТКА ВСЕХ АУДИО ДАННЫХ ===');
+  
+  // Список ВСЕХ возможных ключей для очистки
+  const allAudioKeys = [
+    STORAGE_KEY,
+    `${STORAGE_KEY}-timestamp`,
+    `${STORAGE_KEY}-count`,
+    `${STORAGE_KEY}-emergency`,
+    ...CEMENT_SOURCES,
+    
+    // Дополнительные ключи из пуленепробиваемой системы
+    'wb-unified-audio-system',
+    'cellAudios',
+    'wb-audio-files-backup',
+    'wb-audio-files-cells-backup',
+    'wb-audio-files-cells-backup-2', 
+    'wb-audio-files-cells-backup-3',
+    'wb-audio-files-cells-emergency',
+    'wb-pvz-cells-permanent',
+    'wb-pvz-cells-never-delete',
+    'wb-pvz-cells-ultimate-backup',
+    'wb-pvz-acceptance-cells',
+    'wb-NEVER-LOSE-CELLS-BACKUP',
+    'wb-pvz-cell-audio-timestamp',
+    'wb-pvz-cell-audio-lock',
+    
+    // Старые ключи
+    'audioFiles',
+    'customAudioFiles',
+    'wbAudioFiles'
+  ];
+  
+  let removedCount = 0;
+  
+  allAudioKeys.forEach(key => {
+    try {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key);
+        removedCount++;
+        console.log(`🗑️ Удален: ${key}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ Не удалось удалить ${key}:`, error);
+    }
+  });
+  
+  // Удаляем также все ключи, которые начинаются с паттернов
+  const patterns = ['wb-audio', 'wb-pvz', 'cellAudio', 'audio'];
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && patterns.some(pattern => key.toLowerCase().includes(pattern))) {
+      try {
+        localStorage.removeItem(key);
+        removedCount++;
+        console.log(`🗑️ Удален по паттерну: ${key}`);
+        i--; // Уменьшаем индекс так как localStorage.length изменился
+      } catch (error) {
+        console.warn(`⚠️ Ошибка удаления ${key}:`, error);
+      }
+    }
   }
+  
+  console.log(`✅ ОЧИСТКА ЗАВЕРШЕНА: удалено ${removedCount} ключей`);
+  console.log('🧹 Все аудио данные полностью удалены из localStorage');
 };

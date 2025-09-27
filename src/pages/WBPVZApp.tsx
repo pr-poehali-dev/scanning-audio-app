@@ -14,7 +14,7 @@ import { useAudioHelpers } from '@/hooks/useAudioHelpers';
 const WBPVZApp = () => {
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
-  const { playAudio, updateAudioFiles, customAudioFiles } = useAudio();
+  const { playAudio, updateAudioFiles, customAudioFiles, clearAllAudio } = useAudio();
   
   // Создаем обработчики событий
   const appHandlers = useAppHandlers({
@@ -40,6 +40,14 @@ const WBPVZApp = () => {
 
   // Создаем вспомогательные функции для аудио
   const audioHelpers = useAudioHelpers(updateAudioFiles, customAudioFiles);
+
+  // Функция полной очистки озвучки
+  const handleClearAllAudio = () => {
+    if (confirm('⚠️ Удалить ВСЮ озвучку?\n\nЭто действие нельзя отменить. Будут удалены все MP3 файлы ячеек и системные звуки.')) {
+      clearAllAudio();
+      alert('✅ Вся озвучка удалена!\n\nТеперь можете загрузить новые файлы.');
+    }
+  };
 
 
 
@@ -96,6 +104,7 @@ const WBPVZApp = () => {
         handleDiscountAudio={appHandlers.handleDiscountAudio}
         handleCheckProductAudio={appHandlers.handleCheckProductAudio}
         handleRatePvzAudio={appHandlers.handleRatePvzAudio}
+        handleClearAllAudio={handleClearAllAudio}
       />
 
       <SettingsModal

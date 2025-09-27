@@ -15,6 +15,7 @@ interface SideMenuProps {
   handleDiscountAudio?: () => void;
   handleCheckProductAudio?: () => void;
   handleRatePvzAudio?: () => void;
+  handleClearAllAudio?: () => void;
 }
 
 const SideMenu = ({ 
@@ -27,7 +28,8 @@ const SideMenu = ({
   toggleMenuItem,
   handleDiscountAudio,
   handleCheckProductAudio,
-  handleRatePvzAudio
+  handleRatePvzAudio,
+  handleClearAllAudio
 }: SideMenuProps) => {
   if (!isOpen) return null;
 
@@ -240,6 +242,13 @@ const SideMenu = ({
                   onClick={handleRatePvzAudio}
                 >
                   🔊 Оцените наш пункт выдачи
+                </button>
+                <hr className="my-2 border-gray-300" />
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-red-600 hover:bg-red-100 font-medium"
+                  onClick={handleClearAllAudio}
+                >
+                  🗑️ Удалить всю озвучку
                 </button>
               </div>
             )}
