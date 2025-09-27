@@ -20,41 +20,100 @@ const VOICE_VARIANTS = {
   }
 };
 
+// Функция для создания слышимого тестового звука
+const createTestAudio = (frequency: number, duration: number): string => {
+  const sampleRate = 44100;
+  const samples = sampleRate * duration;
+  const buffer = new ArrayBuffer(44 + samples * 2);
+  const view = new DataView(buffer);
+  
+  // WAV header
+  const writeString = (offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+  
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, samples * 2, true);
+  
+  // Generate sine wave
+  for (let i = 0; i < samples; i++) {
+    const sample = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.3 * 32767;
+    view.setInt16(44 + i * 2, sample, true);
+  }
+  
+  // Convert to base64
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return 'data:audio/wav;base64,' + btoa(binary);
+};
+
 // Функция для создания демо-файлов озвучки
 const createDemoVoiceFiles = async (variantKey: string, variantName: string) => {
-  // Создаем пустой звук (silence) в формате base64
-  const silenceAudio = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IAAAAAEAAQARIwAAESMAAAABAAgAZGF0YQAAAAA=';
+  console.log(`🎵 Создаем тестовые звуки для ${variantName}...`);
   
   const demoFiles: Record<string, string> = {};
   
-  // Создаем файлы для всех ячеек (1-482)
-  for (let i = 1; i <= 482; i++) {
-    demoFiles[i.toString()] = silenceAudio;
-    demoFiles[`cell-${i}`] = silenceAudio;
-    demoFiles[`ячейка-${i}`] = silenceAudio;
+  // Создаем разные тоны для разных диапазонов ячеек
+  const cellRanges = [
+    { start: 1, end: 100, freq: 800 },    // Низкий тон
+    { start: 101, end: 200, freq: 1000 }, // Средний тон
+    { start: 201, end: 300, freq: 1200 }, // Высокий тон  
+    { start: 301, end: 400, freq: 1400 }, // Очень высокий
+    { start: 401, end: 482, freq: 1600 }  // Самый высокий
+  ];
+  
+  // Создаем файлы для всех ячеек с разными тонами
+  for (const range of cellRanges) {
+    const audio = createTestAudio(range.freq, 0.5); // 0.5 секунды
+    
+    for (let i = range.start; i <= range.end; i++) {
+      demoFiles[i.toString()] = audio;
+      demoFiles[`cell-${i}`] = audio;
+      demoFiles[`ячейка-${i}`] = audio;
+    }
   }
   
-  // Добавляем системные звуки в зависимости от варианта
+  // Добавляем системные звуки с уникальными тонами
+  const systemAudio1 = createTestAudio(500, 1.0);  // Низкий долгий звук
+  const systemAudio2 = createTestAudio(2000, 0.3); // Высокий короткий звук
+  
   if (variantKey === 'variant1') {
-    demoFiles['discount-announcement'] = silenceAudio;
-    demoFiles['товары со скидкой'] = silenceAudio;
-    demoFiles['check-product'] = silenceAudio;
-    demoFiles['проверьте товар'] = silenceAudio;
-    demoFiles['rate-pvz'] = silenceAudio;
-    demoFiles['оцените пвз'] = silenceAudio;
+    demoFiles['discount-announcement'] = systemAudio1;
+    demoFiles['товары со скидкой'] = systemAudio1;
+    demoFiles['check-product'] = systemAudio2;
+    demoFiles['проверьте товар'] = systemAudio2;
+    demoFiles['rate-pvz'] = systemAudio1;
+    demoFiles['оцените пвз'] = systemAudio1;
   } else {
-    demoFiles['error-sound'] = silenceAudio;
-    demoFiles['goods'] = silenceAudio;
-    demoFiles['payment-on-delivery'] = silenceAudio;
-    demoFiles['please-check-good-under-camera'] = silenceAudio;
-    demoFiles['thanks-for-order'] = silenceAudio;
+    demoFiles['error-sound'] = createTestAudio(300, 0.2);
+    demoFiles['goods'] = systemAudio1;
+    demoFiles['payment-on-delivery'] = systemAudio2;
+    demoFiles['please-check-good-under-camera'] = systemAudio1;
+    demoFiles['thanks-for-order'] = systemAudio2;
   }
   
   // Сохраняем в bulletproof систему
   const storageKey = `wb-voice-${variantKey}-permanent`;
   localStorage.setItem(storageKey, JSON.stringify(demoFiles));
   
-  console.log(`✅ Создано ${Object.keys(demoFiles).length} демо-файлов для ${variantName}`);
+  console.log(`✅ Создано ${Object.keys(demoFiles).length} звуковых файлов для ${variantName}`);
+  console.log(`🔊 Тестовые тоны: ячейки 1-100 (${cellRanges[0].freq}Hz), 101-200 (${cellRanges[1].freq}Hz), и т.д.`);
 };
 
 export const CloudVoiceLoader = ({ isOpen, onClose }: CloudVoiceLoaderProps) => {
