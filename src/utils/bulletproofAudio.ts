@@ -6,6 +6,12 @@
 // ЕДИНСТВЕННЫЙ ключ хранения
 const BULLETPROOF_KEY = 'bulletproof-audio-system';
 
+// Ключи для вариантов озвучки
+const VOICE_VARIANT_KEYS = {
+  variant1: 'wb-voice-variant1-permanent',
+  variant2: 'wb-voice-variant2-permanent'
+};
+
 interface AudioRecord {
   url: string;
   name: string;
@@ -51,6 +57,8 @@ class BulletproofAudio {
       // ДОБАВЛЯЕМ НОВЫЕ ВАРИАНТЫ ОЗВУЧКИ
       'wb-pvz-variant-variant1-audio-base64',
       'wb-pvz-variant-variant2-audio-base64',
+      'wb-voice-variant1-permanent',
+      'wb-voice-variant2-permanent',
       BULLETPROOF_KEY
     ];
 
@@ -283,6 +291,63 @@ export const playAudio = (key: string) => bulletproofAudio.playAudio(key);
 export const playCellAudio = (cellNumber: string) => bulletproofAudio.playAudio(cellNumber);
 export const playSystemAudio = (soundKey: string) => bulletproofAudio.playAudio(soundKey);
 export const getAudioStats = () => bulletproofAudio.getStats();
+
+/**
+ * 🎵 Активация варианта озвучки
+ */
+export const activateVoiceVariant = (variantKey: string): boolean => {
+  try {
+    console.log(`🎵 АКТИВАЦИЯ ВАРИАНТА ОЗВУЧКИ: ${variantKey}`);
+    
+    // Проверяем, что вариант загружен
+    const variantData = localStorage.getItem(`wb-voice-${variantKey}-permanent`);
+    if (!variantData) {
+      console.error(`❌ Вариант ${variantKey} не найден`);
+      return false;
+    }
+    
+    // Устанавливаем активный вариант
+    localStorage.setItem('wb-active-voice-variant', variantKey);
+    
+    // Принудительно перезагружаем аудио систему
+    bulletproofAudio.loadAllAudioFiles();
+    
+    console.log(`✅ Вариант ${variantKey} успешно активирован`);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Ошибка активации варианта:', error);
+    return false;
+  }
+};
+
+/**
+ * 🔍 Получить информацию о загруженных вариантах
+ */
+export const getVoiceVariantsInfo = () => {
+  const variants: Record<string, any> = {};
+  
+  ['variant1', 'variant2'].forEach(key => {
+    const storageKey = `wb-voice-${key}-permanent`;
+    const data = localStorage.getItem(storageKey);
+    
+    if (data) {
+      try {
+        variants[key] = JSON.parse(data);
+      } catch (error) {
+        console.error(`Ошибка парсинга данных для ${key}:`, error);
+      }
+    }
+  });
+  
+  const activeVariant = localStorage.getItem('wb-active-voice-variant') || 'none';
+  
+  return {
+    variants,
+    activeVariant,
+    totalVariants: Object.keys(variants).length
+  };
+};
 
 // Автоматически загружаем все файлы при импорте
 console.log('🛡️ ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА АКТИВИРОВАНА');

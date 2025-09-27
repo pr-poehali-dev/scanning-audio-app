@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
-import VoiceVariantUploader from '@/components/VoiceVariantUploader';
+import { CloudVoiceLoader } from '@/components/CloudVoiceLoader';
 import Footer from '@/components/Footer';
 
 import { useAudio } from '@/hooks/useAudio';
@@ -179,7 +179,7 @@ const WBPVZApp = () => {
         onClose={() => appState.setShowQRScanner(false)}
       />
 
-      <VoiceVariantUploader
+      <CloudVoiceLoader
         isOpen={showVoiceUploader}
         onClose={() => setShowVoiceUploader(false)}
       />
