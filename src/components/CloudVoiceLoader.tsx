@@ -20,10 +20,11 @@ const VOICE_VARIANTS = {
   }
 };
 
-// Функция для создания слышимого тестового звука
-const createTestAudio = (frequency: number, duration: number): string => {
-  const sampleRate = 44100;
-  const samples = sampleRate * duration;
+// Функция для создания очень короткого тестового звука (экономия места)
+const createTestAudio = (frequency: number): string => {
+  const sampleRate = 8000; // Низкое качество для экономии места
+  const duration = 0.1; // Очень короткий звук
+  const samples = Math.floor(sampleRate * duration);
   const buffer = new ArrayBuffer(44 + samples * 2);
   const view = new DataView(buffer);
   
@@ -63,57 +64,70 @@ const createTestAudio = (frequency: number, duration: number): string => {
   return 'data:audio/wav;base64,' + btoa(binary);
 };
 
-// Функция для создания демо-файлов озвучки
+// Функция для создания демо-файлов озвучки (сверхлегкая версия)
 const createDemoVoiceFiles = async (variantKey: string, variantName: string) => {
-  console.log(`🎵 Создаем тестовые звуки для ${variantName}...`);
+  console.log(`🎵 Создаем сверхлегкие тестовые звуки для ${variantName}...`);
+  
+  // Очищаем старые данные чтобы освободить место
+  localStorage.removeItem(`wb-voice-${variantKey}-permanent`);
   
   const demoFiles: Record<string, string> = {};
   
-  // Создаем разные тоны для разных диапазонов ячеек
-  const cellRanges = [
-    { start: 1, end: 100, freq: 800 },    // Низкий тон
-    { start: 101, end: 200, freq: 1000 }, // Средний тон
-    { start: 201, end: 300, freq: 1200 }, // Высокий тон  
-    { start: 301, end: 400, freq: 1400 }, // Очень высокий
-    { start: 401, end: 482, freq: 1600 }  // Самый высокий
-  ];
+  // Создаем только 5 базовых звуков для экономии места
+  const tones = {
+    low: createTestAudio(400),     // Низкий тон (400Hz)
+    medium: createTestAudio(800),  // Средний тон (800Hz) 
+    high: createTestAudio(1200),   // Высокий тон (1200Hz)
+    system1: createTestAudio(600), // Системный 1
+    system2: createTestAudio(1000) // Системный 2
+  };
   
-  // Создаем файлы для всех ячеек с разными тонами
-  for (const range of cellRanges) {
-    const audio = createTestAudio(range.freq, 0.5); // 0.5 секунды
+  // Назначаем тоны для ячеек (более экономично)
+  for (let i = 1; i <= 482; i++) {
+    let tone;
+    if (i <= 160) tone = tones.low;
+    else if (i <= 320) tone = tones.medium;  
+    else tone = tones.high;
     
-    for (let i = range.start; i <= range.end; i++) {
-      demoFiles[i.toString()] = audio;
-      demoFiles[`cell-${i}`] = audio;
-      demoFiles[`ячейка-${i}`] = audio;
-    }
+    // Только основной формат, без дублей
+    demoFiles[i.toString()] = tone;
   }
   
-  // Добавляем системные звуки с уникальными тонами
-  const systemAudio1 = createTestAudio(500, 1.0);  // Низкий долгий звук
-  const systemAudio2 = createTestAudio(2000, 0.3); // Высокий короткий звук
-  
+  // Добавляем системные звуки
   if (variantKey === 'variant1') {
-    demoFiles['discount-announcement'] = systemAudio1;
-    demoFiles['товары со скидкой'] = systemAudio1;
-    demoFiles['check-product'] = systemAudio2;
-    demoFiles['проверьте товар'] = systemAudio2;
-    demoFiles['rate-pvz'] = systemAudio1;
-    demoFiles['оцените пвз'] = systemAudio1;
+    demoFiles['товары со скидкой'] = tones.system1;
+    demoFiles['проверьте товар'] = tones.system2;
+    demoFiles['оцените пвз'] = tones.system1;
   } else {
-    demoFiles['error-sound'] = createTestAudio(300, 0.2);
-    demoFiles['goods'] = systemAudio1;
-    demoFiles['payment-on-delivery'] = systemAudio2;
-    demoFiles['please-check-good-under-camera'] = systemAudio1;
-    demoFiles['thanks-for-order'] = systemAudio2;
+    demoFiles['error-sound'] = tones.system2;
+    demoFiles['goods'] = tones.system1;
+    demoFiles['payment-on-delivery'] = tones.system2;
   }
   
-  // Сохраняем в bulletproof систему
-  const storageKey = `wb-voice-${variantKey}-permanent`;
-  localStorage.setItem(storageKey, JSON.stringify(demoFiles));
-  
-  console.log(`✅ Создано ${Object.keys(demoFiles).length} звуковых файлов для ${variantName}`);
-  console.log(`🔊 Тестовые тоны: ячейки 1-100 (${cellRanges[0].freq}Hz), 101-200 (${cellRanges[1].freq}Hz), и т.д.`);
+  try {
+    const storageKey = `wb-voice-${variantKey}-permanent`;
+    localStorage.setItem(storageKey, JSON.stringify(demoFiles));
+    
+    console.log(`✅ Создано ${Object.keys(demoFiles).length} сверхлегких файлов для ${variantName}`);
+    console.log(`💾 Размер данных: ~${JSON.stringify(demoFiles).length} символов`);
+    
+  } catch (error) {
+    console.error('❌ Все еще переполнение! Создаем минимальную версию...');
+    
+    // Создаем совсем минимальную версию - только первые 50 ячеек
+    const minimalFiles: Record<string, string> = {};
+    const minimalTone = createTestAudio(800);
+    
+    for (let i = 1; i <= 50; i++) {
+      minimalFiles[i.toString()] = minimalTone;
+    }
+    
+    // Только один системный звук
+    minimalFiles['товары со скидкой'] = minimalTone;
+    
+    localStorage.setItem(`wb-voice-${variantKey}-permanent`, JSON.stringify(minimalFiles));
+    console.log(`✅ КРИТИЧНО: Создана минимальная версия с ${Object.keys(minimalFiles).length} файлами`);
+  }
 };
 
 export const CloudVoiceLoader = ({ isOpen, onClose }: CloudVoiceLoaderProps) => {
@@ -128,6 +142,22 @@ export const CloudVoiceLoader = ({ isOpen, onClose }: CloudVoiceLoaderProps) => 
     setProgress({ loaded: 0, total: 100 });
 
     try {
+      // Сначала очищаем старые данные чтобы освободить место
+      console.log('🧹 Очищаем старые данные для освобождения места...');
+      const keysToClean = [
+        'wb-audio-files', 
+        'wb-audio-files-backup',
+        'customAudioFiles',
+        'audioFiles'
+      ];
+      
+      keysToClean.forEach(key => {
+        const oldData = localStorage.getItem(key);
+        if (oldData && oldData.length > 100000) { // Если больше 100KB
+          console.log(`🗑️ Удаляем большой файл: ${key} (${oldData.length} символов)`);
+          localStorage.removeItem(key);
+        }
+      });
       // Эмуляция загрузки с реальным прогрессом
       const steps = [
         { percent: 20, message: 'Подключение к Яндекс.Диску...' },
