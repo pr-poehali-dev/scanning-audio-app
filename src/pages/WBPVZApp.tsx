@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
@@ -41,10 +42,57 @@ const WBPVZApp = () => {
   // Создаем вспомогательные функции для аудио
   const audioHelpers = useAudioHelpers(updateAudioFiles, customAudioFiles);
 
+  // Восстановление сохраненных вариантов озвучки при загрузке
+  useEffect(() => {
+    const restoreVariantAudio = (variantKey: string) => {
+      try {
+        const storageKey = `wb-pvz-${variantKey}-audio-base64`;
+        const savedData = localStorage.getItem(storageKey);
+        
+        if (savedData) {
+          const base64Files = JSON.parse(savedData);
+          const restoredFiles: { [key: string]: string } = {};
+          
+          Object.entries(base64Files).forEach(([fileName, base64Data]) => {
+            // Конвертируем base64 обратно в blob URL
+            const byteCharacters = atob((base64Data as string).split(',')[1]);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+            const audioUrl = URL.createObjectURL(blob);
+            
+            restoredFiles[fileName] = audioUrl;
+          });
+          
+          // Обновляем аудио файлы
+          updateAudioFiles(prev => ({ ...prev, ...restoredFiles }));
+          
+          console.log(`🔄 ВОССТАНОВЛЕН ВАРИАНТ ${variantKey}: ${Object.keys(restoredFiles).length} файлов`);
+        }
+      } catch (e) {
+        console.warn(`Ошибка восстановления варианта ${variantKey}:`, e);
+      }
+    };
+    
+    // Восстанавливаем оба варианта
+    restoreVariantAudio('variant-variant1');
+    restoreVariantAudio('variant-variant2');
+  }, [updateAudioFiles]);
+
   // Функция полной очистки озвучки
   const handleClearAllAudio = () => {
     if (confirm('⚠️ Удалить ВСЮ озвучку?\n\nЭто действие нельзя отменить. Будут удалены все MP3 файлы ячеек и системные звуки.')) {
       clearAllAudio();
+      
+      // Также очищаем сохраненные варианты
+      localStorage.removeItem('wb-pvz-variant-variant1-audio-base64');
+      localStorage.removeItem('wb-pvz-variant-variant1-files');
+      localStorage.removeItem('wb-pvz-variant-variant2-audio-base64');
+      localStorage.removeItem('wb-pvz-variant-variant2-files');
+      
       alert('✅ Вся озвучка удалена!\n\nТеперь можете загрузить новые файлы.');
     }
   };
