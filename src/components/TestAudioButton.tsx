@@ -6,55 +6,38 @@ const TestAudioButton = () => {
 
   const testAudio = async () => {
     setTesting(true);
-    console.log('🧪 ТЕСТИРУЕМ ОЗВУЧКУ...');
+    console.log('🧪 ЗАПУСК ПОЛНОЙ ДИАГНОСТИКИ...');
 
     try {
-      // Импортируем bulletproof систему
-      const { playAudio, playCellAudio, getAudioStats } = await import('@/utils/bulletproofAudio');
+      // Запускаем диагностику
+      const { testDirectAudio, forceActivateAudio } = await import('@/utils/directAudioTest');
       
-      // Получаем статистику
-      const stats = getAudioStats();
-      console.log('📊 Статистика аудио:', stats);
+      const diagnostic = await testDirectAudio();
+      console.log(diagnostic);
       
-      // Проверяем активный вариант
-      const activeVariant = localStorage.getItem('wb-active-voice-variant');
-      console.log('🎵 Активный вариант:', activeVariant);
+      // Пробуем принудительную активацию
+      console.log('🔄 ПРОБУЕМ ПРИНУДИТЕЛЬНУЮ АКТИВАЦИЮ...');
+      const activated = await forceActivateAudio();
       
-      // Проверяем загруженные варианты
-      const variant1Data = localStorage.getItem('wb-voice-variant1-permanent');
-      const variant2Data = localStorage.getItem('wb-voice-variant2-permanent');
-      
-      console.log('📦 Вариант 1 загружен:', !!variant1Data, variant1Data ? 'размер:' + variant1Data.length : '');
-      console.log('📦 Вариант 2 загружен:', !!variant2Data, variant2Data ? 'размер:' + variant2Data.length : '');
-      
-      // Пробуем воспроизвести тестовую ячейку
-      console.log('🔊 Пробуем воспроизвести ячейку 1...');
-      const success1 = await playCellAudio('1');
-      console.log('🔊 Результат ячейки 1:', success1);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Пробуем воспроизвести ячейку 100
-      console.log('🔊 Пробуем воспроизвести ячейку 100...');
-      const success100 = await playCellAudio('100');
-      console.log('🔊 Результат ячейки 100:', success100);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Пробуем системный звук
-      console.log('🔊 Пробуем системный звук...');
-      const successSystem = await playAudio('товары со скидкой');
-      console.log('🔊 Результат системного звука:', successSystem);
-      
-      if (success1 || success100 || successSystem) {
-        alert('✅ Тест прошел! Озвучка работает.\n\nПроверьте консоль браузера (F12) для деталей.');
+      if (activated) {
+        // Если активация прошла - тестируем bulletproof
+        const { playCellAudio } = await import('@/utils/bulletproofAudio');
+        
+        console.log('🔊 ТЕСТИРУЕМ ПОСЛЕ АКТИВАЦИИ...');
+        const success = await playCellAudio('1');
+        
+        if (success) {
+          alert('✅ ОЗВУЧКА РАБОТАЕТ!\n\nПосле принудительной активации все заработало.\n\nСмотрите консоль для деталей.');
+        } else {
+          alert('❌ Активация прошла, но озвучка все равно не работает.\n\nДетали в консоли (F12):\n\n' + diagnostic.slice(0, 500) + '...');
+        }
       } else {
-        alert('❌ Тест не прошел. Озвучка не работает.\n\nОткройте консоль браузера (F12) для диагностики.');
+        alert('❌ ОЗВУЧКА НЕ РАБОТАЕТ\n\nДетали диагностики в консоли (F12):\n\n' + diagnostic.slice(0, 500) + '...');
       }
       
     } catch (error) {
-      console.error('❌ Ошибка тестирования:', error);
-      alert(`❌ Ошибка тестирования: ${error}`);
+      console.error('❌ Критическая ошибка диагностики:', error);
+      alert(`❌ Критическая ошибка: ${error}`);
     }
     
     setTesting(false);
