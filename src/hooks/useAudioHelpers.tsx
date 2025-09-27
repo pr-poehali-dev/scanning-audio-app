@@ -29,12 +29,55 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
         const baseFileName = file.name.replace(/\.[^/.]+$/, '');
         const audioUrl = URL.createObjectURL(file);
         
-        // Сохраняем файл с префиксом вкладки
-        const prefixedFileName = `${tabType}-${baseFileName}`;
-        audioFiles[prefixedFileName] = audioUrl;
-        
-        // ТАКЖЕ сохраняем файл БЕЗ префикса для глобального доступа
-        audioFiles[baseFileName] = audioUrl;
+        // Специальная обработка для вариантов озвучки
+        if (tabType === 'variant-variant1' || tabType === 'variant-variant2') {
+          console.log(`🎯 Обрабатываю файл варианта озвучки: ${baseFileName}`);
+          
+          // Для ячеек (число) - создаем все форматы
+          if (/^\d+$/.test(baseFileName)) {
+            audioFiles[baseFileName] = audioUrl; // 44
+            audioFiles[`cell-${baseFileName}`] = audioUrl; // cell-44
+            audioFiles[`ячейка-${baseFileName}`] = audioUrl; // ячейка-44
+            console.log(`🏠 ЯЧЕЙКА ${baseFileName}: созданы все форматы`);
+          }
+          // Для системных звуков - сохраняем как есть и создаем дубли
+          else {
+            audioFiles[baseFileName] = audioUrl;
+            
+            // Маппинг системных звуков
+            if (baseFileName.toLowerCase().includes('товары со скидкой') || 
+                baseFileName.toLowerCase().includes('скидк')) {
+              audioFiles['discount'] = audioUrl;
+              audioFiles['Товары со скидкой проверьте ВБ кошелек'] = audioUrl;
+            }
+            
+            if (baseFileName.toLowerCase().includes('проверьте товар') || 
+                baseFileName.toLowerCase().includes('камер')) {
+              audioFiles['check-product-camera'] = audioUrl;
+              audioFiles['Проверьте товар под камерой'] = audioUrl;
+            }
+            
+            if (baseFileName.toLowerCase().includes('оцените') || 
+                baseFileName.toLowerCase().includes('пункт выдачи')) {
+              audioFiles['rate-pvz'] = audioUrl;
+              audioFiles['Оцените наш пункт выдачи'] = audioUrl;
+              audioFiles['Пожалуйста оцените наш пункт выдачи в приложении'] = audioUrl;
+            }
+            
+            if (baseFileName.toLowerCase().includes('оплата при получении') || 
+                baseFileName.toLowerCase().includes('наложенный платеж')) {
+              audioFiles['cash-on-delivery'] = audioUrl;
+              audioFiles['оплата при получении'] = audioUrl;
+            }
+            
+            console.log(`🎵 СИСТЕМНЫЙ ЗВУК: ${baseFileName}`);
+          }
+        } else {
+          // Обычная обработка для других вкладок
+          const prefixedFileName = `${tabType}-${baseFileName}`;
+          audioFiles[prefixedFileName] = audioUrl;
+          audioFiles[baseFileName] = audioUrl;
+        }
         
         console.log(`✅ Добавлен аудиофайл:`, {
           withPrefix: prefixedFileName,

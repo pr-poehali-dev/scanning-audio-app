@@ -104,6 +104,7 @@ const WBPVZApp = () => {
         handleDiscountAudio={appHandlers.handleDiscountAudio}
         handleCheckProductAudio={appHandlers.handleCheckProductAudio}
         handleRatePvzAudio={appHandlers.handleRatePvzAudio}
+        handleCashOnDeliveryAudio={appHandlers.handleCashOnDeliveryAudio}
         handleClearAllAudio={handleClearAllAudio}
       />
 

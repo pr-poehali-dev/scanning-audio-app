@@ -15,6 +15,7 @@ interface SideMenuProps {
   handleDiscountAudio?: () => void;
   handleCheckProductAudio?: () => void;
   handleRatePvzAudio?: () => void;
+  handleCashOnDeliveryAudio?: () => void;
   handleClearAllAudio?: () => void;
 }
 
@@ -29,6 +30,7 @@ const SideMenu = ({
   handleDiscountAudio,
   handleCheckProductAudio,
   handleRatePvzAudio,
+  handleCashOnDeliveryAudio,
   handleClearAllAudio
 }: SideMenuProps) => {
   if (!isOpen) return null;
@@ -242,6 +244,12 @@ const SideMenu = ({
                   onClick={handleRatePvzAudio}
                 >
                   🔊 Оцените наш пункт выдачи
+                </button>
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
+                  onClick={() => handleCashOnDeliveryAudio?.()}
+                >
+                  🔊 Оплата при получении
                 </button>
                 <hr className="my-2 border-gray-300" />
                 <button 

@@ -97,6 +97,14 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     }
   };
 
+  const handleCashOnDeliveryAudio = async () => {
+    try {
+      await playAudio('cash-on-delivery');
+    } catch (error) {
+      console.error('Ошибка воспроизведения оплаты при получении:', error);
+    }
+  };
+
   return {
     handleQRScan: qrHandlers.handleQRScan,
     handleQRScanResult: qrHandlers.handleQRScanResult,
@@ -111,5 +119,6 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     handleDiscountAudio,
     handleCheckProductAudio,
     handleRatePvzAudio,
+    handleCashOnDeliveryAudio,
   };
 };

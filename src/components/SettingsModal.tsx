@@ -34,6 +34,12 @@ const SettingsModal = ({
   togglePhraseEnabled
 }: SettingsModalProps) => {
   const audioTabInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const variantInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
+  const handleVariantUpload = (event: React.ChangeEvent<HTMLInputElement>, variantType: string) => {
+    // Передаем загрузку в основной обработчик с специальным типом
+    handleFolderUpload(event, `variant-${variantType}`);
+  };
 
   if (!isOpen) return null;
 
@@ -79,9 +85,79 @@ const SettingsModal = ({
             </div>
           </div>
 
+          {/* Выбор варианта озвучки */}
+          <div className="mb-8">
+            <h4 className="text-base font-medium text-gray-900 mb-4">Вариант озвучки</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Вариант 1 */}
+              <div className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
+                <div className="flex items-start gap-3">
+                  <input 
+                    type="radio" 
+                    id="voice-variant-1" 
+                    name="voice-variant"
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="voice-variant-1" className="block font-medium text-gray-900 mb-2 cursor-pointer">
+                      Стандартная озвучка
+                    </label>
+                    <div className="text-sm text-gray-600 space-y-1 mb-3">
+                      <div><strong>Системные звуки:</strong></div>
+                      <div>• товары со скидкой проверьте вб кошелек.mp3</div>
+                      <div>• пожалуйста оцените наш пункт выдачи в приложении.mp3</div>
+                      <div><strong>Ячейки:</strong></div>
+                      <div>• 1.mp3, 2.mp3, ..., 482.mp3</div>
+                    </div>
+                    <button 
+                      onClick={() => variantInputRefs.current.variant1?.click()}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
+                    >
+                      <Icon name="Upload" size={14} />
+                      Загрузить MP3 файлы
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Вариант 2 */}
+              <div className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
+                <div className="flex items-start gap-3">
+                  <input 
+                    type="radio" 
+                    id="voice-variant-2" 
+                    name="voice-variant"
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="voice-variant-2" className="block font-medium text-gray-900 mb-2 cursor-pointer">
+                      Альтернативная озвучка
+                    </label>
+                    <div className="text-sm text-gray-600 space-y-1 mb-3">
+                      <div><strong>Системные звуки:</strong></div>
+                      <div>• пик цифра товаров.mp3</div>
+                      <div>• оплата при получении.mp3</div>
+                      <div>• пожалуйста проверьте товар под камерой.mp3</div>
+                      <div>• спасибо за заказ оцените пункт выдачи.mp3</div>
+                      <div><strong>Ячейки:</strong></div>
+                      <div>• 1.mp3, 2.mp3, ..., 482.mp3</div>
+                    </div>
+                    <button 
+                      onClick={() => variantInputRefs.current.variant2?.click()}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
+                    >
+                      <Icon name="Upload" size={14} />
+                      Загрузить MP3 файлы
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Фразы для озвучки */}
           <div>
-            <h4 className="text-base font-medium text-gray-900 mb-4">Фразы для озвучки</h4>
+            <h4 className="text-base font-medium text-gray-900 mb-4">Дополнительные фразы</h4>
             
             {/* Вкладки */}
             <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
@@ -195,6 +271,19 @@ const SettingsModal = ({
                     )}
                   </div>
                 </div>
+                
+                {/* Скрытые input'ы для вариантов озвучки */}
+                {['variant1', 'variant2'].map(variantId => (
+                  <input
+                    key={variantId}
+                    ref={(el) => variantInputRefs.current[variantId] = el}
+                    type="file"
+                    multiple
+                    accept="audio/*"
+                    onChange={(e) => handleVariantUpload(e, variantId)}
+                    className="hidden"
+                  />
+                ))}
                 
                 {/* Скрытые input'ы для каждой вкладки */}
                 {['delivery', 'acceptance', 'returns', 'general'].map(tabId => (
