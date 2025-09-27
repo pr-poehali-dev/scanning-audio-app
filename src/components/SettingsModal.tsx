@@ -103,11 +103,11 @@ const SettingsModal = ({
                       Стандартная озвучка
                     </label>
                     <div className="text-sm text-gray-600 space-y-1 mb-3">
-                      <div><strong>Системные звуки:</strong></div>
-                      <div>• товары со скидкой проверьте вб кошелек.mp3</div>
-                      <div>• пожалуйста оцените наш пункт выдачи в приложении.mp3</div>
-                      <div><strong>Ячейки:</strong></div>
-                      <div>• 1.mp3, 2.mp3, ..., 482.mp3</div>
+                      <div><strong>Последовательность озвучки:</strong></div>
+                      <div>1. Сканирование → номер ячейки (1.mp3, 2.mp3...)</div>
+                      <div>2. товары со скидкой проверьте вб кошелек.mp3</div>
+                      <div>3. Сканирование товара → проверьте товар под камерой.mp3</div>
+                      <div>4. После выдачи → пожалуйста оцените наш пункт выдачи в приложении.mp3</div>
                     </div>
                     <button 
                       onClick={() => variantInputRefs.current.variant1?.click()}
@@ -134,13 +134,11 @@ const SettingsModal = ({
                       Альтернативная озвучка
                     </label>
                     <div className="text-sm text-gray-600 space-y-1 mb-3">
-                      <div><strong>Системные звуки:</strong></div>
-                      <div>• пик цифра товаров.mp3</div>
-                      <div>• оплата при получении.mp3</div>
-                      <div>• пожалуйста проверьте товар под камерой.mp3</div>
-                      <div>• спасибо за заказ оцените пункт выдачи.mp3</div>
-                      <div><strong>Ячейки:</strong></div>
-                      <div>• 1.mp3, 2.mp3, ..., 482.mp3</div>
+                      <div><strong>Последовательность озвучки:</strong></div>
+                      <div>1. Сканирование → error_sound.mp3 → номер ячейки (1.mp3, 2.mp3...)</div>
+                      <div>2. goods.mp3 (цифра товаров) → payment_on_delivery.mp3</div>
+                      <div>3. Сканирование товара → please_check_good_under_camera.mp3</div>
+                      <div>4. После выдачи → thanks_for_order_rate_pickpoint.mp3</div>
                     </div>
                     <button 
                       onClick={() => variantInputRefs.current.variant2?.click()}

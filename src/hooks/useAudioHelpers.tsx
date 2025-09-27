@@ -51,53 +51,103 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
             console.log(`🏠 ЯЧЕЙКА ${baseFileName}: все форматы`);
           }
           
-          // Обработка системных звуков
-          if (baseFileName.toLowerCase().includes('товары со скидкой') || 
-              baseFileName.toLowerCase().includes('скидк')) {
-            audioFiles['discount'] = audioUrl;
-            audioFiles['Товары со скидкой проверьте ВБ кошелек'] = audioUrl;
-            base64Files['discount'] = base64;
-            base64Files['Товары со скидкой проверьте ВБ кошелек'] = base64;
+          // ПЕРВЫЙ ВАРИАНТ: обработка системных звуков
+          if (variantType === 'variant1') {
+            // товары со скидкой проверьте вб кошелек
+            if (baseFileName.toLowerCase().includes('товары') && 
+                (baseFileName.toLowerCase().includes('скидк') || baseFileName.toLowerCase().includes('вб') || baseFileName.toLowerCase().includes('кошелек'))) {
+              audioFiles['discount'] = audioUrl;
+              audioFiles['товары со скидкой'] = audioUrl;
+              audioFiles['Товары со скидкой проверьте ВБ кошелек'] = audioUrl;
+              base64Files['discount'] = base64;
+              base64Files['товары со скидкой'] = base64;
+              base64Files['Товары со скидкой проверьте ВБ кошелек'] = base64;
+              console.log(`🛍️ ВАРИАНТ 1 - СКИДКИ: ${baseFileName}`);
+            }
+            
+            // проверьте товар под камерой
+            if (baseFileName.toLowerCase().includes('проверьте') && baseFileName.toLowerCase().includes('товар') && baseFileName.toLowerCase().includes('камер')) {
+              audioFiles['check-product-camera'] = audioUrl;
+              audioFiles['проверьте товар'] = audioUrl;
+              audioFiles['Проверьте товар под камерой'] = audioUrl;
+              base64Files['check-product-camera'] = base64;
+              base64Files['проверьте товар'] = base64;
+              base64Files['Проверьте товар под камерой'] = base64;
+              console.log(`📷 ВАРИАНТ 1 - ПРОВЕРКА ТОВАРА: ${baseFileName}`);
+            }
+            
+            // пожалуйста оцените наш пункт выдачи в приложении
+            if ((baseFileName.toLowerCase().includes('пожалуйста') || baseFileName.toLowerCase().includes('оцените')) && 
+                baseFileName.toLowerCase().includes('пункт') && baseFileName.toLowerCase().includes('выдачи')) {
+              audioFiles['rate-pvz'] = audioUrl;
+              audioFiles['оцените пвз'] = audioUrl;
+              audioFiles['Пожалуйста оцените наш пункт выдачи в приложении'] = audioUrl;
+              base64Files['rate-pvz'] = base64;
+              base64Files['оцените пвз'] = base64;
+              base64Files['Пожалуйста оцените наш пункт выдачи в приложении'] = base64;
+              console.log(`⭐ ВАРИАНТ 1 - ОЦЕНКА ПВЗ: ${baseFileName}`);
+            }
           }
           
-          if (baseFileName.toLowerCase().includes('проверьте товар') || 
-              baseFileName.toLowerCase().includes('камер')) {
-            audioFiles['check-product-camera'] = audioUrl;
-            audioFiles['Проверьте товар под камерой'] = audioUrl;
-            base64Files['check-product-camera'] = base64;
-            base64Files['Проверьте товар под камерой'] = base64;
-          }
-          
-          if (baseFileName.toLowerCase().includes('оцените') || 
-              baseFileName.toLowerCase().includes('пункт выдачи')) {
-            audioFiles['rate-pvz'] = audioUrl;
-            audioFiles['Оцените наш пункт выдачи'] = audioUrl;
-            audioFiles['Пожалуйста оцените наш пункт выдачи в приложении'] = audioUrl;
-            base64Files['rate-pvz'] = base64;
-            base64Files['Оцените наш пункт выдачи'] = base64;
-            base64Files['Пожалуйста оцените наш пункт выдачи в приложении'] = base64;
-          }
-          
-          if (baseFileName.toLowerCase().includes('оплата при получении') || 
-              baseFileName.toLowerCase().includes('наложенный платеж')) {
-            audioFiles['cash-on-delivery'] = audioUrl;
-            audioFiles['оплата при получении'] = audioUrl;
-            base64Files['cash-on-delivery'] = base64;
-            base64Files['оплата при получении'] = base64;
-          }
-          
-          if (baseFileName.toLowerCase().includes('пик') && baseFileName.toLowerCase().includes('цифра')) {
-            audioFiles['pick-digit'] = audioUrl;
-            audioFiles['Пик цифра товаров'] = audioUrl;
-            base64Files['pick-digit'] = base64;
-            base64Files['Пик цифра товаров'] = base64;
-          }
-          
-          if (baseFileName.toLowerCase().includes('спасибо') && baseFileName.toLowerCase().includes('заказ')) {
-            audioFiles['thanks'] = audioUrl;
-            audioFiles['Спасибо за заказ оцените пункт выдачи'] = audioUrl;
-            base64Files['thanks'] = base64;
-            base64Files['Спасибо за заказ оцените пункт выдачи'] = base64;
+          // ВТОРОЙ ВАРИАНТ: обработка системных звуков  
+          if (variantType === 'variant2') {
+            // error_sound
+            if (baseFileName.toLowerCase().includes('error') || baseFileName.toLowerCase().includes('ошибк')) {
+              audioFiles['error_sound'] = audioUrl;
+              audioFiles['ошибка'] = audioUrl;
+              base64Files['error_sound'] = base64;
+              base64Files['ошибка'] = base64;
+              console.log(`❌ ВАРИАНТ 2 - ОШИБКА: ${baseFileName}`);
+            }
+            
+            // goods (цифра товаров)
+            if (baseFileName.toLowerCase().includes('goods') || 
+                (baseFileName.toLowerCase().includes('цифра') && baseFileName.toLowerCase().includes('товар'))) {
+              audioFiles['goods'] = audioUrl;
+              audioFiles['goods-digit'] = audioUrl;
+              audioFiles['цифра товаров'] = audioUrl;
+              base64Files['goods'] = base64;
+              base64Files['goods-digit'] = base64;
+              base64Files['цифра товаров'] = base64;
+              console.log(`🔢 ВАРИАНТ 2 - ЦИФРА ТОВАРОВ: ${baseFileName}`);
+            }
+            
+            // payment_on_delivery
+            if (baseFileName.toLowerCase().includes('payment_on_delivery') || 
+                baseFileName.toLowerCase().includes('оплата при получении') || 
+                baseFileName.toLowerCase().includes('наложенный платеж')) {
+              audioFiles['payment_on_delivery'] = audioUrl;
+              audioFiles['cash-on-delivery'] = audioUrl;
+              audioFiles['оплата при получении'] = audioUrl;
+              base64Files['payment_on_delivery'] = base64;
+              base64Files['cash-on-delivery'] = base64;
+              base64Files['оплата при получении'] = base64;
+              console.log(`💰 ВАРИАНТ 2 - ОПЛАТА ПРИ ПОЛУЧЕНИИ: ${baseFileName}`);
+            }
+            
+            // please_check_good_under_camera
+            if (baseFileName.toLowerCase().includes('please_check_good_under_camera') || 
+                (baseFileName.toLowerCase().includes('проверьте') && baseFileName.toLowerCase().includes('товар') && baseFileName.toLowerCase().includes('камер'))) {
+              audioFiles['please_check_good_under_camera'] = audioUrl;
+              audioFiles['check-product-camera'] = audioUrl;
+              audioFiles['проверьте товар под камерой'] = audioUrl;
+              base64Files['please_check_good_under_camera'] = base64;
+              base64Files['check-product-camera'] = base64;
+              base64Files['проверьте товар под камерой'] = base64;
+              console.log(`📷 ВАРИАНТ 2 - ПРОВЕРКА ТОВАРА: ${baseFileName}`);
+            }
+            
+            // thanks_for_order_rate_pickpoint
+            if (baseFileName.toLowerCase().includes('thanks_for_order_rate_pickpoint') || 
+                (baseFileName.toLowerCase().includes('спасибо') && baseFileName.toLowerCase().includes('заказ') && baseFileName.toLowerCase().includes('оцените'))) {
+              audioFiles['thanks_for_order_rate_pickpoint'] = audioUrl;
+              audioFiles['thanks'] = audioUrl;
+              audioFiles['спасибо за заказ оцените пункт выдачи'] = audioUrl;
+              base64Files['thanks_for_order_rate_pickpoint'] = base64;
+              base64Files['thanks'] = base64;
+              base64Files['спасибо за заказ оцените пункт выдачи'] = base64;
+              console.log(`🙏 ВАРИАНТ 2 - СПАСИБО И ОЦЕНКА: ${baseFileName}`);
+            }
           }
           
           processedCount++;
