@@ -64,69 +64,71 @@ const createTestAudio = (frequency: number): string => {
   return 'data:audio/wav;base64,' + btoa(binary);
 };
 
-// Функция для создания демо-файлов озвучки (сверхлегкая версия)
+// Функция для создания демо-файлов озвучки (ИСПРАВЛЕННАЯ версия)
 const createDemoVoiceFiles = async (variantKey: string, variantName: string) => {
-  console.log(`🎵 Создаем сверхлегкие тестовые звуки для ${variantName}...`);
+  console.log(`🎵 ИСПРАВЛЯЕМ создание файлов для ${variantName}...`);
   
-  // Очищаем старые данные чтобы освободить место
+  // Очищаем старые данные
   localStorage.removeItem(`wb-voice-${variantKey}-permanent`);
+  
+  // Создаем ОДИН базовый звук для всех
+  const baseAudio = createTestAudio(800); // Средний тон
   
   const demoFiles: Record<string, string> = {};
   
-  // Создаем только 5 базовых звуков для экономии места
-  const tones = {
-    low: createTestAudio(400),     // Низкий тон (400Hz)
-    medium: createTestAudio(800),  // Средний тон (800Hz) 
-    high: createTestAudio(1200),   // Высокий тон (1200Hz)
-    system1: createTestAudio(600), // Системный 1
-    system2: createTestAudio(1000) // Системный 2
-  };
-  
-  // Назначаем тоны для ячеек (более экономично)
+  // СНАЧАЛА добавляем ячейки как строки
+  console.log('📝 Создаем файлы ячеек 1-482...');
   for (let i = 1; i <= 482; i++) {
-    let tone;
-    if (i <= 160) tone = tones.low;
-    else if (i <= 320) tone = tones.medium;  
-    else tone = tones.high;
-    
-    // Только основной формат, без дублей
-    demoFiles[i.toString()] = tone;
+    const key = i.toString(); // ВАЖНО: именно строка!
+    demoFiles[key] = baseAudio;
   }
   
   // Добавляем системные звуки
+  console.log('📝 Добавляем системные звуки...');
   if (variantKey === 'variant1') {
-    demoFiles['товары со скидкой'] = tones.system1;
-    demoFiles['проверьте товар'] = tones.system2;
-    demoFiles['оцените пвз'] = tones.system1;
+    demoFiles['товары со скидкой'] = baseAudio;
+    demoFiles['проверьте товар'] = baseAudio;
+    demoFiles['оцените пвз'] = baseAudio;
   } else {
-    demoFiles['error-sound'] = tones.system2;
-    demoFiles['goods'] = tones.system1;
-    demoFiles['payment-on-delivery'] = tones.system2;
+    demoFiles['error-sound'] = baseAudio;
+    demoFiles['goods'] = baseAudio;
+    demoFiles['payment-on-delivery'] = baseAudio;
   }
   
+  console.log(`📊 Подготовлено файлов: ${Object.keys(demoFiles).length}`);
+  console.log(`📋 Первые ключи: ${Object.keys(demoFiles).slice(0, 10).join(', ')}`);
+  
   try {
+    const dataToSave = JSON.stringify(demoFiles);
     const storageKey = `wb-voice-${variantKey}-permanent`;
-    localStorage.setItem(storageKey, JSON.stringify(demoFiles));
     
-    console.log(`✅ Создано ${Object.keys(demoFiles).length} сверхлегких файлов для ${variantName}`);
-    console.log(`💾 Размер данных: ~${JSON.stringify(demoFiles).length} символов`);
+    console.log(`💾 Размер данных: ${Math.floor(dataToSave.length / 1024)}KB`);
     
-  } catch (error) {
-    console.error('❌ Все еще переполнение! Создаем минимальную версию...');
+    localStorage.setItem(storageKey, dataToSave);
     
-    // Создаем совсем минимальную версию - только первые 50 ячеек
-    const minimalFiles: Record<string, string> = {};
-    const minimalTone = createTestAudio(800);
-    
-    for (let i = 1; i <= 50; i++) {
-      minimalFiles[i.toString()] = minimalTone;
+    // ПРОВЕРЯЕМ что сохранилось
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const savedKeys = Object.keys(parsed);
+      console.log(`✅ УСПЕШНО СОХРАНЕНО: ${savedKeys.length} файлов`);
+      console.log(`🔍 Проверка ключей: "1" ${parsed['1'] ? 'ЕСТЬ' : 'НЕТ'}, "100" ${parsed['100'] ? 'ЕСТЬ' : 'НЕТ'}`);
     }
     
-    // Только один системный звук
-    minimalFiles['товары со скидкой'] = minimalTone;
+  } catch (error) {
+    console.error('❌ Ошибка сохранения, создаем минимальную версию:', error);
     
-    localStorage.setItem(`wb-voice-${variantKey}-permanent`, JSON.stringify(minimalFiles));
-    console.log(`✅ КРИТИЧНО: Создана минимальная версия с ${Object.keys(minimalFiles).length} файлами`);
+    // Минимальная версия - только 10 ячеек
+    const minimalFiles: Record<string, string> = {};
+    
+    for (let i = 1; i <= 10; i++) {
+      minimalFiles[i.toString()] = baseAudio;
+    }
+    
+    const storageKey = `wb-voice-${variantKey}-permanent`;
+    localStorage.setItem(storageKey, JSON.stringify(minimalFiles));
+    
+    console.log(`⚠️ Создана минимальная версия: ${Object.keys(minimalFiles).length} файлов`);
   }
 };
 

@@ -6,6 +6,7 @@ import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { CloudVoiceLoader } from '@/components/CloudVoiceLoader';
 import TestAudioButton from '@/components/TestAudioButton';
+import FixAudioButton from '@/components/FixAudioButton';
 import Footer from '@/components/Footer';
 
 import { useAudio } from '@/hooks/useAudio';
@@ -186,6 +187,7 @@ const WBPVZApp = () => {
       />
 
       <TestAudioButton />
+      <FixAudioButton />
 
     </div>
   );
