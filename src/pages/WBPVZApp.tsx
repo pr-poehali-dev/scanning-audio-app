@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
+import VoiceVariantUploader from '@/components/VoiceVariantUploader';
 import Footer from '@/components/Footer';
 
 import { useAudio } from '@/hooks/useAudio';
@@ -16,6 +17,7 @@ const WBPVZApp = () => {
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
   const { playAudio, updateAudioFiles, customAudioFiles, clearAllAudio } = useAudio();
+  const [showVoiceUploader, setShowVoiceUploader] = useState(false);
   
   // Создаем обработчики событий
   const appHandlers = useAppHandlers({
@@ -145,6 +147,7 @@ const WBPVZApp = () => {
         isOpen={appState.showSideMenu}
         onClose={() => appState.setShowSideMenu(false)}
         onSettingsOpen={() => appState.setShowSettings(true)}
+        onVoiceUploaderOpen={() => setShowVoiceUploader(true)}
         pvzInfo={appState.pvzInfo}
         updatePvzInfo={appHandlers.updatePvzInfo}
         expandedMenuItems={appState.expandedMenuItems}
@@ -174,6 +177,11 @@ const WBPVZApp = () => {
         isOpen={appState.showQRScanner}
         onScan={appHandlers.handleQRScanResult}
         onClose={() => appState.setShowQRScanner(false)}
+      />
+
+      <VoiceVariantUploader
+        isOpen={showVoiceUploader}
+        onClose={() => setShowVoiceUploader(false)}
       />
 
 

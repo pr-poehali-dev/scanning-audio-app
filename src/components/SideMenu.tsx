@@ -17,6 +17,7 @@ interface SideMenuProps {
   handleRatePvzAudio?: () => void;
   handleCashOnDeliveryAudio?: () => void;
   handleClearAllAudio?: () => void;
+  onVoiceUploaderOpen?: () => void;
 }
 
 const SideMenu = ({ 
@@ -31,7 +32,8 @@ const SideMenu = ({
   handleCheckProductAudio,
   handleRatePvzAudio,
   handleCashOnDeliveryAudio,
-  handleClearAllAudio
+  handleClearAllAudio,
+  onVoiceUploaderOpen
 }: SideMenuProps) => {
   if (!isOpen) return null;
 
@@ -355,8 +357,33 @@ const SideMenu = ({
           </div>
         </div>
 
-        {/* Footer - Exit */}
-        <div className="border-t p-4">
+        {/* Footer - Settings & Exit */}
+        <div className="border-t p-4 space-y-2">
+          {/* Загрузка вариантов озвучки */}
+          <button 
+            className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-purple-50 rounded-lg"
+            onClick={() => {
+              onClose();
+              onVoiceUploaderOpen?.();
+            }}
+          >
+            <Icon name="Upload" size={18} className="text-purple-600" />
+            <span className="text-sm text-purple-700 font-medium">🎵 Загрузить варианты озвучки</span>
+          </button>
+          
+          {/* Настройки */}
+          <button 
+            className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
+            onClick={() => {
+              onClose();
+              onSettingsOpen();
+            }}
+          >
+            <Icon name="Settings" size={18} className="text-gray-600" />
+            <span className="text-sm text-gray-700">Настройки</span>
+          </button>
+          
+          {/* Выйти */}
           <button 
             className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
             onClick={() => {
