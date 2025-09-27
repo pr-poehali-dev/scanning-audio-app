@@ -93,6 +93,9 @@ const WBPVZApp = () => {
         updatePvzInfo={appHandlers.updatePvzInfo}
         expandedMenuItems={appState.expandedMenuItems}
         toggleMenuItem={appHandlers.toggleMenuItem}
+        handleDiscountAudio={appHandlers.handleDiscountAudio}
+        handleCheckProductAudio={appHandlers.handleCheckProductAudio}
+        handleRatePvzAudio={appHandlers.handleRatePvzAudio}
       />
 
       <SettingsModal

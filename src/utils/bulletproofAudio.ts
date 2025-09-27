@@ -169,6 +169,15 @@ class BulletproofAudio {
       );
     }
 
+    if (key === 'rate-pvz') {
+      possibleKeys.push(
+        'Оцените наш пункт выдачи',
+        'оцените',
+        'пункт выдачи',
+        'отзыв'
+      );
+    }
+
     // Ищем файл по всем возможным ключам
     let audioUrl: string | null = null;
     let foundKey = '';

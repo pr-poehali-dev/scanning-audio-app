@@ -12,6 +12,9 @@ interface SideMenuProps {
   updatePvzInfo: (field: string, value: string) => void;
   expandedMenuItems: { [key: string]: boolean };
   toggleMenuItem: (item: string) => void;
+  handleDiscountAudio?: () => void;
+  handleCheckProductAudio?: () => void;
+  handleRatePvzAudio?: () => void;
 }
 
 const SideMenu = ({ 
@@ -21,7 +24,10 @@ const SideMenu = ({
   pvzInfo, 
   updatePvzInfo, 
   expandedMenuItems, 
-  toggleMenuItem 
+  toggleMenuItem,
+  handleDiscountAudio,
+  handleCheckProductAudio,
+  handleRatePvzAudio
 }: SideMenuProps) => {
   if (!isOpen) return null;
 
@@ -199,6 +205,44 @@ const SideMenu = ({
                 </div>
               )}
             </div>
+
+            {/* Системные звуки */}
+            <button 
+              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+              onClick={() => toggleMenuItem('systemSounds')}
+            >
+              <div className="flex items-center space-x-3">
+                <Icon name="Volume2" size={18} className="text-blue-600" />
+                <span className="text-sm text-gray-700">Системные звуки</span>
+              </div>
+              <Icon 
+                name={expandedMenuItems.systemSounds ? "ChevronUp" : "ChevronDown"} 
+                size={16} 
+                className="text-gray-400" 
+              />
+            </button>
+            {expandedMenuItems.systemSounds && (
+              <div className="bg-blue-50 py-2">
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
+                  onClick={handleDiscountAudio}
+                >
+                  🔊 Товары со скидкой
+                </button>
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
+                  onClick={handleCheckProductAudio}
+                >
+                  🔊 Проверьте товар под камерой
+                </button>
+                <button 
+                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
+                  onClick={handleRatePvzAudio}
+                >
+                  🔊 Оцените наш пункт выдачи
+                </button>
+              </div>
+            )}
 
             {/* Оставить отзыв */}
             <button 

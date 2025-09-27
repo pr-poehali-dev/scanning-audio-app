@@ -72,6 +72,31 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     setAudioSettings
   });
 
+  // Обработчики системных звуков
+  const handleDiscountAudio = async () => {
+    try {
+      await playAudio('discount');
+    } catch (error) {
+      console.error('Ошибка воспроизведения скидки:', error);
+    }
+  };
+
+  const handleCheckProductAudio = async () => {
+    try {
+      await playAudio('check-product-camera');
+    } catch (error) {
+      console.error('Ошибка воспроизведения проверки товара:', error);
+    }
+  };
+
+  const handleRatePvzAudio = async () => {
+    try {
+      await playAudio('rate-pvz');
+    } catch (error) {
+      console.error('Ошибка воспроизведения оценки ПВЗ:', error);
+    }
+  };
+
   return {
     handleQRScan: qrHandlers.handleQRScan,
     handleQRScanResult: qrHandlers.handleQRScanResult,
@@ -83,5 +108,8 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     toggleMenuItem: settingsHandlers.toggleMenuItem,
     updatePvzInfo: settingsHandlers.updatePvzInfo,
     updateAudioSetting: settingsHandlers.updateAudioSetting,
+    handleDiscountAudio,
+    handleCheckProductAudio,
+    handleRatePvzAudio,
   };
 };
