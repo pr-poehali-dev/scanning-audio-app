@@ -42,12 +42,15 @@ class BulletproofAudio {
     const storageKeys = [
       'wb-pvz-cell-audio-settings-permanent',
       'wb-audio-files',
-      'wb-audio-files-backup',
+      'wb-audio-files-backup', 
       'wb-audio-files-cells-backup',
       'wb-unified-audio-system',
       'customAudioFiles',
       'audioFiles',
       'cellAudios',
+      // ДОБАВЛЯЕМ НОВЫЕ ВАРИАНТЫ ОЗВУЧКИ
+      'wb-pvz-variant-variant1-audio-base64',
+      'wb-pvz-variant-variant2-audio-base64',
       BULLETPROOF_KEY
     ];
 
@@ -57,6 +60,7 @@ class BulletproofAudio {
       try {
         const data = localStorage.getItem(key);
         if (data) {
+          console.log(`🔍 Проверяю ключ: ${key}, размер данных: ${data.length}`);
           const parsed = JSON.parse(data);
           
           if (key === 'wb-unified-audio-system' && parsed.files) {
@@ -76,7 +80,8 @@ class BulletproofAudio {
           } else if (typeof parsed === 'object') {
             // Обычные системы - добавляем все файлы
             Object.entries(parsed).forEach(([fileKey, fileUrl]) => {
-              if (typeof fileUrl === 'string' && fileUrl.startsWith('data:audio/')) {
+              if (typeof fileUrl === 'string' && 
+                  (fileUrl.startsWith('data:audio/') || fileUrl.startsWith('blob:'))) {
                 allFiles[fileKey] = fileUrl;
                 
                 // Если это ячейка - создаем все варианты ключей
