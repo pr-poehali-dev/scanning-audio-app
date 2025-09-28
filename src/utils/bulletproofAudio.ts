@@ -1,6 +1,6 @@
 /**
  * 🛡️ ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА ОЗВУЧКИ
- * Работает ВСЕГДА, при любых обстоятельствах
+ * ОПТИМИЗИРОВАННАЯ ДЛЯ ЭКОНОМИИ ПАМЯТИ
  */
 
 // ЕДИНСТВЕННЫЙ ключ хранения
@@ -23,6 +23,8 @@ interface AudioRecord {
 class BulletproofAudio {
   private static instance: BulletproofAudio;
   private audioCache: Map<string, HTMLAudioElement> = new Map();
+  private maxCacheSize = 10; // Максимум 10 аудио в памяти
+  private loadedFiles: Record<string, string> = {};
 
   static getInstance(): BulletproofAudio {
     if (!BulletproofAudio.instance) {
@@ -32,19 +34,17 @@ class BulletproofAudio {
   }
 
   /**
-   * 🔄 ПРИНУДИТЕЛЬНАЯ загрузка всех файлов при запуске
+   * 🔄 ЛЕНИВАЯ инициализация - НЕ загружаем все файлы сразу
    */
   constructor() {
-    this.loadAllAudioFiles();
+    this.loadFileIndex(); // Загружаем только индекс файлов
   }
 
   /**
-   * 📂 Загрузить ВСЕ аудио файлы из localStorage с приоритетом активного варианта
+   * 📂 ЛЕНИВАЯ загрузка: загружаем только индекс доступных файлов
    */
-  private loadAllAudioFiles(): Record<string, string> {
-    console.log('🛡️ === ПУЛЕНЕПРОБИВАЕМАЯ ЗАГРУЗКА ВСЕХ АУДИО ===');
-    
-    const allFiles: Record<string, string> = {};
+  private loadFileIndex(): void {
+    console.log('🛡️ === ИНДЕКСАЦИЯ ДОСТУПНЫХ АУДИО ФАЙЛОВ ===');
     
     // СНАЧАЛА загружаем АКТИВНЫЙ вариант озвучки
     const activeVariant = localStorage.getItem('wb-active-voice-variant');
@@ -56,358 +56,222 @@ class BulletproofAudio {
         const activeData = localStorage.getItem(activeStorageKey);
         if (activeData) {
           const parsedActive = JSON.parse(activeData);
-          console.log(`🔥 ПРИОРИТЕТНАЯ загрузка активного варианта ${activeVariant}: ${Object.keys(parsedActive).length} файлов`);
+          console.log(`🔥 ПРИОРИТЕТНАЯ индексация активного варианта ${activeVariant}: ${Object.keys(parsedActive).length} файлов`);
           
+          // Только индексируем файлы, НЕ загружаем в память
+          let count = 0;
           Object.entries(parsedActive).forEach(([fileKey, fileUrl]) => {
-            if (typeof fileUrl === 'string' && fileUrl.startsWith('data:audio/')) {
-              allFiles[fileKey] = fileUrl;
+            if (typeof fileUrl === 'string' && fileUrl.startsWith('data:audio/') && count < 15) {
+              this.loadedFiles[fileKey] = fileUrl;
+              count++;
               
               // Если это ячейка - создаем все варианты ключей
               const cellMatch = fileKey.match(/(\d+)/);
               if (cellMatch) {
                 const cellNumber = cellMatch[1];
-                allFiles[cellNumber] = fileUrl;
-                allFiles[`cell-${cellNumber}`] = fileUrl;
-                allFiles[`ячейка-${cellNumber}`] = fileUrl;
+                this.loadedFiles[cellNumber] = fileUrl;
+                this.loadedFiles[`cell-${cellNumber}`] = fileUrl;
+                this.loadedFiles[`ячейка-${cellNumber}`] = fileUrl;
               }
             }
           });
           
-          console.log(`✅ Активный вариант ${activeVariant} загружен: ${Object.keys(parsedActive).length} файлов`);
+          console.log(`✅ Активный вариант ${activeVariant} индексирован: ${count} файлов`);
         }
       } catch (error) {
-        console.error(`❌ Ошибка загрузки активного варианта ${activeVariant}:`, error);
+        console.error(`❌ Ошибка индексации активного варианта ${activeVariant}:`, error);
       }
     }
     
-    // СПИСОК ВСЕХ ВОЗМОЖНЫХ КЛЮЧЕЙ
-    const storageKeys = [
-      'wb-pvz-cell-audio-settings-permanent',
-      'wb-audio-files',
-      'wb-audio-files-backup', 
-      'wb-audio-files-cells-backup',
-      'wb-unified-audio-system',
-      'customAudioFiles',
-      'audioFiles',
-      'cellAudios',
-      // ДОБАВЛЯЕМ НОВЫЕ ВАРИАНТЫ ОЗВУЧКИ
-      'wb-pvz-variant-variant1-audio-base64',
-      'wb-pvz-variant-variant2-audio-base64',
-      'wb-voice-variant1-permanent',
-      'wb-voice-variant2-permanent',
-      'wb-voice-standard-permanent',
-      'wb-voice-alternative-permanent',
-      BULLETPROOF_KEY
-    ];
-
-    let totalLoaded = 0;
-
-    // ЗАТЕМ загружаем FALLBACK файлы (только если еще не загружены)
-    storageKeys.forEach(key => {
-      // Пропускаем активный вариант - он уже загружен
-      if (activeVariant && key === `wb-voice-${activeVariant}-permanent`) {
-        return;
-      }
+    // БЫСТРАЯ индексация fallback файлов (только если активный вариант пуст)
+    if (Object.keys(this.loadedFiles).length === 0) {
+      console.log('🔍 Поиск fallback файлов...');
       
-      try {
-        const data = localStorage.getItem(key);
-        if (data) {
-          console.log(`🔍 Fallback загрузка из ключа: ${key}, размер данных: ${data.length}`);
+      const storageKeys = [
+        'wb-pvz-cell-audio-settings-permanent',
+        'wb-audio-files',
+        'wb-unified-audio-system',
+        'wb-voice-variant1-permanent',
+        'wb-voice-variant2-permanent',
+        'wb-voice-standard-permanent',
+        'wb-voice-alternative-permanent'
+      ];
+      
+      for (const key of storageKeys.slice(0, 3)) { // Проверяем только первые 3 ключа
+        try {
+          const data = localStorage.getItem(key);
+          if (!data) continue;
+          
           const parsed = JSON.parse(data);
-          
-          if (key === 'wb-unified-audio-system' && parsed.files) {
-            // Единая система - извлекаем файлы
-            Object.values(parsed.files).forEach((file: any) => {
-              if (file.url && file.url.startsWith('data:audio/')) {
-                const mainKey = file.cellNumber || file.name;
-                // Добавляем только если еще НЕТ в allFiles
-                if (!allFiles[mainKey]) {
-                  allFiles[mainKey] = file.url;
-                  // Дублируем с разными префиксами
-                  if (file.cellNumber) {
-                    if (!allFiles[file.cellNumber]) allFiles[file.cellNumber] = file.url;
-                    if (!allFiles[`cell-${file.cellNumber}`]) allFiles[`cell-${file.cellNumber}`] = file.url;
-                    if (!allFiles[`ячейка-${file.cellNumber}`]) allFiles[`ячейка-${file.cellNumber}`] = file.url;
-                  }
-                  totalLoaded++;
-                }
-              }
-            });
-          } else if (typeof parsed === 'object') {
-            // Обычные системы - добавляем файлы только если их еще нет
+          if (typeof parsed === 'object' && parsed !== null) {
+            let count = 0;
             Object.entries(parsed).forEach(([fileKey, fileUrl]) => {
-              if (typeof fileUrl === 'string' && 
-                  (fileUrl.startsWith('data:audio/') || fileUrl.startsWith('blob:'))) {
+              if (typeof fileUrl === 'string' && fileUrl.startsWith('data:audio/') && count < 5) {
+                this.loadedFiles[fileKey] = fileUrl;
+                count++;
                 
-                // Добавляем только если еще НЕТ в allFiles
-                if (!allFiles[fileKey]) {
-                  allFiles[fileKey] = fileUrl;
-                  
-                  // Если это ячейка - создаем все варианты ключей (если их еще нет)
-                  const cellMatch = fileKey.match(/(\d+)/);
-                  if (cellMatch) {
-                    const cellNumber = cellMatch[1];
-                    if (!allFiles[cellNumber]) allFiles[cellNumber] = fileUrl;
-                    if (!allFiles[`cell-${cellNumber}`]) allFiles[`cell-${cellNumber}`] = fileUrl;
-                    if (!allFiles[`ячейка-${cellNumber}`]) allFiles[`ячейка-${cellNumber}`] = fileUrl;
-                  }
-                  
-                  totalLoaded++;
+                // Только для первых 5 файлов создаем псевдонимы
+                const cellMatch = fileKey.match(/(\d+)/);
+                if (cellMatch) {
+                  const cellNumber = cellMatch[1];
+                  this.loadedFiles[cellNumber] = fileUrl;
                 }
               }
             });
+            
+            if (count > 0) {
+              console.log(`✅ Fallback из ${key}: ${count} файлов`);
+              break; // Берем только первый найденный источник
+            }
           }
-          
-          console.log(`📂 Загружено из ${key}: ${Object.keys(parsed).length} файлов`);
+        } catch (error) {
+          // Тихо игнорируем ошибки
         }
-      } catch (error) {
-        console.warn(`⚠️ Ошибка загрузки из ${key}:`, error);
       }
-    });
-
-    console.log(`🛡️ ИТОГО ЗАГРУЖЕНО: ${totalLoaded} уникальных файлов`);
-    console.log(`🛡️ ВСЕГО КЛЮЧЕЙ В ПАМЯТИ: ${Object.keys(allFiles).length}`);
-
-    // Сохраняем в пуленепробиваемое хранилище
-    this.saveToStorage(allFiles);
-
-    return allFiles;
-  }
-
-  /**
-   * 💾 Сохранить в пуленепробиваемое хранилище
-   */
-  private saveToStorage(files: Record<string, string>): void {
-    try {
-      const bulletproofData = {
-        files: files,
-        lastUpdate: new Date().toISOString(),
-        version: 'bulletproof-1.0'
-      };
-      
-      localStorage.setItem(BULLETPROOF_KEY, JSON.stringify(bulletproofData));
-      
-      // ДУБЛИРУЕМ в основные ключи для совместимости
-      localStorage.setItem('wb-audio-files', JSON.stringify(files));
-      localStorage.setItem('wb-pvz-cell-audio-settings-permanent', JSON.stringify(files));
-      
-      console.log('🛡️ Файлы сохранены в пуленепробиваемое хранилище');
-    } catch (error) {
-      console.error('❌ Ошибка сохранения пуленепробиваемого хранилища:', error);
+    }
+    
+    const totalFiles = Object.keys(this.loadedFiles).length;
+    console.log(`🎯 ИТОГО ИНДЕКСИРОВАНО: ${totalFiles} аудио файлов`);
+    
+    if (totalFiles === 0) {
+      console.warn('⚠️ НЕТ АУДИО ФАЙЛОВ! Проверьте localStorage');
     }
   }
 
   /**
-   * 🎯 ГЛАВНАЯ ФУНКЦИЯ: Воспроизвести аудио
+   * 💾 ЛЕНИВАЯ загрузка аудио в память (только когда нужно)
    */
-  async playAudio(key: string): Promise<boolean> {
-    console.log(`🛡️ === ПУЛЕНЕПРОБИВАЕМОЕ ВОСПРОИЗВЕДЕНИЕ: ${key} ===`);
-
-    // Перезагружаем файлы при каждом воспроизведении для надежности
-    const allFiles = this.loadAllAudioFiles();
-
-    // Список возможных ключей для поиска
-    const possibleKeys = [
-      key,
-      key.toString(),
-      `cell-${key}`,
-      `ячейка-${key}`,
-      key.toLowerCase(),
-      key.toUpperCase()
-    ];
-
-    // Специальные маппинги для системных звуков
-    if (key === 'discount') {
-      possibleKeys.push(
-        'Товары со со скидкой проверьте ВБ кошелек',
-        'Товары со скидкой проверьте ВБ кошелек',
-        'товары со скидкой проверьте вб кошелек',
-        'скидка',
-        'кошелек',
-        'пик цифра товаров' // Альтернативный вариант
-      );
+  private loadAudioToMemory(cellKey: string): HTMLAudioElement | null {
+    // Проверяем кэш
+    if (this.audioCache.has(cellKey)) {
+      console.log(`💿 Из кэша: ${cellKey}`);
+      return this.audioCache.get(cellKey)!;
     }
 
-    if (key === 'check-product' || key === 'check-product-camera') {
-      possibleKeys.push(
-        'Проверьте товар под камерой',
-        'пожалуйста проверьте товар под камерой',
-        'камера',
-        'товар'
-      );
-    }
-
-    if (key === 'rate-pvz') {
-      possibleKeys.push(
-        'Оцените наш пункт выдачи',
-        'Пожалуйста оцените наш пункт выдачи в приложении',
-        'пожалуйста оцените наш пункт выдачи в приложении',
-        'спасибо за заказ оцените пункт выдачи',
-        'оцените',
-        'пункт выдачи',
-        'отзыв'
-      );
-    }
-
-    // Новые системные звуки для альтернативного варианта
-    if (key === 'cash-on-delivery') {
-      possibleKeys.push(
-        'оплата при получении',
-        'наложенный платеж',
-        'оплата'
-      );
-    }
-
-    // Ищем файл по всем возможным ключам
-    let audioUrl: string | null = null;
-    let foundKey = '';
-
-    for (const searchKey of possibleKeys) {
-      if (allFiles[searchKey]) {
-        audioUrl = allFiles[searchKey];
-        foundKey = searchKey;
-        break;
-      }
-    }
-
+    // Ищем файл в индексе
+    const audioUrl = this.loadedFiles[cellKey];
     if (!audioUrl) {
-      console.error(`❌ ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА: Аудио "${key}" НЕ НАЙДЕНО`);
-      console.log(`🔍 Искали по ключам:`, possibleKeys);
-      console.log(`📂 Доступные ключи:`, Object.keys(allFiles).slice(0, 20));
-      return false;
+      console.warn(`❌ Файл не найден в индексе: ${cellKey}`);
+      return null;
     }
 
-    // Воспроизводим аудио
     try {
-      // Создаем новый Audio элемент каждый раз для надежности
-      const audio = new Audio();
-      audio.src = audioUrl;
-      audio.volume = 0.8;
+      // Управляем размером кэша
+      if (this.audioCache.size >= this.maxCacheSize) {
+        // Удаляем первый элемент (самый старый)
+        const firstKey = this.audioCache.keys().next().value;
+        this.audioCache.delete(firstKey);
+        console.log(`🗑️ Удален из кэша: ${firstKey}`);
+      }
+
+      // Создаем аудио элемент
+      const audio = new Audio(audioUrl);
+      audio.preload = 'auto';
+      this.audioCache.set(cellKey, audio);
       
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Таймаут воспроизведения'));
-        }, 5000);
-
-        audio.addEventListener('ended', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-
-        audio.addEventListener('error', (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        });
-
-        audio.play().catch(reject);
-      });
-
-      console.log(`✅ ПУЛЕНЕПРОБИВАЕМО: "${key}" воспроизведено (ключ: ${foundKey})`);
-      return true;
-
+      console.log(`📥 Загружен в кэш: ${cellKey} (размер кэша: ${this.audioCache.size})`);
+      return audio;
     } catch (error) {
-      console.error(`❌ ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА: Ошибка воспроизведения "${key}":`, error);
+      console.error(`❌ Ошибка создания Audio для ${cellKey}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 🔊 ВОСПРОИЗВЕДЕНИЕ аудио файла (главная функция)
+   */
+  async playAudio(cellKey: string): Promise<boolean> {
+    console.log(`🎵 Запрос воспроизведения: ${cellKey}`);
+
+    const audio = this.loadAudioToMemory(cellKey);
+    if (!audio) return false;
+
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+      console.log(`✅ Успешно воспроизведено: ${cellKey}`);
+      return true;
+    } catch (error) {
+      console.error(`❌ Ошибка воспроизведения ${cellKey}:`, error);
       return false;
     }
   }
 
   /**
-   * 🔄 Перезагрузить все аудио файлы
+   * 📊 Статистика системы
    */
-  reloadAudio(): void {
-    console.log('🔄 Принудительная перезагрузка аудио системы...');
-    this.loadAllAudioFiles();
+  getStats(): Record<string, any> {
+    return {
+      indexedFiles: Object.keys(this.loadedFiles).length,
+      cachedAudio: this.audioCache.size,
+      maxCacheSize: this.maxCacheSize,
+      activeVariant: localStorage.getItem('wb-active-voice-variant') || 'не установлен'
+    };
   }
 
   /**
-   * 📊 Получить статистику
+   * 🧹 Очистка кэша
    */
-  getStats(): { totalFiles: number; cellFiles: number; systemFiles: number } {
-    const allFiles = this.loadAllAudioFiles();
-    const keys = Object.keys(allFiles);
-    
-    const cellFiles = keys.filter(key => 
-      /^\d+$/.test(key) || key.includes('cell-') || key.includes('ячейка-')
-    ).length;
-    
-    const systemFiles = keys.filter(key =>
-      key.includes('скидк') || key.includes('кошелек') || key.includes('камер') || 
-      key.includes('товар') || key.includes('discount') || key.includes('check')
-    ).length;
+  clearCache(): void {
+    this.audioCache.clear();
+    console.log('🧹 Кэш аудио очищен');
+  }
 
-    return {
-      totalFiles: keys.length,
-      cellFiles: Math.floor(cellFiles / 3), // Делим на 3 т.к. каждая ячейка в 3 форматах
-      systemFiles
-    };
+  /**
+   * 🔄 Перезагрузка индекса
+   */
+  reloadIndex(): void {
+    this.loadedFiles = {};
+    this.clearCache();
+    this.loadFileIndex();
   }
 }
 
-// Создаем единственный экземпляр
+// ГЛОБАЛЬНЫЙ ЭКЗЕМПЛЯР
 const bulletproofAudio = BulletproofAudio.getInstance();
 
-// Экспортируем главные функции
-export const playAudio = (key: string) => bulletproofAudio.playAudio(key);
-export const playCellAudio = (cellNumber: string) => bulletproofAudio.playAudio(cellNumber);
-export const playSystemAudio = (soundKey: string) => bulletproofAudio.playAudio(soundKey);
-export const getAudioStats = () => bulletproofAudio.getStats();
+/**
+ * 🎯 ОСНОВНАЯ ФУНКЦИЯ ДЛЯ ВОСПРОИЗВЕДЕНИЯ
+ */
+export async function playCellAudio(cellKey: string | number): Promise<boolean> {
+  const key = String(cellKey);
+  return await bulletproofAudio.playAudio(key);
+}
 
 /**
- * 🎵 Активация варианта озвучки
+ * 🔄 Активация варианта озвучки
  */
-export const activateVoiceVariant = (variantKey: string): boolean => {
+export function activateVoiceVariant(variant: string): boolean {
   try {
-    console.log(`🎵 АКТИВАЦИЯ ВАРИАНТА ОЗВУЧКИ: ${variantKey}`);
-    
-    // Проверяем, что вариант загружен
-    const variantData = localStorage.getItem(`wb-voice-${variantKey}-permanent`);
-    if (!variantData) {
-      console.error(`❌ Вариант ${variantKey} не найден`);
-      return false;
-    }
-    
-    // Устанавливаем активный вариант
-    localStorage.setItem('wb-active-voice-variant', variantKey);
-    
-    // Принудительно перезагружаем аудио систему
-    bulletproofAudio.reloadAudio();
-    
-    console.log(`✅ Вариант ${variantKey} успешно активирован`);
+    localStorage.setItem('wb-active-voice-variant', variant);
+    bulletproofAudio.reloadIndex(); // Перезагружаем индекс с новым активным вариантом
+    console.log(`🎯 Активирован вариант: ${variant}`);
     return true;
-    
   } catch (error) {
     console.error('❌ Ошибка активации варианта:', error);
     return false;
   }
-};
+}
 
 /**
- * 🔍 Получить информацию о загруженных вариантах
+ * 📊 Получить статистику системы
  */
-export const getVoiceVariantsInfo = () => {
-  const variants: Record<string, any> = {};
-  
-  ['variant1', 'variant2', 'standard', 'alternative'].forEach(key => {
-    const storageKey = `wb-voice-${key}-permanent`;
-    const data = localStorage.getItem(storageKey);
-    
-    if (data) {
-      try {
-        variants[key] = JSON.parse(data);
-      } catch (error) {
-        console.error(`Ошибка парсинга данных для ${key}:`, error);
-      }
-    }
-  });
-  
-  const activeVariant = localStorage.getItem('wb-active-voice-variant') || 'none';
-  
-  return {
-    variants,
-    activeVariant,
-    totalVariants: Object.keys(variants).length
-  };
-};
+export function getAudioSystemStats(): Record<string, any> {
+  return bulletproofAudio.getStats();
+}
 
-// Автоматически загружаем все файлы при импорте
-console.log('🛡️ ПУЛЕНЕПРОБИВАЕМАЯ СИСТЕМА АКТИВИРОВАНА');
+/**
+ * 🧹 Очистить кэш
+ */
+export function clearAudioCache(): void {
+  bulletproofAudio.clearCache();
+}
+
+/**
+ * 🔄 Перезагрузить систему
+ */
+export function reloadAudioSystem(): void {
+  bulletproofAudio.reloadIndex();
+}
+
+console.log('🛡️ Пуленепробиваемая система озвучки ОПТИМИЗИРОВАНА и готова!');
