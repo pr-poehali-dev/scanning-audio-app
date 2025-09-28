@@ -273,3 +273,5 @@ export function getVoiceVariantsInfo(): Record<string, { count: number; exists: 
 }
 
 console.log('🛡️ Пуленепробиваемая система озвучки ЭКСТРЕМАЛЬНО ОПТИМИЗИРОВАНА!');
+
+export default BulletproofAudio;

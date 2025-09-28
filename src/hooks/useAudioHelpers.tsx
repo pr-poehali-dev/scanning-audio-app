@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import BulletproofAudio from '@/utils/bulletproofAudio';
 
 export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>) => void, customAudioFiles: Record<string, string>) => {
   
@@ -46,6 +47,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           if (/^\d+$/.test(baseFileName)) {
             audioFiles[`cell-${baseFileName}`] = audioUrl;
             audioFiles[`ячейка-${baseFileName}`] = audioUrl;
+            base64Files[baseFileName] = base64; // Сохраняем по номеру ячейки для bulletproofAudio
             base64Files[`cell-${baseFileName}`] = base64;
             base64Files[`ячейка-${baseFileName}`] = base64;
             console.log(`🏠 ЯЧЕЙКА ${baseFileName}: все форматы`);
@@ -156,11 +158,14 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           
           // Когда все файлы обработаны
           if (processedCount === files.length) {
-            // Сохраняем в localStorage с постоянным хранением
+            // Сохраняем в localStorage с правильными ключами для bulletproofAudio
             try {
-              const storageKey = `wb-pvz-${tabType}-audio-base64`;
+              // Преобразуем tabType в название варианта для bulletproofAudio
+              const variantName = tabType === 'variant-variant1' ? 'standard' : 'alternative';
+              const storageKey = `wb-voice-${variantName}-permanent`;
+              
               localStorage.setItem(storageKey, JSON.stringify(base64Files));
-              console.log(`💾 СОХРАНЕН ${currentVariantName}: ${Object.keys(base64Files).length} файлов в localStorage`);
+              console.log(`💾 СОХРАНЕН ${currentVariantName}: ${Object.keys(base64Files).length} файлов в localStorage под ключом: ${storageKey}`);
               
               // Также сохраняем список названий для быстрого доступа
               const fileNames = Object.keys(base64Files);
@@ -171,6 +176,11 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
             
             // Обновляем аудио файлы в приложении
             updateAudioFiles(audioFiles);
+            
+            // Активируем загруженный вариант в bulletproofAudio
+            const bulletproofAudio = BulletproofAudio.getInstance();
+            bulletproofAudio.activateVariant(variantName);
+            console.log(`🎯 АКТИВИРОВАН ВАРИАНТ: ${variantName}`);
             
             alert(`${currentVariantName} озвучка загружена!\n\n✅ Файлов: ${Object.keys(base64Files).length}\n💾 Сохранено навсегда в браузере`);
           }
