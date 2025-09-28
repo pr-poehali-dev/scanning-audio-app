@@ -1,11 +1,8 @@
 import { useCallback } from 'react';
 import { findOrderByPhone } from '@/data/mockOrders';
-import { playCellAudioSafely } from './qrHandlers';
 
 interface DeliveryHandlersProps {
-  customAudioFiles: Record<string, string>;
   currentOrder: any;
-  playAudio: (key: string) => Promise<void>;
   setCurrentOrder: (order: any) => void;
   setDeliveryStep: (step: any) => void;
   setIsProductScanned: (value: boolean) => void;
@@ -15,7 +12,7 @@ interface DeliveryHandlersProps {
 
 export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
   const {
-    customAudioFiles, currentOrder, playAudio, setCurrentOrder,
+    currentOrder, setCurrentOrder,
     setDeliveryStep, setIsProductScanned, setScannedData, setPhoneNumber
   } = props;
 
@@ -34,40 +31,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       const randomCellNumber = Math.floor(Math.random() * 482) + 1;
       order.cellNumber = randomCellNumber.toString();
       
-      console.log(`🏠 === ПОПЫТКА ОЗВУЧИТЬ ЯЧЕЙКУ: ${order.cellNumber} ===`);
-      
-      // Пробуем озвучить ячейку напрямую через новую систему
-      try {
-        const { playCellAudio } = await import('@/utils/cellAudioPlayer');
-        const success = await playCellAudio(order.cellNumber);
-        
-        if (success) {
-          console.log(`✅ ЯЧЕЙКА ${order.cellNumber} УСПЕШНО ОЗВУЧЕНА!`);
-        } else {
-          console.warn(`❌ Не удалось озвучить ячейку ${order.cellNumber}`);
-        }
-      } catch (error) {
-        console.error(`❌ Ошибка озвучки ячейки ${order.cellNumber}:`, error);
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('🔊 ПОПЫТКА ВОСПРОИЗВЕСТИ СКИДКУ...');
-      try {
-        // Сначала пробуем новую систему
-        const { audioManager } = await import('@/utils/simpleAudioManager');
-        const success = await audioManager.playSystemAudio('discount');
-        
-        if (success) {
-          console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА через новую систему');
-        } else {
-          // Fallback на старую систему
-          await playAudio('discount');
-          console.log('✅ СКИДКА ВОСПРОИЗВЕДЕНА через старую систему');
-        }
-      } catch (error) {
-        console.warn('⚠️ Аудио скидки не найдено:', error);
-      }
+      console.log(`🏠 Назначена ячейка: ${order.cellNumber}`);
       
       // Очищаем номер телефона
       setPhoneNumber('');
@@ -75,7 +39,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       console.log('❌ Заказ не найден');
       alert('Заказ не найден');
     }
-  }, [playAudio, setPhoneNumber, setCurrentOrder, setDeliveryStep, customAudioFiles]);
+  }, [setPhoneNumber, setCurrentOrder, setDeliveryStep]);
 
   // Обработчик сканирования товара
   const handleScanProduct = useCallback(async () => {
@@ -86,29 +50,15 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       setScannedData(currentOrder.items.map((item: any) => item.barcode).join(','));
     }
     
-    // Озвучиваем "Проверьте товар под камерой"
-    try {
-      await playAudio('check-product-camera');
-    } catch (error) {
-      try {
-        await playAudio('check-product');
-      } catch (error2) {
-        console.log('⚠️ Аудио проверки товара не найдено');
-      }
-    }
-  }, [currentOrder, playAudio, setDeliveryStep, setIsProductScanned, setScannedData]);
+    console.log('📦 Товар отсканирован');
+  }, [currentOrder, setDeliveryStep, setIsProductScanned, setScannedData]);
 
   // Обработчик выдачи товара
   const handleDeliverProduct = useCallback(async () => {
     // Устанавливаем состояние завершения
     setDeliveryStep('completed');
     
-    // Финальная выдача товара с озвучкой "Оцените наш ПВЗ"
-    try {
-      await playAudio('rate-service');
-    } catch (error) {
-      console.log('⚠️ Аудио оценки не найдено');
-    }
+    console.log('✅ Товар выдан');
     
     // Сброс состояния через некоторое время
     setTimeout(() => {
@@ -117,7 +67,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       setIsProductScanned(false);
       setScannedData('');
     }, 5000); // Увеличиваем время для показа сообщения
-  }, [playAudio, setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData]);
+  }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData]);
 
   // Обработчик смены вкладки
   const handleTabChange = useCallback((tab: string) => {

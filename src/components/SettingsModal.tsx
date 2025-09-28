@@ -10,297 +10,189 @@ interface SettingsModalProps {
     phrases: any;
     enabled: any;
   };
-  customAudioFiles: { [key: string]: string };
   updateAudioSetting: (key: string, value: any) => void;
-  playAudio: (key: string) => Promise<void>;
-  handleFolderUpload: (event: React.ChangeEvent<HTMLInputElement>, tabType: string) => void;
-  getTabName: (tabId: string) => string;
-  getPhrasesByTab: (tabId: string) => string[];
-  getDescriptionsByTab: (tabId: string) => { text: string; enabled: boolean }[];
-  togglePhraseEnabled: (tabId: string, phraseIndex: number) => void;
 }
 
 const SettingsModal = ({
   isOpen,
   onClose,
   audioSettings,
-  customAudioFiles,
-  updateAudioSetting,
-  playAudio,
-  handleFolderUpload,
-  getTabName,
-  getPhrasesByTab,
-  getDescriptionsByTab,
-  togglePhraseEnabled
+  updateAudioSetting
 }: SettingsModalProps) => {
-  const audioTabInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-  const variantInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-
-  const handleVariantUpload = (event: React.ChangeEvent<HTMLInputElement>, variantType: string) => {
-    // Передаем загрузку в основной обработчик с специальным типом
-    handleFolderUpload(event, `variant-${variantType}`);
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center gap-4 p-6 border-b bg-gray-50">
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <Icon name="ArrowLeft" size={20} className="text-gray-600" />
-          </button>
-          <h3 className="text-lg font-semibold text-gray-900">Настройки</h3>
-        </div>
-        
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* Скорость озвучки */}
-          <div className="mb-8">
-            <h4 className="text-base font-medium text-gray-900 mb-4">Скорость озвучки</h4>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">x1</span>
-              <div className="flex-1">
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2"
-                  step="0.1"
-                  value={audioSettings.speed}
-                  onChange={(e) => updateAudioSetting('speed', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-              </div>
-              <span className="text-sm text-gray-600">x1,5</span>
-              <button 
-                onClick={() => playAudio('test')}
-                className="p-2 bg-purple-100 hover:bg-purple-200 rounded-full"
-              >
-                <Icon name="Volume2" size={18} className="text-purple-600" />
-              </button>
-            </div>
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b">
+            <h2 className="text-xl font-semibold text-gray-800">Настройки</h2>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Icon name="X" size={20} />
+            </button>
           </div>
 
-          {/* Выбор варианта озвучки */}
-          <div className="mb-8">
-            <h4 className="text-base font-medium text-gray-900 mb-4">Вариант озвучки</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Вариант 1 */}
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-                <div className="flex items-start gap-3">
-                  <input 
-                    type="radio" 
-                    id="voice-variant-1" 
-                    name="voice-variant"
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <label htmlFor="voice-variant-1" className="block font-medium text-gray-900 mb-2 cursor-pointer">
-                      Стандартная озвучка
-                    </label>
-                    <div className="text-sm text-gray-600 space-y-1 mb-3">
-                      <div><strong>Последовательность озвучки:</strong></div>
-                      <div>1. Сканирование → номер ячейки (1.mp3, 2.mp3...)</div>
-                      <div>2. товары со скидкой проверьте вб кошелек.mp3</div>
-                      <div>3. Сканирование товара → проверьте товар под камерой.mp3</div>
-                      <div>4. После выдачи → пожалуйста оцените наш пункт выдачи в приложении.mp3</div>
-                    </div>
-                    <button 
-                      onClick={() => variantInputRefs.current.variant1?.click()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
-                    >
-                      <Icon name="Upload" size={14} />
-                      Загрузить MP3 файлы
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Вариант 2 */}
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-                <div className="flex items-start gap-3">
-                  <input 
-                    type="radio" 
-                    id="voice-variant-2" 
-                    name="voice-variant"
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <label htmlFor="voice-variant-2" className="block font-medium text-gray-900 mb-2 cursor-pointer">
-                      Альтернативная озвучка
-                    </label>
-                    <div className="text-sm text-gray-600 space-y-1 mb-3">
-                      <div><strong>Последовательность озвучки:</strong></div>
-                      <div>1. Сканирование → error_sound.mp3 → номер ячейки (1.mp3, 2.mp3...)</div>
-                      <div>2. goods.mp3 (цифра товаров) → payment_on_delivery.mp3</div>
-                      <div>3. Сканирование товара → please_check_good_under_camera.mp3</div>
-                      <div>4. После выдачи → thanks_for_order_rate_pickpoint.mp3</div>
-                    </div>
-                    <button 
-                      onClick={() => variantInputRefs.current.variant2?.click()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm flex items-center gap-2"
-                    >
-                      <Icon name="Upload" size={14} />
-                      Загрузить MP3 файлы
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Фразы для озвучки */}
-          <div>
-            <h4 className="text-base font-medium text-gray-900 mb-4">Дополнительные фразы</h4>
+          {/* Content */}
+          <div className="p-6 space-y-6">
             
-            {/* Вкладки */}
-            <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-              {[
-                { id: 'delivery', name: 'Выдача', color: 'purple' },
-                { id: 'acceptance', name: 'Приемка', color: 'gray' },
-                { id: 'returns', name: 'Возврат', color: 'gray' },
-                { id: 'general', name: 'Общие', color: 'gray' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => updateAudioSetting('activeTab', tab.id)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    audioSettings.activeTab === tab.id
-                      ? 'bg-purple-600 text-white'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-white'
-                  }`}
-                >
-                  {tab.name}
-                </button>
-              ))}
-            </div>
-
-            {/* Список фраз */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 gap-6">
-                {/* Левая колонка - Фразы */}
+            {/* Общие настройки */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-800">Общие настройки</h3>
+              
+              <div className="space-y-3">
                 <div>
-                  <h5 className="text-sm font-medium text-gray-700 mb-3">Фраза или звук</h5>
-                  <div className="space-y-3">
-                    {getPhrasesByTab(audioSettings.activeTab).map((phrase, index) => (
-                      <div key={index} className="text-sm text-gray-600 py-2">
-                        {phrase}
-                      </div>
-                    ))}
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Скорость работы
+                  </label>
+                  <select
+                    value={audioSettings.speed}
+                    onChange={(e) => updateAudioSetting('speed', Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value={0.5}>Медленно (0.5x)</option>
+                    <option value={0.75}>Немного медленно (0.75x)</option>
+                    <option value={1}>Нормально (1x)</option>
+                    <option value={1.25}>Немного быстро (1.25x)</option>
+                    <option value={1.5}>Быстро (1.5x)</option>
+                    <option value={2}>Очень быстро (2x)</option>
+                  </select>
                 </div>
 
-                {/* Правая колонка - Описания и переключатели */}
                 <div>
-                  <h5 className="text-sm font-medium text-gray-700 mb-3">Описание действия в интерфейсе</h5>
-                  <div className="space-y-3">
-                    {getDescriptionsByTab(audioSettings.activeTab).map((desc, index) => (
-                      <div key={index} className="flex items-center justify-between py-2">
-                        <span className="text-sm text-gray-600 flex-1">{desc.text}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">{desc.enabled ? 'Вкл' : 'Выкл'}</span>
-                          <button
-                            onClick={() => togglePhraseEnabled(audioSettings.activeTab, index)}
-                            className={`w-10 h-6 rounded-full transition-colors ${
-                              desc.enabled ? 'bg-purple-600' : 'bg-gray-300'
-                            }`}
-                          >
-                            <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                              desc.enabled ? 'translate-x-5' : 'translate-x-1'
-                            } mt-1`} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Активная вкладка по умолчанию
+                  </label>
+                  <select
+                    value={audioSettings.activeTab}
+                    onChange={(e) => updateAudioSetting('activeTab', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="delivery">Выдача</option>
+                    <option value="acceptance">Приемка</option>
+                    <option value="returns">Возврат</option>
+                  </select>
                 </div>
               </div>
+            </div>
 
-              {/* Кнопка загрузки */}
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => audioTabInputRefs.current[audioSettings.activeTab]?.click()}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 text-sm"
-                >
-                  <Icon name="Upload" size={16} />
-                  Загрузить аудио для вкладки "{getTabName(audioSettings.activeTab)}"
-                </button>
-                
-                {/* Примеры названий файлов */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs font-medium text-blue-800 mb-2">
-                    Примеры названий файлов для вкладки "{getTabName(audioSettings.activeTab)}":
-                  </p>
-                  <div className="text-xs text-blue-700 space-y-1">
-                    {audioSettings.activeTab === 'delivery' && (
-                      <>
-                        <div>• scan-success.mp3 - успешное сканирование QR</div>
-                        <div>• client-found.mp3 - клиент найден</div>
-                        <div>• phone-input.mp3 - ввод телефона</div>
-                        <div>• check-product.mp3 - проверьте товар под камерой</div>
-                        <div>• discount.mp3 - товары со скидкой</div>
-                        <div>• rate-service.mp3 - оцените наш ПВЗ</div>
-                        <div>• cell-123.mp3 - озвучка ячейки 123 (cell-НОМЕР.mp3)</div>
-                      </>
-                    )}
-                    {audioSettings.activeTab === 'acceptance' && (
-                      <>
-                        <div>• scan-success.mp3 - успешное сканирование</div>
-                        <div>• acceptance-complete.mp3 - приемка завершена</div>
-                        <div>• error.mp3 - ошибка приемки</div>
-                      </>
-                    )}
-                    {audioSettings.activeTab === 'returns' && (
-                      <>
-                        <div>• return-complete.mp3 - возврат оформлен</div>
-                        <div>• error.mp3 - ошибка возврата</div>
-                      </>
-                    )}
-                    {audioSettings.activeTab === 'general' && (
-                      <>
-                        <div>• test.mp3 - тестовый звук</div>
-                        <div>• error.mp3 - общие ошибки</div>
-                        <div>• notification.mp3 - уведомления</div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Скрытые input'ы для вариантов озвучки */}
-                {['variant1', 'variant2'].map(variantId => (
-                  <input
-                    key={variantId}
-                    ref={(el) => variantInputRefs.current[variantId] = el}
-                    type="file"
-                    multiple
-                    accept="audio/*"
-                    onChange={(e) => handleVariantUpload(e, variantId)}
-                    className="hidden"
+            {/* Уведомления */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-800">Уведомления</h3>
+              
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    defaultChecked
                   />
-                ))}
+                  <span className="ml-2 text-sm text-gray-700">Звуковые уведомления</span>
+                </label>
                 
-                {/* Скрытые input'ы для каждой вкладки */}
-                {['delivery', 'acceptance', 'returns', 'general'].map(tabId => (
-                  <input
-                    key={tabId}
-                    ref={(el) => audioTabInputRefs.current[tabId] = el}
-                    type="file"
-                    multiple
-                    accept="audio/*"
-                    onChange={(e) => handleFolderUpload(e, tabId)}
-                    className="hidden"
+                <label className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    defaultChecked
                   />
-                ))}
+                  <span className="ml-2 text-sm text-gray-700">Вибрация</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    defaultChecked
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Push-уведомления</span>
+                </label>
               </div>
             </div>
+
+            {/* Интерфейс */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-800">Интерфейс</h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Тема оформления
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="light">Светлая</option>
+                    <option value="dark">Темная</option>
+                    <option value="auto">Автоматическая</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Размер шрифта
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="small">Маленький</option>
+                    <option value="medium">Средний</option>
+                    <option value="large">Большой</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Безопасность */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-800">Безопасность</h3>
+              
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Требовать PIN для входа</span>
+                </label>
+                
+                <label className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    defaultChecked
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Автоматический выход через 30 минут</span>
+                </label>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Отмена
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Сохранить
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,11 +1,6 @@
 import { useState } from 'react';
-import { RotateCcw, Scan, CheckCircle, XCircle, AlertTriangle, User } from 'lucide-react';
+import Icon from '@/components/ui/icon';
 import QRScanner from './QRScanner';
-
-interface ReturnsTabProps {
-  playAudio: (audioName: string) => void;
-  customAudioFiles: Record<string, string>;
-}
 
 interface ReturnItem {
   id: string;
@@ -27,7 +22,7 @@ const RETURN_REASONS = [
   'Другое'
 ];
 
-const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
+const ReturnsTab = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [returnItems, setReturnItems] = useState<ReturnItem[]>([]);
   const [showReturnForm, setShowReturnForm] = useState(false);
@@ -37,29 +32,6 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
     returnReason: '',
     productName: ''
   });
-
-  // Функция для автоматического проигрывания аудио при изменениях
-  const playReturnAudio = (status: string) => {
-    const audioMap: Record<string, string[]> = {
-      'processing': ['returns-Возврат в обработке', 'Возврат в обработке', 'processing'],
-      'approved': ['returns-Возврат одобрен', 'Возврат одобрен', 'approved'],
-      'rejected': ['returns-Возврат отклонен', 'Возврат отклонен', 'rejected'],
-      'completed': ['returns-Возврат оформлен', 'Возврат оформлен', 'completed'],
-      'error': ['returns-Ошибка возврата', 'Ошибка возврата', 'error']
-    };
-
-    const possibleAudios = audioMap[status] || [];
-    
-    for (const audioName of possibleAudios) {
-      if (customAudioFiles[audioName]) {
-        console.log(`🔊 Проигрываю аудио для возврата: ${audioName}`);
-        playAudio(audioName);
-        return;
-      }
-    }
-    
-    console.log(`⚠️ Аудио для статуса возврата "${status}" не найдено`);
-  };
 
   // Обработка сканирования QR-кода заказа
   const handleOrderScan = (data: string) => {
@@ -74,13 +46,11 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
     }));
     
     setShowReturnForm(true);
-    playReturnAudio('processing');
   };
 
   // Обработка создания возврата
   const handleCreateReturn = () => {
     if (!currentReturn.orderNumber || !currentReturn.customerPhone || !currentReturn.returnReason) {
-      playReturnAudio('error');
       alert('Заполните все обязательные поля');
       return;
     }
@@ -106,8 +76,6 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
       productName: ''
     });
     setShowReturnForm(false);
-    
-    playReturnAudio('processing');
   };
 
   // Функция для изменения статуса возврата
@@ -117,8 +85,6 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
         item.id === itemId ? { ...item, status: newStatus, timestamp: new Date().toLocaleString('ru-RU') } : item
       )
     );
-    
-    playReturnAudio(newStatus);
   };
 
   // Получаем статистику
@@ -136,7 +102,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
       {/* Заголовок и статистика */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center gap-3 mb-4">
-          <RotateCcw className="text-purple-600" size={28} />
+          <Icon name="RotateCcw" size={28} className="text-purple-600" />
           <h2 className="text-2xl font-bold text-gray-800">Возврат товаров</h2>
         </div>
         
@@ -170,7 +136,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
             onClick={() => setShowScanner(true)}
             className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition-colors"
           >
-            <Scan size={20} />
+            <Icon name="Scan" size={20} />
             <span>Сканировать заказ для возврата</span>
           </button>
           
@@ -178,7 +144,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
             onClick={() => setShowReturnForm(true)}
             className="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
           >
-            <User size={20} />
+            <Icon name="User" size={20} />
             <span>Ручной ввод</span>
           </button>
         </div>
@@ -272,7 +238,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
         <div className="max-h-96 overflow-y-auto">
           {returnItems.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
-              <RotateCcw size={48} className="mx-auto mb-4 opacity-50" />
+              <Icon name="RotateCcw" size={48} className="mx-auto mb-4 opacity-50" />
               <p>Пока нет оформленных возвратов</p>
               <p className="text-sm">Отсканируйте заказ для создания возврата</p>
             </div>
@@ -322,7 +288,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
                         title="Одобрить"
                         disabled={item.status === 'completed'}
                       >
-                        <CheckCircle size={16} />
+                        <Icon name="CheckCircle" size={16} />
                       </button>
                       <button
                         onClick={() => changeReturnStatus(item.id, 'rejected')}
@@ -330,7 +296,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
                         title="Отклонить"
                         disabled={item.status === 'completed'}
                       >
-                        <XCircle size={16} />
+                        <Icon name="XCircle" size={16} />
                       </button>
                       {item.status === 'approved' && (
                         <button
@@ -338,7 +304,7 @@ const ReturnsTab = ({ playAudio, customAudioFiles }: ReturnsTabProps) => {
                           className="text-purple-600 hover:bg-purple-100 p-1 rounded transition-colors"
                           title="Завершить возврат"
                         >
-                          <RotateCcw size={16} />
+                          <Icon name="RotateCcw" size={16} />
                         </button>
                       )}
                     </div>

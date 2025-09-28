@@ -18,8 +18,6 @@ interface TabContentProps {
   onScanProduct: () => void;
   onDeliverProduct: () => void;
   currentOrder?: any;
-  playAudio?: (audioName: string) => void;
-  customAudioFiles?: Record<string, string>;
 }
 
 const TabContent = ({
@@ -35,9 +33,7 @@ const TabContent = ({
   onCellClick,
   onScanProduct,
   onDeliverProduct,
-  currentOrder,
-  playAudio,
-  customAudioFiles
+  currentOrder
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи  
@@ -86,7 +82,6 @@ const TabContent = ({
             )}
           </div>
           
-
         </div>
 
         {/* Divider */}
@@ -113,20 +108,7 @@ const TabContent = ({
             />
             
             <button
-              onClick={async () => {
-                const order = findOrderByPhone(phoneNumber);
-                
-                if (order) {
-                  try {
-                    const { playCellAudio } = await import('@/utils/cellAudioPlayer');
-                    await playCellAudio(order.cellNumber);
-                  } catch (error) {
-                    console.error('Ошибка озвучки:', error);
-                  }
-                }
-                
-                onPhoneSubmit(phoneNumber);
-              }}
+              onClick={() => onPhoneSubmit(phoneNumber)}
               disabled={phoneNumber.length !== 4}
               className={`w-full py-3 rounded-lg font-medium transition-colors ${
                 phoneNumber.length === 4
@@ -143,21 +125,11 @@ const TabContent = ({
   }
 
   if (activeTab === 'acceptance') {
-    return (
-      <AcceptanceTab 
-        playAudio={playAudio || (() => {})} 
-        customAudioFiles={customAudioFiles || {}} 
-      />
-    );
+    return <AcceptanceTab />;
   }
 
   if (activeTab === 'returns') {
-    return (
-      <ReturnsTab 
-        playAudio={playAudio || (() => {})} 
-        customAudioFiles={customAudioFiles || {}} 
-      />
-    );
+    return <ReturnsTab />;
   }
 
   return null;

@@ -1,18 +1,14 @@
 import { PvzInfo, AudioSettings } from './useAppState';
 import { createQRHandlers } from './handlers/qrHandlers';
 import { createDeliveryHandlers } from './handlers/deliveryHandlers';
-import { createCellAudioHandlers } from './handlers/cellAudioHandlers';
 import { createSettingsHandlers } from './handlers/settingsHandlers';
 
 interface UseAppHandlersProps {
   activeTab: string;
   deliveryStep: string;
   currentOrder: any;
-  customAudioFiles: Record<string, string>;
   expandedMenuItems: Record<string, boolean>;
   audioSettings: AudioSettings;
-  playAudio: (key: string) => Promise<void>;
-  updateAudioFiles: (files: Record<string, string>) => void;
   setIsScanning: (value: boolean) => void;
   setShowQRScanner: (value: boolean) => void;
   setCurrentOrder: (order: any) => void;
@@ -27,8 +23,8 @@ interface UseAppHandlersProps {
 
 export const useAppHandlers = (props: UseAppHandlersProps) => {
   const {
-    activeTab, deliveryStep, currentOrder, customAudioFiles, expandedMenuItems, audioSettings,
-    playAudio, updateAudioFiles, setIsScanning, setShowQRScanner, setCurrentOrder, 
+    activeTab, deliveryStep, currentOrder, expandedMenuItems, audioSettings,
+    setIsScanning, setShowQRScanner, setCurrentOrder, 
     setDeliveryStep, setScannedData, setIsProductScanned, setPhoneNumber,
     setExpandedMenuItems, setPvzInfo, setAudioSettings
   } = props;
@@ -37,8 +33,6 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
   const qrHandlers = createQRHandlers({
     activeTab,
     deliveryStep,
-    customAudioFiles,
-    playAudio,
     setIsScanning,
     setShowQRScanner,
     setCurrentOrder,
@@ -49,19 +43,12 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
 
   // Создаем обработчики доставки
   const deliveryHandlers = createDeliveryHandlers({
-    customAudioFiles,
     currentOrder,
-    playAudio,
     setCurrentOrder,
     setDeliveryStep,
     setIsProductScanned,
     setScannedData,
     setPhoneNumber
-  });
-
-  // Создаем обработчики озвучки ячеек
-  const cellAudioHandlers = createCellAudioHandlers({
-    playAudio
   });
 
   // Создаем обработчики настроек
@@ -72,53 +59,21 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     setAudioSettings
   });
 
-  // Обработчики системных звуков
-  const handleDiscountAudio = async () => {
-    try {
-      await playAudio('discount');
-    } catch (error) {
-      console.error('Ошибка воспроизведения скидки:', error);
-    }
-  };
-
-  const handleCheckProductAudio = async () => {
-    try {
-      await playAudio('check-product-camera');
-    } catch (error) {
-      console.error('Ошибка воспроизведения проверки товара:', error);
-    }
-  };
-
-  const handleRatePvzAudio = async () => {
-    try {
-      await playAudio('rate-pvz');
-    } catch (error) {
-      console.error('Ошибка воспроизведения оценки ПВЗ:', error);
-    }
-  };
-
-  const handleCashOnDeliveryAudio = async () => {
-    try {
-      await playAudio('cash-on-delivery');
-    } catch (error) {
-      console.error('Ошибка воспроизведения оплаты при получении:', error);
-    }
+  // Заглушка для клика по ячейке (без аудио)
+  const handleCellClick = (cellNumber: string) => {
+    console.log(`Клик по ячейке: ${cellNumber}`);
   };
 
   return {
     handleQRScan: qrHandlers.handleQRScan,
     handleQRScanResult: qrHandlers.handleQRScanResult,
     handlePhoneSubmit: deliveryHandlers.handlePhoneSubmit,
-    handleCellClick: cellAudioHandlers.handleCellClick,
+    handleCellClick,
     handleScanProduct: deliveryHandlers.handleScanProduct,
     handleDeliverProduct: deliveryHandlers.handleDeliverProduct,
     handleTabChange: deliveryHandlers.handleTabChange,
     toggleMenuItem: settingsHandlers.toggleMenuItem,
     updatePvzInfo: settingsHandlers.updatePvzInfo,
     updateAudioSetting: settingsHandlers.updateAudioSetting,
-    handleDiscountAudio,
-    handleCheckProductAudio,
-    handleRatePvzAudio,
-    handleCashOnDeliveryAudio,
   };
 };

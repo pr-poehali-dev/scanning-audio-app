@@ -12,12 +12,6 @@ interface SideMenuProps {
   updatePvzInfo: (field: string, value: string) => void;
   expandedMenuItems: { [key: string]: boolean };
   toggleMenuItem: (item: string) => void;
-  handleDiscountAudio?: () => void;
-  handleCheckProductAudio?: () => void;
-  handleRatePvzAudio?: () => void;
-  handleCashOnDeliveryAudio?: () => void;
-  handleClearAllAudio?: () => void;
-  onVoiceUploaderOpen?: () => void;
 }
 
 const SideMenu = ({ 
@@ -27,378 +21,154 @@ const SideMenu = ({
   pvzInfo, 
   updatePvzInfo, 
   expandedMenuItems, 
-  toggleMenuItem,
-  handleDiscountAudio,
-  handleCheckProductAudio,
-  handleRatePvzAudio,
-  handleCashOnDeliveryAudio,
-  handleClearAllAudio,
-  onVoiceUploaderOpen
+  toggleMenuItem
 }: SideMenuProps) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="text-sm text-gray-600 space-y-2 flex-1">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs">ID ПВЗ:</span>
-              <input 
-                type="text" 
-                value={pvzInfo.id}
-                onChange={(e) => updatePvzInfo('id', e.target.value)}
-                placeholder="Введите ID"
-                className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs">Адрес:</span>
-              <input 
-                type="text" 
-                value={pvzInfo.address}
-                onChange={(e) => updatePvzInfo('address', e.target.value)}
-                placeholder="Введите адрес"
-                className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs">ID сотрудника:</span>
-              <input 
-                type="text" 
-                value={pvzInfo.employeeId}
-                onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
-                placeholder="Введите ID"
-                className="text-xs border-b border-gray-200 bg-transparent outline-none flex-1"
-              />
-            </div>
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg ml-2"
-          >
-            <Icon name="X" size={20} className="text-gray-600" />
-          </button>
-        </div>
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={onClose}
+        />
+      )}
 
-        {/* Search */}
-        <div className="p-4 border-b">
-          <div className="relative">
-            <Icon name="Search" size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Поиск по ШК"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const barcode = (e.target as HTMLInputElement).value.trim();
-                  if (barcode) {
-                    alert(`🔍 Поиск товара по ШК: ${barcode}\n\nФункция в разработке - скоро добавим полноценный поиск!`);
-                    (e.target as HTMLInputElement).value = '';
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="py-2">
-            {/* Как работать с программой */}
+      {/* Side Menu */}
+      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-lg font-semibold text-gray-800">Меню</h2>
             <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => toggleMenuItem('program')}
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="flex items-center space-x-3">
-                <Icon name="BookOpen" size={18} className="text-red-500" />
-                <span className="text-sm text-gray-700">Как работать с программой</span>
-              </div>
-              <Icon 
-                name={expandedMenuItems.program ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
-                className="text-gray-400" 
-              />
+              <Icon name="X" size={20} />
             </button>
-            {expandedMenuItems.program && (
-              <div className="bg-gray-50 py-2">
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('📖 Руководство пользователя\n\nЗдесь будет открываться подробная инструкция по работе с системой.')}
-                >
-                  Руководство пользователя
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('❓ Частые вопросы\n\n• Как сканировать QR-код?\n• Что делать если товар не найден?\n• Как настроить принтер?\n\nПолный список ответов в разработке.')}
-                >
-                  Частые вопросы
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('🎥 Обучающие видео\n\nВидеоуроки по работе с системой скоро будут добавлены!')}
-                >
-                  Обучающие видео
-                </button>
-              </div>
-            )}
+          </div>
 
-            {/* Наклейки для работы с товаром */}
-            <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => toggleMenuItem('labels')}
-            >
-              <div className="flex items-center space-x-3">
-                <Icon name="Tag" size={18} className="text-gray-600" />
-                <span className="text-sm text-gray-700">Наклейки для работы с товаром</span>
-              </div>
-              <Icon 
-                name={expandedMenuItems.labels ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
-                className="text-gray-400" 
-              />
-            </button>
-            {expandedMenuItems.labels && (
-              <div className="bg-gray-50 py-2">
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('🖨️ Печать этикеток\n\nФункция печати этикеток будет добавлена в ближайшем обновлении.')}
-                >
-                  Печать этикеток
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('⚙️ Настройка принтера\n\nНастройка принтера этикеток в разработке.')}
-                >
-                  Настройка принтера
-                </button>
-              </div>
-            )}
-
-            {/* Настройки */}
-            <div className={`${expandedMenuItems.settings ? 'bg-purple-100' : ''}`}>
-              <button 
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-purple-50"
-                onClick={() => toggleMenuItem('settings')}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon name="Settings" size={18} className="text-purple-600" />
-                  <span className="text-sm text-gray-700">Настройки</span>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            
+            {/* ПВЗ Info Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                Информация о ПВЗ
+              </h3>
+              
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">ID ПВЗ</label>
+                  <input
+                    type="text"
+                    value={pvzInfo.id}
+                    onChange={(e) => updatePvzInfo('id', e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Введите ID ПВЗ"
+                  />
                 </div>
-                <Icon 
-                  name={expandedMenuItems.settings ? "ChevronUp" : "ChevronDown"} 
-                  size={16} 
-                  className="text-gray-400" 
-                />
-              </button>
-              {expandedMenuItems.settings && (
-                <div className="bg-purple-50 py-2">
-                  <button className="w-full flex items-center space-x-3 px-12 py-2 text-left text-sm text-gray-600 hover:bg-purple-100">
-                    <Icon name="Sliders" size={16} />
-                    <span>Основные</span>
-                  </button>
-                  <button 
-                    className="w-full flex items-center space-x-3 px-12 py-2 text-left text-sm text-gray-600 hover:bg-purple-100"
-                    onClick={() => {
-                      onClose();
-                      onSettingsOpen();
-                    }}
-                  >
-                    <Icon name="Volume2" size={16} />
-                    <span>Голосовая озвучка</span>
-                  </button>
+                
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Адрес</label>
+                  <textarea
+                    value={pvzInfo.address}
+                    onChange={(e) => updatePvzInfo('address', e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={2}
+                    placeholder="Введите адрес ПВЗ"
+                  />
                 </div>
-              )}
+                
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">ID сотрудника</label>
+                  <input
+                    type="text"
+                    value={pvzInfo.employeeId}
+                    onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Введите ID сотрудника"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Системные звуки */}
-            <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => toggleMenuItem('systemSounds')}
-            >
-              <div className="flex items-center space-x-3">
-                <Icon name="Volume2" size={18} className="text-blue-600" />
-                <span className="text-sm text-gray-700">Системные звуки</span>
-              </div>
-              <Icon 
-                name={expandedMenuItems.systemSounds ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
-                className="text-gray-400" 
-              />
-            </button>
-            {expandedMenuItems.systemSounds && (
-              <div className="bg-blue-50 py-2">
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
-                  onClick={handleDiscountAudio}
+            {/* Menu Items */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                Инструменты
+              </h3>
+              
+              <div className="space-y-2">
+                {/* Настройки */}
+                <button
+                  onClick={() => {
+                    onSettingsOpen();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  🔊 Товары со скидкой
+                  <Icon name="Settings" size={18} />
+                  <span className="text-sm">Настройки</span>
                 </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
-                  onClick={handleCheckProductAudio}
-                >
-                  🔊 Проверьте товар под камерой
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
-                  onClick={handleRatePvzAudio}
-                >
-                  🔊 Оцените наш пункт выдачи
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-blue-100"
-                  onClick={() => handleCashOnDeliveryAudio?.()}
-                >
-                  🔊 Оплата при получении
-                </button>
-                <hr className="my-2 border-gray-300" />
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-red-600 hover:bg-red-100 font-medium"
-                  onClick={handleClearAllAudio}
-                >
-                  🗑️ Удалить всю озвучку
-                </button>
-              </div>
-            )}
 
-            {/* Оставить отзыв */}
-            <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => {
-                const feedback = prompt('⭐ Ваш отзыв о системе WB ПВЗ:\n\n(Укажите что нравится и что можно улучшить)');
-                if (feedback) {
-                  alert(`Спасибо за отзыв! 🙏\n\nВаш отзыв: "${feedback}"\n\nМы обязательно учтем ваши пожелания в следующих обновлениях.`);
-                }
-              }}
-            >
-              <div className="flex items-center space-x-3">
-                <Icon name="Star" size={18} className="text-gray-600" />
-                <span className="text-sm text-gray-700">Оставить отзыв</span>
-              </div>
-            </button>
+                {/* Статистика */}
+                <button
+                  onClick={() => toggleMenuItem('stats')}
+                  className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon name="BarChart3" size={18} />
+                    <span className="text-sm">Статистика</span>
+                  </div>
+                  <Icon name={expandedMenuItems.stats ? "ChevronUp" : "ChevronDown"} size={16} />
+                </button>
+                
+                {expandedMenuItems.stats && (
+                  <div className="ml-6 space-y-1">
+                    <div className="text-xs text-gray-600 py-2">
+                      <div>Выдано сегодня: 0</div>
+                      <div>Принято товаров: 0</div>
+                      <div>Возвратов: 0</div>
+                    </div>
+                  </div>
+                )}
 
-            {/* Полезные ссылки */}
-            <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => toggleMenuItem('links')}
-            >
-              <div className="flex items-center space-x-3">
-                <Icon name="ExternalLink" size={18} className="text-gray-600" />
-                <span className="text-sm text-gray-700">Полезные ссылки</span>
+                {/* Справка */}
+                <button
+                  onClick={() => toggleMenuItem('help')}
+                  className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon name="HelpCircle" size={18} />
+                    <span className="text-sm">Справка</span>
+                  </div>
+                  <Icon name={expandedMenuItems.help ? "ChevronUp" : "ChevronDown"} size={16} />
+                </button>
+                
+                {expandedMenuItems.help && (
+                  <div className="ml-6 space-y-1">
+                    <div className="text-xs text-gray-600 py-2">
+                      <div>Версия: 1.0.51</div>
+                      <div>Поддержка: support@wb.ru</div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <Icon 
-                name={expandedMenuItems.links ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
-                className="text-gray-400" 
-              />
-            </button>
-            {expandedMenuItems.links && (
-              <div className="bg-gray-50 py-2">
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('🔗 Портал партнеров\n\nСсылка на официальный портал партнеров WB будет добавлена.')}
-                >
-                  Портал партнеров
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('📚 База знаний\n\nБаза знаний с ответами на все вопросы в разработке.')}
-                >
-                  База знаний
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('🆘 Техподдержка\n\nТелефон: 8-800-XXX-XX-XX\nEmail: support@example.com\n\nСвязь с техподдержкой скоро будет добавлена.')}
-                >
-                  Техподдержка
-                </button>
-              </div>
-            )}
-
-            {/* Дополнительный функционал */}
-            <button 
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-              onClick={() => toggleMenuItem('additional')}
-            >
-              <div className="flex items-center space-x-3">
-                <Icon name="MoreHorizontal" size={18} className="text-gray-600" />
-                <span className="text-sm text-gray-700">Дополнительный функционал</span>
-              </div>
-              <Icon 
-                name={expandedMenuItems.additional ? "ChevronUp" : "ChevronDown"} 
-                size={16} 
-                className="text-gray-400" 
-              />
-            </button>
-            {expandedMenuItems.additional && (
-              <div className="bg-gray-50 py-2">
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('📡 Режим офлайн\n\nРежим работы без интернета будет добавлен в следующих версиях.')}
-                >
-                  Режим офлайн
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('📊 Экспорт отчетов\n\nФункция экспорта отчетов о работе в Excel/PDF скоро появится.')}
-                >
-                  Экспорт отчетов
-                </button>
-                <button 
-                  className="w-full px-12 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-                  onClick={() => alert('🔄 Обновления\n\nТекущая версия: 1.0.0\nПоследнее обновление: Сегодня\n\nАвтообновления включены.')}
-                >
-                  Обновления
-                </button>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* Footer - Settings & Exit */}
-        <div className="border-t p-4 space-y-2">
-          {/* Загрузка вариантов озвучки */}
-          <button 
-            className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-purple-50 rounded-lg"
-            onClick={() => {
-              onClose();
-              onVoiceUploaderOpen?.();
-            }}
-          >
-            <Icon name="Upload" size={18} className="text-purple-600" />
-            <span className="text-sm text-purple-700 font-medium">🎵 Загрузить варианты озвучки</span>
-          </button>
-          
-          {/* Настройки */}
-          <button 
-            className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
-            onClick={() => {
-              onClose();
-              onSettingsOpen();
-            }}
-          >
-            <Icon name="Settings" size={18} className="text-gray-600" />
-            <span className="text-sm text-gray-700">Настройки</span>
-          </button>
-          
-          {/* Выйти */}
-          <button 
-            className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
-            onClick={() => {
-              if (confirm('Вы действительно хотите выйти?')) {
-                localStorage.clear();
-                window.location.reload();
-              }
-            }}
-          >
-            <Icon name="LogOut" size={18} className="text-gray-600" />
-            <span className="text-sm text-gray-700">Выйти</span>
-          </button>
+          {/* Footer */}
+          <div className="p-4 border-t bg-gray-50">
+            <div className="text-xs text-gray-500 text-center">
+              <div>WB ПВЗ Система</div>
+              <div>Версия 1.0.51</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
