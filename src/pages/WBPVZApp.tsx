@@ -5,6 +5,8 @@ import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { CloudVoiceLoader } from '@/components/CloudVoiceLoader';
+import VoiceVariantManager from '@/components/VoiceVariantManager';
+import VoiceVariantButton from '@/components/VoiceVariantButton';
 import TestAudioButton from '@/components/TestAudioButton';
 import FixAudioButton from '@/components/FixAudioButton';
 import Footer from '@/components/Footer';
@@ -20,6 +22,7 @@ const WBPVZApp = () => {
   const appState = useAppState();
   const { playAudio, updateAudioFiles, customAudioFiles, clearAllAudio } = useAudio();
   const [showVoiceUploader, setShowVoiceUploader] = useState(false);
+  const [showVoiceVariants, setShowVoiceVariants] = useState(false);
   
   // Создаем обработчики событий
   const appHandlers = useAppHandlers({
@@ -186,6 +189,12 @@ const WBPVZApp = () => {
         onClose={() => setShowVoiceUploader(false)}
       />
 
+      <VoiceVariantManager
+        isOpen={showVoiceVariants}
+        onClose={() => setShowVoiceVariants(false)}
+      />
+
+      <VoiceVariantButton onClick={() => setShowVoiceVariants(true)} />
       <TestAudioButton />
       <FixAudioButton />
 
