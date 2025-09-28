@@ -127,10 +127,21 @@ const VoiceVariantManager: React.FC<VoiceVariantManagerProps> = ({ isOpen = true
     return { count: 0, exists: false, cells: [] };
   };
 
-  const setActiveVariant = (variant: 'standard' | 'alternative') => {
-    localStorage.setItem('wb-active-voice-variant', variant);
-    console.log(`🎯 Активный вариант изменен на: ${variant}`);
-    alert(`✅ Активный вариант озвучки: ${variant === 'standard' ? 'Стандартная' : 'Альтернативная'}`);
+  const setActiveVariant = async (variant: 'standard' | 'alternative') => {
+    try {
+      const { activateVoiceVariant } = await import('@/utils/bulletproofAudio');
+      const success = activateVoiceVariant(variant);
+      
+      if (success) {
+        console.log(`🎯 Активный вариант изменен на: ${variant}`);
+        alert(`✅ Активный вариант озвучки: ${variant === 'standard' ? 'Стандартная' : 'Альтернативная'}`);
+      } else {
+        alert(`❌ Ошибка активации варианта "${variant}"`);
+      }
+    } catch (error) {
+      console.error('Ошибка активации варианта:', error);
+      alert('❌ Ошибка активации варианта');
+    }
   };
 
   const clearVariant = (variant: 'standard' | 'alternative') => {
@@ -157,16 +168,26 @@ const VoiceVariantManager: React.FC<VoiceVariantManagerProps> = ({ isOpen = true
 
     const testCell = info.cells[0];
     try {
-      // Временно устанавливаем этот вариант как активный для теста
+      // Сохраняем оригинальный активный вариант
       const originalActive = localStorage.getItem('wb-active-voice-variant');
-      localStorage.setItem('wb-active-voice-variant', variant);
       
-      const { playCellAudio } = await import('@/utils/bulletproofAudio');
+      // Активируем тестируемый вариант через bulletproof систему
+      const { activateVoiceVariant, playCellAudio } = await import('@/utils/bulletproofAudio');
+      
+      console.log(`🧪 Тестируем вариант ${variant} с ячейкой ${testCell}`);
+      const activated = activateVoiceVariant(variant);
+      
+      if (!activated) {
+        alert(`❌ Не удалось активировать вариант "${variant}"`);
+        return;
+      }
+      
+      // Тестируем воспроизведение
       const success = await playCellAudio(testCell);
       
       // Восстанавливаем оригинальный активный вариант
       if (originalActive) {
-        localStorage.setItem('wb-active-voice-variant', originalActive);
+        activateVoiceVariant(originalActive);
       } else {
         localStorage.removeItem('wb-active-voice-variant');
       }

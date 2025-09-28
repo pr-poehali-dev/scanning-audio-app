@@ -9,7 +9,9 @@ const BULLETPROOF_KEY = 'bulletproof-audio-system';
 // Ключи для вариантов озвучки
 const VOICE_VARIANT_KEYS = {
   variant1: 'wb-voice-variant1-permanent',
-  variant2: 'wb-voice-variant2-permanent'
+  variant2: 'wb-voice-variant2-permanent',
+  standard: 'wb-voice-standard-permanent',
+  alternative: 'wb-voice-alternative-permanent'
 };
 
 interface AudioRecord {
@@ -37,12 +39,46 @@ class BulletproofAudio {
   }
 
   /**
-   * 📂 Загрузить ВСЕ аудио файлы из localStorage
+   * 📂 Загрузить ВСЕ аудио файлы из localStorage с приоритетом активного варианта
    */
   private loadAllAudioFiles(): Record<string, string> {
     console.log('🛡️ === ПУЛЕНЕПРОБИВАЕМАЯ ЗАГРУЗКА ВСЕХ АУДИО ===');
     
     const allFiles: Record<string, string> = {};
+    
+    // СНАЧАЛА загружаем АКТИВНЫЙ вариант озвучки
+    const activeVariant = localStorage.getItem('wb-active-voice-variant');
+    console.log(`🎯 Активный вариант озвучки: ${activeVariant || 'не установлен'}`);
+    
+    if (activeVariant) {
+      const activeStorageKey = `wb-voice-${activeVariant}-permanent`;
+      try {
+        const activeData = localStorage.getItem(activeStorageKey);
+        if (activeData) {
+          const parsedActive = JSON.parse(activeData);
+          console.log(`🔥 ПРИОРИТЕТНАЯ загрузка активного варианта ${activeVariant}: ${Object.keys(parsedActive).length} файлов`);
+          
+          Object.entries(parsedActive).forEach(([fileKey, fileUrl]) => {
+            if (typeof fileUrl === 'string' && fileUrl.startsWith('data:audio/')) {
+              allFiles[fileKey] = fileUrl;
+              
+              // Если это ячейка - создаем все варианты ключей
+              const cellMatch = fileKey.match(/(\d+)/);
+              if (cellMatch) {
+                const cellNumber = cellMatch[1];
+                allFiles[cellNumber] = fileUrl;
+                allFiles[`cell-${cellNumber}`] = fileUrl;
+                allFiles[`ячейка-${cellNumber}`] = fileUrl;
+              }
+            }
+          });
+          
+          console.log(`✅ Активный вариант ${activeVariant} загружен: ${Object.keys(parsedActive).length} файлов`);
+        }
+      } catch (error) {
+        console.error(`❌ Ошибка загрузки активного варианта ${activeVariant}:`, error);
+      }
+    }
     
     // СПИСОК ВСЕХ ВОЗМОЖНЫХ КЛЮЧЕЙ
     const storageKeys = [
@@ -59,49 +95,65 @@ class BulletproofAudio {
       'wb-pvz-variant-variant2-audio-base64',
       'wb-voice-variant1-permanent',
       'wb-voice-variant2-permanent',
+      'wb-voice-standard-permanent',
+      'wb-voice-alternative-permanent',
       BULLETPROOF_KEY
     ];
 
     let totalLoaded = 0;
 
+    // ЗАТЕМ загружаем FALLBACK файлы (только если еще не загружены)
     storageKeys.forEach(key => {
+      // Пропускаем активный вариант - он уже загружен
+      if (activeVariant && key === `wb-voice-${activeVariant}-permanent`) {
+        return;
+      }
+      
       try {
         const data = localStorage.getItem(key);
         if (data) {
-          console.log(`🔍 Проверяю ключ: ${key}, размер данных: ${data.length}`);
+          console.log(`🔍 Fallback загрузка из ключа: ${key}, размер данных: ${data.length}`);
           const parsed = JSON.parse(data);
           
           if (key === 'wb-unified-audio-system' && parsed.files) {
             // Единая система - извлекаем файлы
             Object.values(parsed.files).forEach((file: any) => {
               if (file.url && file.url.startsWith('data:audio/')) {
-                allFiles[file.cellNumber || file.name] = file.url;
-                // Дублируем с разными префиксами
-                if (file.cellNumber) {
-                  allFiles[file.cellNumber] = file.url;
-                  allFiles[`cell-${file.cellNumber}`] = file.url;
-                  allFiles[`ячейка-${file.cellNumber}`] = file.url;
+                const mainKey = file.cellNumber || file.name;
+                // Добавляем только если еще НЕТ в allFiles
+                if (!allFiles[mainKey]) {
+                  allFiles[mainKey] = file.url;
+                  // Дублируем с разными префиксами
+                  if (file.cellNumber) {
+                    if (!allFiles[file.cellNumber]) allFiles[file.cellNumber] = file.url;
+                    if (!allFiles[`cell-${file.cellNumber}`]) allFiles[`cell-${file.cellNumber}`] = file.url;
+                    if (!allFiles[`ячейка-${file.cellNumber}`]) allFiles[`ячейка-${file.cellNumber}`] = file.url;
+                  }
+                  totalLoaded++;
                 }
-                totalLoaded++;
               }
             });
           } else if (typeof parsed === 'object') {
-            // Обычные системы - добавляем все файлы
+            // Обычные системы - добавляем файлы только если их еще нет
             Object.entries(parsed).forEach(([fileKey, fileUrl]) => {
               if (typeof fileUrl === 'string' && 
                   (fileUrl.startsWith('data:audio/') || fileUrl.startsWith('blob:'))) {
-                allFiles[fileKey] = fileUrl;
                 
-                // Если это ячейка - создаем все варианты ключей
-                const cellMatch = fileKey.match(/(\d+)/);
-                if (cellMatch) {
-                  const cellNumber = cellMatch[1];
-                  allFiles[cellNumber] = fileUrl;
-                  allFiles[`cell-${cellNumber}`] = fileUrl;
-                  allFiles[`ячейка-${cellNumber}`] = fileUrl;
+                // Добавляем только если еще НЕТ в allFiles
+                if (!allFiles[fileKey]) {
+                  allFiles[fileKey] = fileUrl;
+                  
+                  // Если это ячейка - создаем все варианты ключей (если их еще нет)
+                  const cellMatch = fileKey.match(/(\d+)/);
+                  if (cellMatch) {
+                    const cellNumber = cellMatch[1];
+                    if (!allFiles[cellNumber]) allFiles[cellNumber] = fileUrl;
+                    if (!allFiles[`cell-${cellNumber}`]) allFiles[`cell-${cellNumber}`] = fileUrl;
+                    if (!allFiles[`ячейка-${cellNumber}`]) allFiles[`ячейка-${cellNumber}`] = fileUrl;
+                  }
+                  
+                  totalLoaded++;
                 }
-                
-                totalLoaded++;
               }
             });
           }
@@ -260,6 +312,14 @@ class BulletproofAudio {
   }
 
   /**
+   * 🔄 Перезагрузить все аудио файлы
+   */
+  reloadAudio(): void {
+    console.log('🔄 Принудительная перезагрузка аудио системы...');
+    this.loadAllAudioFiles();
+  }
+
+  /**
    * 📊 Получить статистику
    */
   getStats(): { totalFiles: number; cellFiles: number; systemFiles: number } {
@@ -310,7 +370,7 @@ export const activateVoiceVariant = (variantKey: string): boolean => {
     localStorage.setItem('wb-active-voice-variant', variantKey);
     
     // Принудительно перезагружаем аудио систему
-    bulletproofAudio.loadAllAudioFiles();
+    bulletproofAudio.reloadAudio();
     
     console.log(`✅ Вариант ${variantKey} успешно активирован`);
     return true;
@@ -327,7 +387,7 @@ export const activateVoiceVariant = (variantKey: string): boolean => {
 export const getVoiceVariantsInfo = () => {
   const variants: Record<string, any> = {};
   
-  ['variant1', 'variant2'].forEach(key => {
+  ['variant1', 'variant2', 'standard', 'alternative'].forEach(key => {
     const storageKey = `wb-voice-${key}-permanent`;
     const data = localStorage.getItem(storageKey);
     
