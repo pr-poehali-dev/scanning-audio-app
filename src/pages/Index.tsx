@@ -1,8 +1,6 @@
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import ReturnsTab from '@/components/ReturnsTab';
-import { AudioSettings } from '@/components/AudioSettings';
-import { AudioManager } from '@/components/AudioManager';
 import { AppHeader } from '@/components/AppHeader';
 import { TabNavigation } from '@/components/TabNavigation';
 import { useWarehouseApp } from '@/hooks/useWarehouseApp';
@@ -13,11 +11,7 @@ const Index = () => {
     activeTab,
     phoneNumber,
     isScanning,
-    showAudioSettings,
-    showAudioManager,
-    audioFiles,
     isProcessing,
-    audioEnabled,
     cellNumber,
     currentOrder,
     currentStep,
@@ -25,18 +19,11 @@ const Index = () => {
     customerPhone,
     receivingStep,
     receivingBarcode,
-    returnStep,
-    returnReason,
     mockProducts,
-    customAudioFiles,
     
     // Сеттеры
     setActiveTab,
     setPhoneNumber,
-    setShowAudioSettings,
-    setShowAudioManager,
-    setAudioFiles,
-    setAudioEnabled,
     setReceivingBarcode,
     
     // Обработчики
@@ -45,14 +32,6 @@ const Index = () => {
     handleReceivingStart,
     handleReceivingNext,
     handleReceivingReset,
-    handleReturnStart,
-    handleReturnComplete,
-    handleReturnReasonSelect,
-    handleReturnStepChange,
-    handleAudioManagerUpdate,
-    handleTestAudio,
-    clearAllAudio,
-    removeAudioFile
   } = useWarehouseApp();
 
   // Конфигурация вкладок
@@ -65,13 +44,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <AppHeader
-        customAudioFiles={customAudioFiles}
-        onShowAudioManager={() => setShowAudioManager(true)}
-        onShowAudioSettings={() => setShowAudioSettings(true)}
-        onTestAudio={handleTestAudio}
-        onClearAudio={clearAllAudio}
-      />
+      <AppHeader />
 
       {/* Tab Navigation */}
       <TabNavigation
@@ -115,32 +88,10 @@ const Index = () => {
 
           {/* Возврат */}
           {activeTab === 'return' && (
-            <ReturnsTab
-              playAudio={handleTestAudio}
-              customAudioFiles={customAudioFiles}
-            />
+            <ReturnsTab />
           )}
         </div>
       </div>
-
-      {/* Модальные окна */}
-      {showAudioSettings && (
-        <AudioSettings 
-          onClose={() => setShowAudioSettings(false)}
-          onAudioFilesUpdate={(files) => {
-            setAudioFiles(files);
-          }}
-          existingFiles={audioFiles}
-        />
-      )}
-
-      {showAudioManager && (
-        <AudioManager 
-          onClose={() => setShowAudioManager(false)}
-          onAudioUpdate={handleAudioManagerUpdate}
-          existingFiles={customAudioFiles}
-        />
-      )}
     </div>
   );
 };

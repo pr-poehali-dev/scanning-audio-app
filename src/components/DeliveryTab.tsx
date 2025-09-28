@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import DeliveryProductList from './delivery/DeliveryProductList';
 
 interface Product {
   id: string;
@@ -28,9 +27,6 @@ interface DeliveryTabProps {
   customerPhone: string;
   onPhoneNumberChange: (value: string) => void;
   onQRScan: () => void;
-  onManagerScan: () => void;
-  onTryOn: () => void;
-  onIssue: () => void;
   onConfirmCode: () => void;
 }
 
@@ -46,9 +42,6 @@ export const DeliveryTab = ({
   customerPhone,
   onPhoneNumberChange,
   onQRScan,
-  onManagerScan,
-  onTryOn,
-  onIssue,
   onConfirmCode
 }: DeliveryTabProps) => {
   return (
@@ -100,25 +93,23 @@ export const DeliveryTab = ({
       )}
 
       {currentStep === 'manager-scan' && (
-        <DeliveryProductList
-          cellNumber={cellNumber}
-          itemsCount={currentOrder?.items?.length || itemsCount}
-          scannedCount={0}
-          products={(currentOrder?.items || mockProducts).map(p => ({
-            ...p,
-            article: p.article || p.id,
-            image: p.image || `https://via.placeholder.com/80x80/f0f0f0/999?text=Товар`,
-            scanned: false
-          }))}
-          onScanProduct={(productId) => {
-            console.log('Пропущен товар:', productId);
-            onManagerScan();
-          }}
-          onSkipAll={() => {
-            console.log('Все товары пропущены');
-            onManagerScan();
-          }}
-        />
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Ячейка: {cellNumber}</h2>
+          {currentOrder && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="font-medium">🧑‍🦱 Клиент: {currentOrder.customerName}</p>
+              <p className="text-sm text-gray-600">📞 Телефон: {currentOrder.phone}</p>
+            </div>
+          )}
+          <div className="text-lg text-green-600">📱 Готов к сканированию менеджером</div>
+          <Button 
+            onClick={onQRScan}
+            className="bg-green-500 hover:bg-green-600"
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Обработка...' : 'Сканировать товар'}
+          </Button>
+        </div>
       )}
 
       {currentStep === 'check' && (
@@ -159,14 +150,12 @@ export const DeliveryTab = ({
             
             <div className="mt-auto space-y-3">
               <Button 
-                onClick={onIssue}
                 className="w-full bg-purple-500 hover:bg-purple-600 py-3"
                 disabled={isProcessing}
               >
                 {isProcessing ? 'Обработка...' : 'Выдать'}
               </Button>
               <Button 
-                onClick={onTryOn}
                 variant="outline"
                 className="w-full py-3"
                 disabled={isProcessing}

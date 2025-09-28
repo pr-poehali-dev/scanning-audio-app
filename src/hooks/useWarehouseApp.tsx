@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAudio } from './useAudio';
 import { findOrderByPhone } from '@/data/mockOrders';
 
 export interface Product {
@@ -13,40 +12,12 @@ export interface Product {
   originalPrice: number;
 }
 
-interface CellAudio {
-  cellNumber: string;
-  audioFile: File | null;
-  audioUrl?: string;
-}
-
-export interface AudioFiles {
-  delivery: File[];
-  receiving: File[];
-  return: File[];
-  cells: File[];
-  cellAudios?: CellAudio[];
-}
-
 export const useWarehouseApp = () => {
   // Основные состояния
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [showAudioSettings, setShowAudioSettings] = useState(false);
-  const [showAudioManager, setShowAudioManager] = useState(false);
-  const [audioFiles, setAudioFiles] = useState<AudioFiles>({
-    delivery: [],
-    receiving: [],
-    return: [],
-    cells: [],
-    cellAudios: []
-  });
-  
   const [isProcessing, setIsProcessing] = useState(false);
-  const [audioEnabled, setAudioEnabled] = useState(() => {
-    const saved = localStorage.getItem('audioEnabled');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
   
   // Состояния для выдачи
   const [cellNumber, setCellNumber] = useState(() => Math.floor(Math.random() * 482) + 1);
@@ -63,13 +34,6 @@ export const useWarehouseApp = () => {
   // Состояния для приемки
   const [receivingStep, setReceivingStep] = useState(1);
   const [receivingBarcode, setReceivingBarcode] = useState('');
-  
-  // Состояния для возврата
-  const [returnStep, setReturnStep] = useState(1);
-  const [returnReason, setReturnReason] = useState('');
-  
-  // Аудио хук
-  const { playAudio, playCellAudio, updateAudioFiles, removeAudioFile, clearAllAudio, customAudioFiles } = useAudio();
   
   // Данные для товаров
   const productNames = [
@@ -113,10 +77,6 @@ export const useWarehouseApp = () => {
 
   // Эффекты
   useEffect(() => {
-    localStorage.setItem('audioEnabled', JSON.stringify(audioEnabled));
-  }, [audioEnabled]);
-  
-  useEffect(() => {
     if (isProcessing) {
       const timeoutId = setTimeout(() => {
         console.warn('⚠️ Мгновенный сброс isProcessing');
@@ -127,19 +87,8 @@ export const useWarehouseApp = () => {
     }
   }, [isProcessing]);
 
-  // Функции управления аудио
-  const enableAudio = () => {
-    if (!audioEnabled) {
-      setAudioEnabled(true);
-      const silent = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAAAMAC4AAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAA//8AAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-      silent.play().catch(() => {});
-      console.log('🔊 Аудио разблокировано');
-    }
-  };
-
   // Обработчики для выдачи
   const handleQRScan = async () => {
-    enableAudio();
     if (activeTab === 'delivery' && !isProcessing) {
       setIsProcessing(true);
       setIsScanning(true);
@@ -150,13 +99,6 @@ export const useWarehouseApp = () => {
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
         setCurrentStep('manager-scan');
-        
-        // Озвучка ячейки (без await чтобы не блокировать)
-        if (audioEnabled) {
-          playCellAudio(String(cellNumber)).catch(audioError => {
-            console.warn('Ошибка озвучки ячейки:', audioError);
-          });
-        }
         
         // МГНОВЕННЫЙ ПЕРЕХОД К СКАНИРОВАНИЮ МЕНЕДЖЕРА
         handleManagerScan();
@@ -190,19 +132,11 @@ export const useWarehouseApp = () => {
   const handleGiveItem = async () => {
     if (isProcessing) return;
     
-    enableAudio();
     setIsProcessing(true);
     console.log('⚡ МГНОВЕННАЯ ВЫДАЧА ТОВАРА!');
     setCurrentStep('payment');
     
     try {
-      // Озвучка завершения (без await чтобы не блокировать)
-      if (audioEnabled) {
-        playAudio('delivery-complete').catch(audioError => {
-          console.warn('Ошибка озвучки завершения:', audioError);
-        });
-      }
-      
       // МГНОВЕННЫЙ СБРОС БЕЗ ЗАДЕРЖЕК
       setCurrentStep('scan');
       setPhoneNumber('');
@@ -239,75 +173,21 @@ export const useWarehouseApp = () => {
 
   // Обработчики для приемки
   const handleReceivingStart = async () => {
-    enableAudio();
     setReceivingStep(2);
-    
-    if (audioEnabled) {
-      try {
-        await playAudio('receiving-start');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки начала приемки:', audioError);
-      }
-    }
+    console.log('📦 Начало приемки');
   };
 
   const handleReceivingNext = async () => {
     if (receivingStep < 4) {
       const nextStep = receivingStep + 1;
       setReceivingStep(nextStep);
-      
-      if (audioEnabled) {
-        try {
-          await playAudio('receiving-scan');
-        } catch (audioError) {
-          console.warn('Ошибка озвучки приемки:', audioError);
-        }
-      }
+      console.log(`📦 Приемка - шаг ${nextStep}`);
     }
   };
 
   const handleReceivingReset = () => {
     setReceivingStep(1);
-  };
-
-  // Обработчики для возврата
-  const handleReturnStart = () => {
-    setReturnStep(2);
-  };
-
-  const handleReturnComplete = async () => {
-    setReturnStep(1);
-    
-    if (audioEnabled) {
-      try {
-        await playAudio('return-complete');
-      } catch (audioError) {
-        console.warn('Ошибка озвучки завершения возврата:', audioError);
-      }
-    }
-  };
-
-  const handleReturnReasonSelect = (reason: string) => {
-    setReturnReason(reason);
-  };
-
-  const handleReturnStepChange = (step: number) => {
-    setReturnStep(step);
-  };
-
-  // Обработчики аудио
-  const handleAudioManagerUpdate = (newFiles: { [key: string]: string }) => {
-    updateAudioFiles(newFiles);
-    console.log('Озвучка обновлена через AudioManager:', Object.keys(newFiles));
-  };
-
-  const handleTestAudio = async () => {
-    enableAudio();
-    try {
-      await playAudio('delivery-complete');
-    } catch (error) {
-      console.error('Ошибка тестирования аудио:', error);
-    }
+    console.log('📦 Сброс приемки');
   };
 
   return {
@@ -315,11 +195,7 @@ export const useWarehouseApp = () => {
     activeTab,
     phoneNumber,
     isScanning,
-    showAudioSettings,
-    showAudioManager,
-    audioFiles,
     isProcessing,
-    audioEnabled,
     cellNumber,
     currentOrder,
     currentStep,
@@ -327,18 +203,11 @@ export const useWarehouseApp = () => {
     customerPhone,
     receivingStep,
     receivingBarcode,
-    returnStep,
-    returnReason,
     mockProducts,
-    customAudioFiles,
     
     // Сеттеры
     setActiveTab,
     setPhoneNumber,
-    setShowAudioSettings,
-    setShowAudioManager,
-    setAudioFiles,
-    setAudioEnabled,
     setReceivingBarcode,
     
     // Обработчики
@@ -347,13 +216,5 @@ export const useWarehouseApp = () => {
     handleReceivingStart,
     handleReceivingNext,
     handleReceivingReset,
-    handleReturnStart,
-    handleReturnComplete,
-    handleReturnReasonSelect,
-    handleReturnStepChange,
-    handleAudioManagerUpdate,
-    handleTestAudio,
-    clearAllAudio,
-    removeAudioFile
   };
 };
