@@ -274,4 +274,37 @@ export function reloadAudioSystem(): void {
   bulletproofAudio.reloadIndex();
 }
 
+/**
+ * 📋 Получить информацию о вариантах озвучки
+ */
+export function getVoiceVariantsInfo(): Record<string, { count: number; exists: boolean; cells: string[] }> {
+  const variants = {
+    standard: { count: 0, exists: false, cells: [] as string[] },
+    alternative: { count: 0, exists: false, cells: [] as string[] }
+  };
+
+  // Проверяем каждый вариант в localStorage
+  Object.keys(variants).forEach(variant => {
+    const storageKey = `wb-voice-${variant}-permanent`;
+    try {
+      const data = localStorage.getItem(storageKey);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (typeof parsed === 'object' && parsed !== null) {
+          const cells = Object.keys(parsed).filter(key => /^\d+$/.test(key)).sort((a, b) => parseInt(a) - parseInt(b));
+          variants[variant as keyof typeof variants] = {
+            count: cells.length,
+            exists: cells.length > 0,
+            cells
+          };
+        }
+      }
+    } catch (error) {
+      console.error(`Ошибка чтения данных для ${variant}:`, error);
+    }
+  });
+
+  return variants;
+}
+
 console.log('🛡️ Пуленепробиваемая система озвучки ОПТИМИЗИРОВАНА и готова!');
