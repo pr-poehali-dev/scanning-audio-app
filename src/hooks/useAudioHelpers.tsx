@@ -52,7 +52,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           }
           
           // ПЕРВЫЙ ВАРИАНТ: обработка системных звуков
-          if (variantType === 'variant1') {
+          if (tabType === 'variant-variant1') {
             // товары со скидкой проверьте вб кошелек
             if (baseFileName.toLowerCase().includes('товары') && 
                 (baseFileName.toLowerCase().includes('скидк') || baseFileName.toLowerCase().includes('вб') || baseFileName.toLowerCase().includes('кошелек'))) {
@@ -90,7 +90,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           }
           
           // ВТОРОЙ ВАРИАНТ: обработка системных звуков  
-          if (variantType === 'variant2') {
+          if (tabType === 'variant-variant2') {
             // error_sound
             if (baseFileName.toLowerCase().includes('error') || baseFileName.toLowerCase().includes('ошибк')) {
               audioFiles['error_sound'] = audioUrl;
@@ -151,7 +151,8 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           }
           
           processedCount++;
-          console.log(`✅ ${variantName} - ФАЙЛ: ${baseFileName} (${processedCount}/${files.length})`);
+          const currentVariantName = tabType === 'variant-variant1' ? 'Стандартная' : 'Альтернативная';
+          console.log(`✅ ${currentVariantName} - ФАЙЛ: ${baseFileName} (${processedCount}/${files.length})`);
           
           // Когда все файлы обработаны
           if (processedCount === files.length) {
@@ -159,7 +160,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
             try {
               const storageKey = `wb-pvz-${tabType}-audio-base64`;
               localStorage.setItem(storageKey, JSON.stringify(base64Files));
-              console.log(`💾 СОХРАНЕН ${variantName}: ${Object.keys(base64Files).length} файлов в localStorage`);
+              console.log(`💾 СОХРАНЕН ${currentVariantName}: ${Object.keys(base64Files).length} файлов в localStorage`);
               
               // Также сохраняем список названий для быстрого доступа
               const fileNames = Object.keys(base64Files);
@@ -171,7 +172,7 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
             // Обновляем аудио файлы в приложении
             updateAudioFiles(audioFiles);
             
-            alert(`${variantName} озвучка загружена!\n\n✅ Файлов: ${Object.keys(base64Files).length}\n💾 Сохранено навсегда в браузере`);
+            alert(`${currentVariantName} озвучка загружена!\n\n✅ Файлов: ${Object.keys(base64Files).length}\n💾 Сохранено навсегда в браузере`);
           }
         };
         reader.readAsDataURL(file);
@@ -248,13 +249,13 @@ export const useAudioHelpers = (updateAudioFiles: (files: Record<string, string>
           const prefixedFileName = `${tabType}-${baseFileName}`;
           audioFiles[prefixedFileName] = audioUrl;
           audioFiles[baseFileName] = audioUrl;
+          
+          console.log(`✅ Добавлен аудиофайл:`, {
+            withPrefix: prefixedFileName,
+            global: baseFileName,
+            url: audioUrl
+          });
         }
-        
-        console.log(`✅ Добавлен аудиофайл:`, {
-          withPrefix: prefixedFileName,
-          global: baseFileName,
-          url: audioUrl
-        });
         
         newFilesCount++;
       }
