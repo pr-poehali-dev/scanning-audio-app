@@ -9,7 +9,7 @@ interface UseAppHandlersProps {
   currentOrder: any;
   expandedMenuItems: Record<string, boolean>;
   audioSettings: AudioSettings;
-  playAudio?: (phraseKey: string) => void;
+  playAudio?: (phraseKey: string, cellNumber?: number) => void;
   setIsScanning: (value: boolean) => void;
   setShowQRScanner: (value: boolean) => void;
   setCurrentOrder: (order: any) => void;

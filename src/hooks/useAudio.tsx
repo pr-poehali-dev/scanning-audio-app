@@ -35,11 +35,25 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     }
   }, []);
 
-  const playAudio = useCallback((phraseKey: string) => {
+  const playAudio = useCallback((phraseKey: string, cellNumber?: number) => {
     const isEnabled = audioSettings.enabled[phraseKey];
     if (!isEnabled) {
       console.log(`🔇 Озвучка "${phraseKey}" отключена`);
       return;
+    }
+
+    // Специальная обработка для delivery-cell-info с составной озвучкой
+    if (phraseKey === 'delivery-cell-info' && cellNumber) {
+      const cellAudioKey = `cell-${cellNumber}`;
+      const cellAudio = uploadedFiles[cellAudioKey];
+      const tovaryAudio = uploadedFiles['word-tovary'];
+      const paymentAudio = uploadedFiles['payment-cod'];
+
+      // Если есть файлы для составной озвучки
+      if (cellAudio || tovaryAudio || paymentAudio) {
+        playSequentialAudio([cellAudio, tovaryAudio, paymentAudio].filter(Boolean));
+        return;
+      }
     }
 
     // Проверяем сначала загруженный пользователем файл
@@ -83,6 +97,51 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       audioRef.current = null;
     };
   }, [audioSettings, uploadedFiles]);
+
+  const playSequentialAudio = useCallback((audioUrls: string[]) => {
+    if (audioUrls.length === 0) return;
+
+    let currentIndex = 0;
+    setIsPlaying(true);
+
+    const playNext = () => {
+      if (currentIndex >= audioUrls.length) {
+        setIsPlaying(false);
+        audioRef.current = null;
+        return;
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      const audio = new Audio(audioUrls[currentIndex]);
+      audio.playbackRate = audioSettings.speed;
+      audioRef.current = audio;
+
+      console.log(`🔊 Воспроизведение части ${currentIndex + 1}/${audioUrls.length}`);
+
+      audio.play().catch(err => {
+        console.error('Ошибка воспроизведения:', err);
+        currentIndex++;
+        playNext();
+      });
+
+      audio.onended = () => {
+        currentIndex++;
+        playNext();
+      };
+
+      audio.onerror = () => {
+        console.error('Ошибка загрузки аудио');
+        currentIndex++;
+        playNext();
+      };
+    };
+
+    playNext();
+  }, [audioSettings]);
 
   const stopAudio = useCallback(() => {
     if (audioRef.current) {

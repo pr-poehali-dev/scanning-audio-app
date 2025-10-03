@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { AudioSettings } from '@/hooks/useAppState';
+import { CellAudioManager } from './CellAudioManager';
 
 interface AudioManagerProps {
   audioSettings: AudioSettings;
@@ -102,32 +103,53 @@ export const AudioManager = ({
           {Object.entries(AUDIO_PHRASES).map(([tab, phrases]) => (
             <TabsContent key={tab} value={tab} className="space-y-3">
               {Object.entries(phrases).map(([phraseKey, phraseLabel]) => (
-                <div key={phraseKey} className="border rounded-lg p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">{phraseLabel}</Label>
-                    <Switch
-                      checked={audioSettings.enabled[phraseKey] || false}
-                      onCheckedChange={(checked) => handleTogglePhrase(phraseKey, checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Input
-                      type="file"
-                      accept="audio/*"
-                      onChange={(e) => handleFileUpload(phraseKey, e)}
-                      className="flex-1"
-                    />
-                    {uploadedFiles[phraseKey] && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onTestAudio(phraseKey)}
-                      >
-                        <Icon name="Play" className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
+                <div key={phraseKey}>
+                  {phraseKey === 'delivery-cell-info' ? (
+                    // Специальный компонент для номеров ячеек
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <Label className="text-sm font-medium">{phraseLabel}</Label>
+                        <Switch
+                          checked={audioSettings.enabled[phraseKey] || false}
+                          onCheckedChange={(checked) => handleTogglePhrase(phraseKey, checked)}
+                        />
+                      </div>
+                      <CellAudioManager
+                        uploadedFiles={uploadedFiles}
+                        setUploadedFiles={setUploadedFiles}
+                        onTestAudio={onTestAudio}
+                      />
+                    </div>
+                  ) : (
+                    // Обычная загрузка для остальных фраз
+                    <div className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">{phraseLabel}</Label>
+                        <Switch
+                          checked={audioSettings.enabled[phraseKey] || false}
+                          onCheckedChange={(checked) => handleTogglePhrase(phraseKey, checked)}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Input
+                          type="file"
+                          accept="audio/*"
+                          onChange={(e) => handleFileUpload(phraseKey, e)}
+                          className="flex-1"
+                        />
+                        {uploadedFiles[phraseKey] && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onTestAudio(phraseKey)}
+                          >
+                            <Icon name="Play" className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </TabsContent>
