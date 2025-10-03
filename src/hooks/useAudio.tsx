@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { AudioSettings } from './useAppState';
 import { audioStorage } from '@/utils/audioStorage';
-import { speakText, generateCellText, generateCountText, PHRASE_TEXTS } from '@/utils/textToSpeech';
 
 interface UseAudioProps {
   audioSettings: AudioSettings;
@@ -99,15 +98,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         playSequentialAudio(audioSequence);
         return;
       } else {
-        // ФОЛБЕК: используем синтез речи
-        console.warn('⚠️ Файлы не загружены, используем синтез речи (TTS)');
-        const texts: string[] = [];
-        
-        if (cellNumber) texts.push(generateCellText(cellNumber));
-        if (itemCount) texts.push(generateCountText(itemCount));
-        texts.push('Оплата при получении');
-        
-        playTextSequence(texts);
+        console.warn('⚠️ Не загружены файлы для составной озвучки!');
+        console.warn(`   Нужны файлы: ${cellAudioKey}.mp3, ${countAudioKey}.mp3, payment-cod.mp3`);
         return;
       }
     }
@@ -128,16 +120,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     }
     
     if (!audioUrl) {
-      // ФОЛБЕК: используем синтез речи
-      const text = PHRASE_TEXTS[phraseKey];
-      if (text) {
-        console.warn(`⚠️ Файл не загружен, используем синтез речи для "${phraseKey}"`);
-        playTextSequence([text]);
-        return;
-      } else {
-        console.warn(`⚠️ Аудиофайл для "${phraseKey}" не загружен и нет текста для TTS`);
-        return;
-      }
+      console.warn(`⚠️ Аудиофайл для "${phraseKey}" не загружен. Загрузите файл в настройках озвучки.`);
+      return;
     }
 
     if (audioRef.current) {
@@ -213,23 +197,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     };
 
     playNext();
-  }, [audioSettings]);
-
-  const playTextSequence = useCallback(async (texts: string[]) => {
-    if (texts.length === 0) return;
-
-    setIsPlaying(true);
-    console.log(`🗣️ Синтез речи: ${texts.length} фраз`);
-
-    for (const text of texts) {
-      try {
-        await speakText(text, audioSettings.speed);
-      } catch (err) {
-        console.error(`Ошибка TTS для "${text}":`, err);
-      }
-    }
-
-    setIsPlaying(false);
   }, [audioSettings]);
 
   const stopAudio = useCallback(() => {
