@@ -4,6 +4,7 @@ interface SideMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onSettingsOpen: () => void;
+  onAudioSettingsOpen?: () => void;
   pvzInfo: {
     id: string;
     address: string;
@@ -18,6 +19,7 @@ const SideMenu = ({
   isOpen, 
   onClose, 
   onSettingsOpen,
+  onAudioSettingsOpen,
   pvzInfo, 
   updatePvzInfo, 
   expandedMenuItems, 
@@ -101,6 +103,20 @@ const SideMenu = ({
               </h3>
               
               <div className="space-y-2">
+                {/* Озвучка */}
+                {onAudioSettingsOpen && (
+                  <button
+                    onClick={() => {
+                      onAudioSettingsOpen();
+                      onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Icon name="Volume2" size={18} />
+                    <span className="text-sm">Озвучка</span>
+                  </button>
+                )}
+                
                 {/* Настройки */}
                 <button
                   onClick={() => {

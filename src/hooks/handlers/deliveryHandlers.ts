@@ -8,12 +8,14 @@ interface DeliveryHandlersProps {
   setIsProductScanned: (value: boolean) => void;
   setScannedData: (data: string) => void;
   setPhoneNumber: (value: string) => void;
+  playAudio?: (phraseKey: string) => void;
 }
 
 export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
   const {
     currentOrder, setCurrentOrder,
-    setDeliveryStep, setIsProductScanned, setScannedData, setPhoneNumber
+    setDeliveryStep, setIsProductScanned, setScannedData, setPhoneNumber,
+    playAudio
   } = props;
 
   // Обработчик ввода номера телефона
@@ -33,13 +35,18 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       
       console.log(`🏠 Назначена ячейка: ${order.cellNumber}`);
       
+      // Озвучка: номер ячейки, количество товаров, оплата
+      if (playAudio) {
+        playAudio('delivery-cell-info');
+      }
+      
       // Очищаем номер телефона
       setPhoneNumber('');
     } else {
       console.log('❌ Заказ не найден');
       alert('Заказ не найден');
     }
-  }, [setPhoneNumber, setCurrentOrder, setDeliveryStep]);
+  }, [setPhoneNumber, setCurrentOrder, setDeliveryStep, playAudio]);
 
   // Обработчик сканирования товара
   const handleScanProduct = useCallback(async () => {
@@ -50,13 +57,23 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       setScannedData(currentOrder.items.map((item: any) => item.barcode).join(','));
     }
     
+    // Озвучка: проверьте товар под камерой
+    if (playAudio) {
+      playAudio('delivery-check-product');
+    }
+    
     console.log('📦 Товар отсканирован');
-  }, [currentOrder, setDeliveryStep, setIsProductScanned, setScannedData]);
+  }, [currentOrder, setDeliveryStep, setIsProductScanned, setScannedData, playAudio]);
 
   // Обработчик выдачи товара
   const handleDeliverProduct = useCallback(async () => {
     // Устанавливаем состояние завершения
     setDeliveryStep('completed');
+    
+    // Озвучка: спасибо за заказ, оцените ПВЗ
+    if (playAudio) {
+      playAudio('delivery-thanks');
+    }
     
     console.log('✅ Товар выдан');
     
@@ -67,7 +84,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       setIsProductScanned(false);
       setScannedData('');
     }, 5000); // Увеличиваем время для показа сообщения
-  }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData]);
+  }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData, playAudio]);
 
   // Обработчик смены вкладки
   const handleTabChange = useCallback((tab: string) => {

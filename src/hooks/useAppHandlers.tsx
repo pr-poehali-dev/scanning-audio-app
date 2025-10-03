@@ -9,6 +9,7 @@ interface UseAppHandlersProps {
   currentOrder: any;
   expandedMenuItems: Record<string, boolean>;
   audioSettings: AudioSettings;
+  playAudio?: (phraseKey: string) => void;
   setIsScanning: (value: boolean) => void;
   setShowQRScanner: (value: boolean) => void;
   setCurrentOrder: (order: any) => void;
@@ -23,7 +24,7 @@ interface UseAppHandlersProps {
 
 export const useAppHandlers = (props: UseAppHandlersProps) => {
   const {
-    activeTab, deliveryStep, currentOrder, expandedMenuItems, audioSettings,
+    activeTab, deliveryStep, currentOrder, expandedMenuItems, audioSettings, playAudio,
     setIsScanning, setShowQRScanner, setCurrentOrder, 
     setDeliveryStep, setScannedData, setIsProductScanned, setPhoneNumber,
     setExpandedMenuItems, setPvzInfo, setAudioSettings
@@ -48,7 +49,8 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     setDeliveryStep,
     setIsProductScanned,
     setScannedData,
-    setPhoneNumber
+    setPhoneNumber,
+    playAudio
   });
 
   // Создаем обработчики настроек

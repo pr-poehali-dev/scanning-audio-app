@@ -4,14 +4,21 @@ import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
+import { AudioSettings } from '@/components/AudioSettings';
 import Footer from '@/components/Footer';
 
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
+import { useAudio } from '@/hooks/useAudio';
 
 const WBPVZApp = () => {
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
+  
+  // Хук для работы с аудио
+  const { playAudio, uploadedFiles, setUploadedFiles } = useAudio({ audioSettings: appState.audioSettings });
   
   // Создаем обработчики событий
   const appHandlers = useAppHandlers({
@@ -20,6 +27,7 @@ const WBPVZApp = () => {
     currentOrder: appState.currentOrder,
     expandedMenuItems: appState.expandedMenuItems,
     audioSettings: appState.audioSettings,
+    playAudio,
     setIsScanning: appState.setIsScanning,
     setShowQRScanner: appState.setShowQRScanner,
     setCurrentOrder: appState.setCurrentOrder,
@@ -71,6 +79,7 @@ const WBPVZApp = () => {
         isOpen={appState.showSideMenu}
         onClose={() => appState.setShowSideMenu(false)}
         onSettingsOpen={() => appState.setShowSettings(true)}
+        onAudioSettingsOpen={() => setShowAudioSettings(true)}
         pvzInfo={appState.pvzInfo}
         updatePvzInfo={appHandlers.updatePvzInfo}
         expandedMenuItems={appState.expandedMenuItems}
@@ -82,6 +91,16 @@ const WBPVZApp = () => {
         onClose={() => appState.setShowSettings(false)}
         audioSettings={appState.audioSettings}
         updateAudioSetting={appHandlers.updateAudioSetting}
+      />
+      
+      <AudioSettings
+        open={showAudioSettings}
+        onOpenChange={setShowAudioSettings}
+        audioSettings={appState.audioSettings}
+        setAudioSettings={appState.setAudioSettings}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
+        onTestAudio={playAudio}
       />
 
       <QRScanner
