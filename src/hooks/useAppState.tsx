@@ -46,6 +46,7 @@ export const useAppState = () => {
     const savedEnabled = localStorage.getItem('wb-pvz-audio-enabled');
     const defaultEnabled = {
       'delivery-cell-info': true,
+      'delivery-scan-items': true,
       'delivery-check-product': true,
       'delivery-thanks': true,
       'receiving-start': true,

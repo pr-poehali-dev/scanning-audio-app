@@ -8,6 +8,7 @@ interface UseAudioProps {
 
 const AUDIO_FILE_MAP: { [key: string]: string } = {
   'delivery-cell-info': '/audio/cell-info.mp3',
+  'delivery-scan-items': '/audio/scan-items.mp3',
   'delivery-check-product': '/audio/check-product.mp3',
   'delivery-thanks': '/audio/thanks.mp3',
   'receiving-start': '/audio/receiving-start.mp3',

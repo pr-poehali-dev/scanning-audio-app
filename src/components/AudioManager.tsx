@@ -20,6 +20,7 @@ interface AudioManagerProps {
 const AUDIO_PHRASES = {
   delivery: {
     'delivery-cell-info': 'Номер ячейки, количество товаров, оплата при получении',
+    'delivery-scan-items': 'Сканируем товары (Снять все)',
     'delivery-check-product': 'Пожалуйста проверьте товар под камерой',
     'delivery-thanks': 'Спасибо за заказ, оцените пункт выдачи',
   },

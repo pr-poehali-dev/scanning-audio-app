@@ -100,6 +100,9 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ QR!');
         
+        // Озвучка: номер ячейки, количество товаров, оплата при получении
+        playAudio('delivery-cell-info', cellNumber, itemsCount);
+        
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
         setCurrentStep('manager-scan');
@@ -120,11 +123,14 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ МЕНЕДЖЕРА!');
         
-        // Озвучка: проверьте товар под камерой
-        playAudio('delivery-check-product');
+        // Озвучка: сканируем товары (Снять все)
+        playAudio('delivery-scan-items');
         
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setCurrentStep('check');
+        
+        // Озвучка: проверьте товар под камерой
+        playAudio('delivery-check-product');
         
         // МГНОВЕННАЯ ВЫДАЧА ТОВАРА
         handleGiveItem();
@@ -176,9 +182,6 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
         setCellNumber(randomCellNumber);
         console.log(`📦 Заказ не найден для телефона ${phoneNumber}, используем ячейку: ${randomCellNumber}`);
       }
-      
-      // Озвучка: номер ячейки, количество товаров, оплата при получении
-      playAudio('delivery-cell-info');
       
       handleQRScan();
     }
