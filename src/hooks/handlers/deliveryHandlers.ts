@@ -8,7 +8,7 @@ interface DeliveryHandlersProps {
   setIsProductScanned: (value: boolean) => void;
   setScannedData: (data: string) => void;
   setPhoneNumber: (value: string) => void;
-  playAudio?: (phraseKey: string, cellNumber?: number) => void;
+  playAudio?: (phraseKey: string, cellNumber?: number, itemCount?: number) => void;
 }
 
 export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
@@ -36,8 +36,9 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       console.log(`🏠 Назначена ячейка: ${order.cellNumber}`);
       
       // Озвучка: номер ячейки, количество товаров, оплата
+      const itemCount = order.items?.length || 0;
       if (playAudio) {
-        playAudio('delivery-cell-info', randomCellNumber);
+        playAudio('delivery-cell-info', randomCellNumber, itemCount);
       }
       
       // Очищаем номер телефона

@@ -4,7 +4,7 @@ import { findOrderByPhone } from '@/data/mockOrders';
 interface QRHandlersProps {
   activeTab: string;
   deliveryStep: string;
-  playAudio?: (phraseKey: string, cellNumber?: number) => void;
+  playAudio?: (phraseKey: string, cellNumber?: number, itemCount?: number) => void;
   setIsScanning: (value: boolean) => void;
   setShowQRScanner: (value: boolean) => void;
   setCurrentOrder: (order: any) => void;
@@ -48,8 +48,9 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           console.log(`🏠 Ячейка назначена: ${order.cellNumber}`);
           
           // Озвучка: номер ячейки, товары, оплата
+          const itemCount = order.items?.length || 0;
           if (playAudio) {
-            playAudio('delivery-cell-info', randomCellNumber);
+            playAudio('delivery-cell-info', randomCellNumber, itemCount);
           }
           
           // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС

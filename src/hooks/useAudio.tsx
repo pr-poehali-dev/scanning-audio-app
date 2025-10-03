@@ -55,8 +55,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     loadAudioFiles();
   }, []);
 
-  const playAudio = useCallback((phraseKey: string, cellNumber?: number) => {
-    console.log(`🎯 Запрос на озвучку: "${phraseKey}"${cellNumber ? ` (ячейка: ${cellNumber})` : ''}`);
+  const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
+    console.log(`🎯 Запрос на озвучку: "${phraseKey}"${cellNumber ? ` (ячейка: ${cellNumber}, товаров: ${itemCount})` : ''}`);
     
     const isEnabled = audioSettings.enabled[phraseKey];
     if (!isEnabled) {
@@ -65,23 +65,41 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     }
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
-    if (phraseKey === 'delivery-cell-info' && cellNumber) {
+    if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
+      const audioSequence: string[] = [];
+      
+      // 1. Файл номера ячейки: cell-123.mp3
       const cellAudioKey = `cell-${cellNumber}`;
       const cellAudio = uploadedFiles[cellAudioKey];
-      const tovaryAudio = uploadedFiles['word-tovary'];
+      
+      // 2. Файл количества товаров: count-2.mp3
+      const countAudioKey = itemCount ? `count-${itemCount}` : undefined;
+      const countAudio = countAudioKey ? uploadedFiles[countAudioKey] : undefined;
+      
+      // 3. Файл "оплата при получении": payment-cod.mp3
       const paymentAudio = uploadedFiles['payment-cod'];
 
       console.log(`📦 Проверка составной озвучки:`, {
-        cellAudio: !!cellAudio,
-        tovaryAudio: !!tovaryAudio,
-        paymentAudio: !!paymentAudio
+        cellNumber,
+        cellAudio: cellAudioKey + ' → ' + (cellAudio ? 'ЕСТЬ' : 'НЕТ'),
+        itemCount,
+        countAudio: countAudioKey + ' → ' + (countAudio ? 'ЕСТЬ' : 'НЕТ'),
+        paymentAudio: 'payment-cod → ' + (paymentAudio ? 'ЕСТЬ' : 'НЕТ')
       });
 
-      // Если есть файлы для составной озвучки
-      if (cellAudio || tovaryAudio || paymentAudio) {
-        console.log('🔊 Воспроизведение составной озвучки');
-        playSequentialAudio([cellAudio, tovaryAudio, paymentAudio].filter(Boolean));
+      // Собираем последовательность из загруженных файлов
+      if (cellAudio) audioSequence.push(cellAudio);
+      if (countAudio) audioSequence.push(countAudio);
+      if (paymentAudio) audioSequence.push(paymentAudio);
+
+      // Если есть хотя бы один файл - играем последовательность
+      if (audioSequence.length > 0) {
+        console.log(`🔊 Воспроизведение составной озвучки (${audioSequence.length} файлов)`);
+        playSequentialAudio(audioSequence);
         return;
+      } else {
+        console.warn('⚠️ Не загружены файлы для составной озвучки!');
+        console.warn(`   Нужны файлы: ${cellAudioKey}.mp3, ${countAudioKey}.mp3, payment-cod.mp3`);
       }
     }
 
