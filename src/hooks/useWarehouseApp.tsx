@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { findOrderByPhone } from '@/data/mockOrders';
+import { useAudio } from './useAudio';
+import { AudioSettings } from './useAppState';
 
 export interface Product {
   id: string;
@@ -12,7 +14,9 @@ export interface Product {
   originalPrice: number;
 }
 
-export const useWarehouseApp = () => {
+export const useWarehouseApp = (audioSettings: AudioSettings) => {
+  const { playAudio, stopAudio, isPlaying, uploadedFiles, setUploadedFiles } = useAudio({ audioSettings });
+  
   // Основные состояния
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -204,6 +208,13 @@ export const useWarehouseApp = () => {
     receivingStep,
     receivingBarcode,
     mockProducts,
+    
+    // Аудио
+    playAudio,
+    stopAudio,
+    isPlaying,
+    uploadedFiles,
+    setUploadedFiles,
     
     // Сеттеры
     setActiveTab,

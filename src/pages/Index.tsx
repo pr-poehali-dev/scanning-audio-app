@@ -1,11 +1,17 @@
+import { useState } from 'react';
 import { DeliveryTab } from '@/components/DeliveryTab';
 import { ReceivingTab } from '@/components/ReceivingTab';
 import ReturnsTab from '@/components/ReturnsTab';
 import { AppHeader } from '@/components/AppHeader';
 import { TabNavigation } from '@/components/TabNavigation';
+import { AudioSettings } from '@/components/AudioSettings';
 import { useWarehouseApp } from '@/hooks/useWarehouseApp';
+import { useAppState } from '@/hooks/useAppState';
 
 const Index = () => {
+  const { audioSettings, setAudioSettings } = useAppState();
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
+  
   const {
     // Состояния
     activeTab,
@@ -21,6 +27,11 @@ const Index = () => {
     receivingBarcode,
     mockProducts,
     
+    // Аудио
+    playAudio,
+    uploadedFiles,
+    setUploadedFiles,
+    
     // Сеттеры
     setActiveTab,
     setPhoneNumber,
@@ -32,7 +43,7 @@ const Index = () => {
     handleReceivingStart,
     handleReceivingNext,
     handleReceivingReset,
-  } = useWarehouseApp();
+  } = useWarehouseApp(audioSettings);
 
   // Конфигурация вкладок
   const tabs = [
@@ -44,7 +55,18 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <AppHeader />
+      <AppHeader onOpenAudioSettings={() => setShowAudioSettings(true)} />
+      
+      {/* Audio Settings Dialog */}
+      <AudioSettings
+        open={showAudioSettings}
+        onOpenChange={setShowAudioSettings}
+        audioSettings={audioSettings}
+        setAudioSettings={setAudioSettings}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
+        onTestAudio={playAudio}
+      />
 
       {/* Tab Navigation */}
       <TabNavigation

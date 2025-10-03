@@ -1,7 +1,11 @@
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
-export const AppHeader = () => {
+interface AppHeaderProps {
+  onOpenAudioSettings: () => void;
+}
+
+export const AppHeader = ({ onOpenAudioSettings }: AppHeaderProps) => {
   return (
     <header className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 py-3">
@@ -17,6 +21,15 @@ export const AppHeader = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost" 
+              size="sm"
+              onClick={onOpenAudioSettings}
+              className="text-gray-600 hover:text-blue-600"
+            >
+              <Icon name="Volume2" className="w-5 h-5 mr-2" />
+              Озвучка
+            </Button>
             <Button
               variant="ghost" 
               size="sm"
