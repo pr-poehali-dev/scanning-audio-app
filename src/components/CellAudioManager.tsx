@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Icon from '@/components/ui/icon';
+import { audioStorage } from '@/utils/audioStorage';
 
 interface CellAudioManagerProps {
   uploadedFiles: { [key: string]: string };
@@ -20,38 +21,47 @@ export const CellAudioManager = ({
 }: CellAudioManagerProps) => {
   const [bulkCellNumbers, setBulkCellNumbers] = useState('');
   
-  const handleFileUpload = (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
-    const newFiles = { ...uploadedFiles, [key]: url };
-    setUploadedFiles(newFiles);
-    
-    localStorage.setItem('wb-pvz-audio-files', JSON.stringify(newFiles));
+    try {
+      const url = await audioStorage.saveFile(key, file);
+      const newFiles = { ...uploadedFiles, [key]: url };
+      setUploadedFiles(newFiles);
+      console.log(`✅ Файл "${key}" сохранен`);
+    } catch (error) {
+      console.error('Ошибка сохранения:', error);
+      alert('Ошибка сохранения файла');
+    }
   };
 
-  const handleBulkUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     const newFiles = { ...uploadedFiles };
     let uploadedCount = 0;
 
-    Array.from(files).forEach(file => {
-      // Извлекаем номер из имени файла (например: "123.mp3" или "cell_123.mp3")
-      const match = file.name.match(/(\d+)\.mp3$/i);
-      if (match) {
-        const cellNumber = match[1];
-        const url = URL.createObjectURL(file);
-        newFiles[`cell-${cellNumber}`] = url;
-        uploadedCount++;
+    try {
+      for (const file of Array.from(files)) {
+        const match = file.name.match(/(\d+)\.mp3$/i);
+        if (match) {
+          const cellNumber = match[1];
+          const key = `cell-${cellNumber}`;
+          const url = await audioStorage.saveFile(key, file);
+          newFiles[key] = url;
+          uploadedCount++;
+        }
       }
-    });
 
-    setUploadedFiles(newFiles);
-    localStorage.setItem('wb-pvz-audio-files', JSON.stringify(newFiles));
-    alert(`Загружено ${uploadedCount} файлов ячеек`);
+      setUploadedFiles(newFiles);
+      alert(`Загружено ${uploadedCount} файлов ячеек в IndexedDB`);
+      console.log(`✅ Массовая загрузка: ${uploadedCount} файлов`);
+    } catch (error) {
+      console.error('Ошибка массовой загрузки:', error);
+      alert('Ошибка при загрузке файлов');
+    }
   };
 
   const getCellNumbers = (): number[] => {

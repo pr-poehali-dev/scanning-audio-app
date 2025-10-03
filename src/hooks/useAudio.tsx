@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { AudioSettings } from './useAppState';
+import { audioStorage } from '@/utils/audioStorage';
 
 interface UseAudioProps {
   audioSettings: AudioSettings;
@@ -23,16 +24,24 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Загрузка файлов из IndexedDB при монтировании
   useEffect(() => {
-    const savedFiles = localStorage.getItem('wb-pvz-audio-files');
-    if (savedFiles) {
+    const loadAudioFiles = async () => {
       try {
-        setUploadedFiles(JSON.parse(savedFiles));
-      } catch (e) {
-        console.warn('Ошибка загрузки аудиофайлов:', e);
+        await audioStorage.init();
+        const files = await audioStorage.getAllFiles();
+        setUploadedFiles(files);
+        console.log(`✅ Загружено ${Object.keys(files).length} аудиофайлов из IndexedDB`);
+      } catch (error) {
+        console.error('Ошибка загрузки аудиофайлов:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    loadAudioFiles();
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number) => {

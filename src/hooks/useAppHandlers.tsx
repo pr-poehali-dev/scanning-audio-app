@@ -34,6 +34,7 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
   const qrHandlers = createQRHandlers({
     activeTab,
     deliveryStep,
+    playAudio,
     setIsScanning,
     setShowQRScanner,
     setCurrentOrder,

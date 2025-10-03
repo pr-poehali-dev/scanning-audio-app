@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { AudioSettings } from '@/hooks/useAppState';
 import { CellAudioManager } from './CellAudioManager';
+import { audioStorage } from '@/utils/audioStorage';
 
 interface AudioManagerProps {
   audioSettings: AudioSettings;
@@ -44,16 +45,21 @@ export const AudioManager = ({
   onTestAudio
 }: AudioManagerProps) => {
   
-  const handleFileUpload = (phraseKey: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (phraseKey: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
-    const newFiles = { ...uploadedFiles, [phraseKey]: url };
-    setUploadedFiles(newFiles);
-    
-    localStorage.setItem('wb-pvz-audio-files', JSON.stringify(newFiles));
-    localStorage.setItem('wb-pvz-uploaded-audio-files', JSON.stringify(Object.keys(newFiles)));
+    try {
+      // Сохраняем файл в IndexedDB и получаем URL
+      const url = await audioStorage.saveFile(phraseKey, file);
+      const newFiles = { ...uploadedFiles, [phraseKey]: url };
+      setUploadedFiles(newFiles);
+      
+      console.log(`✅ Файл "${phraseKey}" сохранен в IndexedDB`);
+    } catch (error) {
+      console.error('Ошибка сохранения файла:', error);
+      alert('Ошибка сохранения файла');
+    }
   };
 
   const handleTogglePhrase = (phraseKey: string, enabled: boolean) => {
