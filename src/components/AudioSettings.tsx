@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AudioManager } from './AudioManager';
+import { AudioUploadGuide } from './AudioUploadGuide';
 import { AudioSettings as AudioSettingsType } from '@/hooks/useAppState';
 
 interface AudioSettingsProps {
@@ -23,17 +24,22 @@ export const AudioSettings = ({
 }: AudioSettingsProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Настройки озвучки</DialogTitle>
         </DialogHeader>
-        <AudioManager
-          audioSettings={audioSettings}
-          setAudioSettings={setAudioSettings}
-          uploadedFiles={uploadedFiles}
-          setUploadedFiles={setUploadedFiles}
-          onTestAudio={onTestAudio}
-        />
+        
+        <div className="space-y-4">
+          <AudioUploadGuide />
+          
+          <AudioManager
+            audioSettings={audioSettings}
+            setAudioSettings={setAudioSettings}
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+            onTestAudio={onTestAudio}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

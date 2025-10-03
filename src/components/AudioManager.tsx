@@ -17,11 +17,9 @@ interface AudioManagerProps {
 
 const AUDIO_PHRASES = {
   delivery: {
-    'delivery-start': 'Начало процесса выдачи',
-    'delivery-scan-qr': 'Отсканируйте QR код',
-    'delivery-cell-number': 'Номер ячейки',
-    'delivery-scan-product': 'Отсканируйте товар',
-    'delivery-success': 'Выдача завершена',
+    'delivery-cell-info': 'Номер ячейки, количество товаров, оплата при получении',
+    'delivery-check-product': 'Пожалуйста проверьте товар под камерой',
+    'delivery-thanks': 'Спасибо за заказ, оцените пункт выдачи',
   },
   receiving: {
     'receiving-start': 'Начало приемки',

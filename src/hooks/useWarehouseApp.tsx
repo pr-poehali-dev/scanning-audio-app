@@ -120,6 +120,9 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ МЕНЕДЖЕРА!');
         
+        // Озвучка: проверьте товар под камерой
+        playAudio('delivery-check-product');
+        
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setCurrentStep('check');
         
@@ -139,6 +142,9 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
     setIsProcessing(true);
     console.log('⚡ МГНОВЕННАЯ ВЫДАЧА ТОВАРА!');
     setCurrentStep('payment');
+    
+    // Озвучка: спасибо за заказ, оцените пункт выдачи
+    playAudio('delivery-thanks');
     
     try {
       // МГНОВЕННЫЙ СБРОС БЕЗ ЗАДЕРЖЕК
@@ -170,6 +176,9 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
         setCellNumber(randomCellNumber);
         console.log(`📦 Заказ не найден для телефона ${phoneNumber}, используем ячейку: ${randomCellNumber}`);
       }
+      
+      // Озвучка: номер ячейки, количество товаров, оплата при получении
+      playAudio('delivery-cell-info');
       
       handleQRScan();
     }

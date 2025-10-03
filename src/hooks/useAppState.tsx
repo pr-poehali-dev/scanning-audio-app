@@ -42,11 +42,28 @@ export const useAppState = () => {
     employeeId: localStorage.getItem('wb-pvz-employee-id') || ''
   });
 
-  const [audioSettings, setAudioSettings] = useState<AudioSettings>({
-    speed: parseFloat(localStorage.getItem('wb-pvz-audio-speed') || '1'),
-    activeTab: localStorage.getItem('wb-pvz-audio-tab') || 'delivery',
-    phrases: JSON.parse(localStorage.getItem('wb-pvz-audio-phrases') || '{}'),
-    enabled: JSON.parse(localStorage.getItem('wb-pvz-audio-enabled') || '{}')
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => {
+    const savedEnabled = localStorage.getItem('wb-pvz-audio-enabled');
+    const defaultEnabled = {
+      'delivery-cell-info': true,
+      'delivery-check-product': true,
+      'delivery-thanks': true,
+      'receiving-start': true,
+      'receiving-scan': true,
+      'receiving-next': true,
+      'receiving-complete': true,
+      'return-start': true,
+      'return-scan-product': true,
+      'return-confirm': true,
+      'return-success': true,
+    };
+    
+    return {
+      speed: parseFloat(localStorage.getItem('wb-pvz-audio-speed') || '1'),
+      activeTab: localStorage.getItem('wb-pvz-audio-tab') || 'delivery',
+      phrases: JSON.parse(localStorage.getItem('wb-pvz-audio-phrases') || '{}'),
+      enabled: savedEnabled ? JSON.parse(savedEnabled) : defaultEnabled
+    };
   });
 
   // Восстанавливаем информацию о загруженных аудиофайлах при запуске
