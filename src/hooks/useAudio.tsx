@@ -40,12 +40,15 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
-    console.log('▶️ Запрос озвучки:', phraseKey, 'Всего файлов:', Object.keys(uploadedFiles).length);
+    console.log('🎵 ========== ЗАПРОС ОЗВУЧКИ ==========');
+    console.log('▶️ Ключ:', phraseKey);
+    console.log('📦 Всего файлов:', Object.keys(uploadedFiles).length);
     console.log('📋 Доступные файлы:', Object.keys(uploadedFiles));
+    console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     
     const isEnabled = audioSettings.enabled[phraseKey];
     if (!isEnabled) {
-      console.log('❌ Озвучка отключена');
+      console.log('❌ ОЗВУЧКА ОТКЛЮЧЕНА В НАСТРОЙКАХ');
       return;
     }
 
