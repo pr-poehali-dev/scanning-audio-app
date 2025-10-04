@@ -36,29 +36,46 @@ const SideMenu = ({
       )}
 
       {/* Side Menu */}
-      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+      <div className={`fixed top-0 left-0 h-full w-[320px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-lg font-semibold text-gray-800">Меню</h2>
-            <button 
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Icon name="X" size={20} />
+          {/* Header with Logo and ID */}
+          <div className="p-4 border-b bg-gradient-to-r from-purple-50 to-white">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg">WB</span>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">ID {pvzInfo.id || '50001234'}</div>
+                  <div className="text-sm font-medium text-gray-900">V.1.0.51</div>
+                </div>
+              </div>
+              <button 
+                onClick={onClose}
+                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <Icon name="X" size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* User Profile Button */}
+          <div className="px-4 py-3 border-b">
+            <button className="w-full flex items-center gap-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors">
+              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <Icon name="User" size={20} className="text-white" />
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">Сотрудник ПВЗ</div>
+                <div className="text-xs text-gray-500">ID {pvzInfo.employeeId || 'не указан'}</div>
+              </div>
             </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            
-            {/* ПВЗ Info Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
-                Информация о ПВЗ
-              </h3>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
               
               <div className="space-y-2">
                 <div>
