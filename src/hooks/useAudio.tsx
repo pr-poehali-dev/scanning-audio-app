@@ -31,23 +31,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   useEffect(() => {
     const loadAudioFiles = async () => {
       try {
-        console.log('🚀 === ИНИЦИАЛИЗАЦИЯ АУДИО СИСТЕМЫ ===');
         await audioStorage.init();
-        
-        // Диагностика для отладки
-        await audioStorage.diagnose();
-        
         const files = await audioStorage.getAllFiles();
         setUploadedFiles(files);
-        
-        if (Object.keys(files).length > 0) {
-          console.log(`✅ Загружено ${Object.keys(files).length} аудиофайлов из IndexedDB`);
-          console.log('📋 Список загруженных файлов:', Object.keys(files));
-        } else {
-          console.log('⚠️ IndexedDB пуста. Загрузите аудиофайлы в настройках озвучки.');
-        }
       } catch (error) {
-        console.error('❌ Ошибка загрузки аудиофайлов:', error);
+        console.error('Ошибка загрузки:', error);
       } finally {
         setIsLoading(false);
       }
@@ -57,13 +45,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
-    console.log(`🎯 Запрос на озвучку: "${phraseKey}"${cellNumber ? ` (ячейка: ${cellNumber}, товаров: ${itemCount})` : ''}`);
-    
     const isEnabled = audioSettings.enabled[phraseKey];
-    if (!isEnabled) {
-      console.log(`🔇 Озвучка "${phraseKey}" отключена в настройках`);
-      return;
-    }
+    if (!isEnabled) return;
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
@@ -83,15 +66,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // 4. Файл "оплата при получении": payment-cod.mp3
       const paymentAudio = uploadedFiles['payment-cod'];
 
-      console.log(`📦 Проверка составной озвучки:`, {
-        cellNumber,
-        cellAudio: cellAudioKey + ' → ' + (cellAudio ? 'ЕСТЬ' : 'НЕТ'),
-        itemCount,
-        countAudio: countAudioKey + ' → ' + (countAudio ? 'ЕСТЬ' : 'НЕТ'),
-        wordItemsAudio: 'word-items → ' + (wordItemsAudio ? 'ЕСТЬ' : 'НЕТ'),
-        paymentAudio: 'payment-cod → ' + (paymentAudio ? 'ЕСТЬ' : 'НЕТ')
-      });
-
       // Собираем последовательность из загруженных файлов
       if (cellAudio) audioSequence.push(cellAudio);
       if (countAudio) audioSequence.push(countAudio);
@@ -100,35 +74,21 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
       // Если есть хотя бы один файл - играем последовательность
       if (audioSequence.length > 0) {
-        console.log(`🔊 Воспроизведение составной озвучки (${audioSequence.length} файлов)`);
         playSequentialAudio(audioSequence);
         return;
-      } else {
-        console.warn('⚠️ Не загружены файлы для составной озвучки!');
-        console.warn(`   Нужны файлы: ${cellAudioKey}.mp3, ${countAudioKey}.mp3, word-items.mp3, payment-cod.mp3`);
-        return;
       }
+      return;
     }
 
     // Проверяем сначала загруженный пользователем файл
     let audioUrl = uploadedFiles[phraseKey];
     
-    console.log(`📂 Загруженные файлы:`, Object.keys(uploadedFiles));
-    console.log(`🔍 Поиск файла "${phraseKey}":`, audioUrl ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
-    
     // Если нет загруженного файла, пытаемся использовать файл из /public/audio
     if (!audioUrl) {
-      const publicAudioPath = AUDIO_FILE_MAP[phraseKey];
-      if (publicAudioPath) {
-        console.log(`📁 Попытка использовать файл из /public/audio: ${publicAudioPath}`);
-        audioUrl = publicAudioPath;
-      }
+      audioUrl = AUDIO_FILE_MAP[phraseKey];
     }
     
-    if (!audioUrl) {
-      console.warn(`⚠️ Аудиофайл для "${phraseKey}" не загружен. Загрузите файл в настройках озвучки.`);
-      return;
-    }
+    if (!audioUrl) return;
 
     if (audioRef.current) {
       audioRef.current.pause();
@@ -138,17 +98,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     const audio = new Audio(audioUrl);
     audio.playbackRate = audioSettings.speed;
     audioRef.current = audio;
-
     setIsPlaying(true);
-    console.log(`🔊 ВОСПРОИЗВЕДЕНИЕ: "${phraseKey}" (URL: ${audioUrl.substring(0, 50)}...)`);
 
-    audio.play().catch(err => {
-      console.error(`❌ Ошибка воспроизведения "${phraseKey}":`, err);
+    audio.play().catch(() => {
       setIsPlaying(false);
     });
 
     audio.onended = () => {
-      console.log(`✅ Озвучка "${phraseKey}" завершена`);
       setIsPlaying(false);
       audioRef.current = null;
     };

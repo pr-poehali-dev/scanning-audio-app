@@ -52,38 +52,25 @@ export const AudioManager = ({
       try {
         const files = await audioStorage.getAllFiles();
         if (Object.keys(files).length > 0) {
-          console.log('📂 AudioManager: загружено файлов из IndexedDB:', Object.keys(files));
           setUploadedFiles(files);
         }
       } catch (error) {
-        console.error('❌ Ошибка загрузки файлов в AudioManager:', error);
+        console.error('Ошибка загрузки:', error);
       }
     };
     
     loadFiles();
-  }, []);
-
-  const handleDiagnose = async () => {
-    console.log('🔍 === ДИАГНОСТИКА АУДИО СИСТЕМЫ ===');
-    await audioStorage.diagnose();
-    console.log('📋 Текущие uploadedFiles в компоненте:', Object.keys(uploadedFiles));
-    console.log('📊 Настройки audioSettings.enabled:', audioSettings.enabled);
-  };
+  }, [setUploadedFiles]);
   
   const handleFileUpload = async (phraseKey: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     try {
-      // Сохраняем файл в IndexedDB и получаем URL
       const url = await audioStorage.saveFile(phraseKey, file);
-      const newFiles = { ...uploadedFiles, [phraseKey]: url };
-      setUploadedFiles(newFiles);
-      
-      console.log(`✅ Файл "${phraseKey}" сохранен в IndexedDB`);
+      setUploadedFiles({ ...uploadedFiles, [phraseKey]: url });
     } catch (error) {
-      console.error('Ошибка сохранения файла:', error);
-      alert('Ошибка сохранения файла');
+      console.error('Ошибка:', error);
     }
   };
 
@@ -105,20 +92,10 @@ export const AudioManager = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Icon name="Volume2" className="w-5 h-5" />
-            Управление озвучкой
-          </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleDiagnose}
-          >
-            <Icon name="Bug" className="w-4 h-4 mr-1" />
-            Диагностика
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Icon name="Volume2" className="w-5 h-5" />
+          Управление озвучкой
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

@@ -11,44 +11,7 @@ import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-// 🧹 ПРИНУДИТЕЛЬНАЯ ОЧИСТКА ПАМЯТИ ПРИ ЗАПУСКЕ
-const clearMemoryOnStartup = () => {
-  console.log('🧹 === ПРИНУДИТЕЛЬНАЯ ОЧИСТКА ПАМЯТИ ===');
-  
-  // Очищаем все временные данные
-  const keysToRemove: string[] = [];
-  
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && (
-      key.includes('temp') || 
-      key.includes('cache') || 
-      key.includes('backup') ||
-      key.startsWith('wb-audio-files-backup') ||
-      key.startsWith('wb-audio-files-cells-backup')
-    )) {
-      keysToRemove.push(key);
-    }
-  }
-  
-  keysToRemove.forEach(key => {
-    localStorage.removeItem(key);
-    console.log(`🗑️ Удален временный ключ: ${key}`);
-  });
-  
-  // Принудительная сборка мусора (если поддерживается)
-  if (window.gc) {
-    window.gc();
-    console.log('🔄 Принудительная сборка мусора выполнена');
-  }
-  
-  console.log(`✅ Очистка завершена. Удалено ${keysToRemove.length} временных ключей`);
-};
-
 const App = () => {
-  useEffect(() => {
-    clearMemoryOnStartup();
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
