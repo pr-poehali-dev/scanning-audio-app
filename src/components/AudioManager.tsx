@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,29 @@ export const AudioManager = ({
   onTestAudio
 }: AudioManagerProps) => {
   
+  useEffect(() => {
+    const loadFiles = async () => {
+      try {
+        const files = await audioStorage.getAllFiles();
+        if (Object.keys(files).length > 0) {
+          console.log('📂 AudioManager: загружено файлов из IndexedDB:', Object.keys(files));
+          setUploadedFiles(files);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка загрузки файлов в AudioManager:', error);
+      }
+    };
+    
+    loadFiles();
+  }, []);
+
+  const handleDiagnose = async () => {
+    console.log('🔍 === ДИАГНОСТИКА АУДИО СИСТЕМЫ ===');
+    await audioStorage.diagnose();
+    console.log('📋 Текущие uploadedFiles в компоненте:', Object.keys(uploadedFiles));
+    console.log('📊 Настройки audioSettings.enabled:', audioSettings.enabled);
+  };
+  
   const handleFileUpload = async (phraseKey: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -81,10 +105,20 @@ export const AudioManager = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon name="Volume2" className="w-5 h-5" />
-          Управление озвучкой
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Icon name="Volume2" className="w-5 h-5" />
+            Управление озвучкой
+          </CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleDiagnose}
+          >
+            <Icon name="Bug" className="w-4 h-4 mr-1" />
+            Диагностика
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -138,21 +172,29 @@ export const AudioManager = ({
                         />
                       </div>
                       
-                      <div className="flex gap-2">
-                        <Input
-                          type="file"
-                          accept="audio/*"
-                          onChange={(e) => handleFileUpload(phraseKey, e)}
-                          className="flex-1"
-                        />
+                      <div className="space-y-1">
+                        <div className="flex gap-2">
+                          <Input
+                            type="file"
+                            accept="audio/*"
+                            onChange={(e) => handleFileUpload(phraseKey, e)}
+                            className="flex-1"
+                          />
+                          {uploadedFiles[phraseKey] && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onTestAudio(phraseKey)}
+                            >
+                              <Icon name="Play" className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
                         {uploadedFiles[phraseKey] && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onTestAudio(phraseKey)}
-                          >
-                            <Icon name="Play" className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1 text-xs text-green-600">
+                            <Icon name="CheckCircle" className="w-3 h-3" />
+                            <span>Файл загружен</span>
+                          </div>
                         )}
                       </div>
                     </div>
