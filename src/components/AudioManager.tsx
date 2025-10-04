@@ -120,8 +120,8 @@ export const AudioManager = ({
 
     setUploadProgress({ current: 0, total: files.length });
 
-    // Параллельная загрузка пачками по 20 файлов
-    const BATCH_SIZE = 20;
+    // Параллельная загрузка пачками по 100 файлов
+    const BATCH_SIZE = 100;
     const fileArray = Array.from(files);
     
     for (let batchStart = 0; batchStart < fileArray.length; batchStart += BATCH_SIZE) {
@@ -134,26 +134,20 @@ export const AudioManager = ({
         let cellKey = fileName;
         if (!fileName.startsWith('cell_')) {
           const cellNumber = parseInt(fileName, 10);
-          if (!isNaN(cellNumber)) {
+          if (!isNaN(cellNumber) && cellNumber >= 1 && cellNumber <= 482) {
             cellKey = `cell_${cellNumber}`;
+          } else {
+            return { success: false, key: fileName };
           }
         }
         
-        // Проверяем, есть ли такая ячейка в списке
-        if (cellKey.startsWith('cell_')) {
-          const fileConfig = CELL_FILES.find(f => f.key === cellKey);
-          
-          if (fileConfig) {
-            try {
-              const url = await audioStorage.saveFile(cellKey, file);
-              return { success: true, key: cellKey, url };
-            } catch (error) {
-              console.error(`❌ ${cellKey}:`, error);
-              return { success: false, key: cellKey };
-            }
-          }
+        try {
+          const url = await audioStorage.saveFile(cellKey, file);
+          return { success: true, key: cellKey, url };
+        } catch (error) {
+          console.error(`❌ ${cellKey}:`, error);
+          return { success: false, key: cellKey };
         }
-        return { success: false, key: cellKey };
       });
 
       const results = await Promise.all(uploadPromises);
@@ -168,12 +162,15 @@ export const AudioManager = ({
         }
       });
 
-      setUploadProgress({ current: batchStart + batch.length, total: fileArray.length });
-      setUploadedFiles({ ...newFiles });
+      const currentProgress = Math.min(batchStart + batch.length, fileArray.length);
+      setUploadProgress({ current: currentProgress, total: fileArray.length });
+      console.log(`📊 Прогресс: ${currentProgress}/${fileArray.length} (${Math.round(currentProgress/fileArray.length*100)}%)`);
     }
 
+    setUploadedFiles(newFiles);
     setIsUploading(false);
     setUploadProgress({ current: 0, total: 0 });
+    console.log(`✅ Загрузка завершена: ${successCount} успешно, ${errorCount} ошибок`);
     alert(`Загружено ячеек: ${successCount} из ${files.length}\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
   };
 
