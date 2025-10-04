@@ -30,6 +30,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   useEffect(() => {
     const loadAudioFiles = async () => {
       const files = await audioStorage.getAllFiles();
+      console.log('📦 Загружено файлов:', Object.keys(files).length);
+      console.log('📋 Список файлов:', Object.keys(files));
       setUploadedFiles(files);
       setIsLoading(false);
     };
