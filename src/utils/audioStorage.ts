@@ -203,6 +203,10 @@ class AudioStorage {
     });
   }
 
+  async getAllKeys(): Promise<string[]> {
+    return this.getStoredKeys();
+  }
+
   // Метод для диагностики состояния базы данных
   async diagnose(): Promise<void> {
     console.log('🔍 === ДИАГНОСТИКА IndexedDB ===');
@@ -219,6 +223,33 @@ class AudioStorage {
     console.log('  - Всего ключей:', keys.length);
     console.log('  - Всего файлов:', Object.keys(files).length);
     console.log('  - Список ключей:', keys);
+    
+    // Детальная проверка каждого ключа
+    if (keys.length > 0) {
+      console.log('📋 Детали каждого файла:');
+      
+      const transaction = this.db!.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      
+      for (const key of keys) {
+        const request = store.get(key);
+        await new Promise<void>((resolve) => {
+          request.onsuccess = () => {
+            const audioFile = request.result as AudioFile | undefined;
+            if (audioFile) {
+              console.log(`  ✅ ${key}:`, {
+                size: `${(audioFile.blob.size / 1024).toFixed(2)} KB`,
+                type: audioFile.mimeType,
+                name: audioFile.fileName
+              });
+            }
+            resolve();
+          };
+          request.onerror = () => resolve();
+        });
+      }
+    }
+    
     console.log('='.repeat(50));
   }
 }
