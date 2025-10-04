@@ -189,15 +189,38 @@ async function playTextToSpeech(text: string): Promise<boolean> {
   return new Promise((resolve) => {
     try {
       if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ru-RU';
         utterance.rate = 0.9;
         utterance.pitch = 1;
         
-        utterance.onend = () => resolve(true);
-        utterance.onerror = () => resolve(false);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
         
-        speechSynthesis.speak(utterance);
+        if (isIOS || isAndroid) {
+          utterance.volume = 1;
+          utterance.rate = 1.0;
+        }
+        
+        utterance.onend = () => {
+          console.log('✅ Озвучка завершена');
+          resolve(true);
+        };
+        
+        utterance.onerror = (event) => {
+          console.error('❌ Ошибка озвучки:', event);
+          resolve(false);
+        };
+        
+        if (isIOS) {
+          setTimeout(() => {
+            window.speechSynthesis.speak(utterance);
+          }, 100);
+        } else {
+          window.speechSynthesis.speak(utterance);
+        }
       } else {
         console.warn('⚠️ Синтез речи не поддерживается браузером');
         resolve(false);

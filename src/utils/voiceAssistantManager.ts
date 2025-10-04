@@ -217,10 +217,24 @@ class VoiceAssistantManager {
             if (oldAudioFiles[key]) {
               console.log(`✅ Найден "${soundId}" в старой системе как "${key}"`);
               const audio = new Audio(oldAudioFiles[key]);
+              
+              const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+              const isAndroid = /Android/.test(navigator.userAgent);
+              
+              if (isIOS || isAndroid) {
+                audio.load();
+              }
+              
               await new Promise((resolve, reject) => {
                 audio.onended = () => resolve(true);
-                audio.onerror = () => reject(new Error('Ошибка воспроизведения'));
-                audio.play().catch(reject);
+                audio.onerror = (e) => {
+                  console.error('❌ Ошибка:', e);
+                  reject(new Error('Ошибка воспроизведения'));
+                };
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                  playPromise.catch(reject);
+                }
               });
               return true;
             }
@@ -232,10 +246,26 @@ class VoiceAssistantManager {
 
       // Воспроизводим звук
       const audio = new Audio(audioData);
+      
+      // Поддержка iOS/Android
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      
+      if (isIOS || isAndroid) {
+        audio.load();
+      }
+      
       await new Promise((resolve, reject) => {
         audio.onended = () => resolve(true);
-        audio.onerror = () => reject(new Error('Ошибка воспроизведения'));
-        audio.play().catch(reject);
+        audio.onerror = (e) => {
+          console.error('❌ Ошибка воспроизведения аудио:', e);
+          reject(new Error('Ошибка воспроизведения'));
+        };
+        
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(reject);
+        }
       });
 
       console.log(`✅ [NEW ASSISTANT] Звук "${soundId}" воспроизведен успешно`);
@@ -433,6 +463,14 @@ class VoiceAssistantManager {
         const soundData = this.getNewSoundData(`cell-${cellNumber}`);
         if (soundData) {
           const audio = new Audio(soundData);
+          
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const isAndroid = /Android/.test(navigator.userAgent);
+          
+          if (isIOS || isAndroid) {
+            audio.load();
+          }
+          
           await audio.play();
           console.log(`✅ [NEW ASSISTANT] Ячейка ${cellNumber} воспроизведена из нового хранилища`);
           return true;
