@@ -202,21 +202,15 @@ export const AudioManager = ({
                 id="bulk-upload"
                 disabled={isUploading}
               />
-              <label 
-                htmlFor="bulk-upload"
-                className="inline-block"
+              <Button
+                variant="default"
+                className="gap-2"
+                disabled={isUploading}
+                onClick={() => document.getElementById('bulk-upload')?.click()}
               >
-                <div className={`
-                  flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer transition-colors
-                  ${isUploading 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }
-                `}>
-                  <Icon name="Upload" className="w-4 h-4" />
-                  <span>{isUploading ? 'Загрузка...' : 'Массовая загрузка файлов'}</span>
-                </div>
-              </label>
+                <Icon name="Upload" className="w-4 h-4" />
+                {isUploading ? 'Загрузка...' : 'Массовая загрузка файлов'}
+              </Button>
               <div className="text-xs text-gray-600 flex items-center">
                 Можно загружать файлы с именами: goods.mp3, 1.mp3, 2.mp3, 3.mp3 или cell_1.mp3, cell_2.mp3
               </div>
@@ -287,15 +281,16 @@ export const AudioManager = ({
                   id="cell-bulk-upload"
                   disabled={isUploading}
                 />
-                <label 
-                  htmlFor="cell-bulk-upload"
-                  className="inline-block"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  disabled={isUploading}
+                  onClick={() => document.getElementById('cell-bulk-upload')?.click()}
                 >
-                  <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
-                    <Icon name="Upload" className="w-3 h-3" />
-                    <span>Загрузить массово</span>
-                  </div>
-                </label>
+                  <Icon name="Upload" className="w-3 h-3" />
+                  Загрузить массово
+                </Button>
                 <span className="text-xs text-gray-500">
                   Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
                 </span>
