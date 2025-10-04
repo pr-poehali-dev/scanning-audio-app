@@ -114,56 +114,64 @@ export const AudioManager = ({
     setIsUploading(true);
     console.log(`📦 Массовая загрузка ячеек: ${files.length} файлов`);
     
-    // Покажем имена первых 5 файлов
-    for (let i = 0; i < Math.min(5, files.length); i++) {
-      console.log(`  Файл ${i + 1}: ${files[i].name}`);
-    }
     const newFiles: { [key: string]: string } = { ...uploadedFiles };
     let successCount = 0;
     let errorCount = 0;
 
     setUploadProgress({ current: 0, total: files.length });
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
+    // Параллельная загрузка пачками по 20 файлов
+    const BATCH_SIZE = 20;
+    const fileArray = Array.from(files);
+    
+    for (let batchStart = 0; batchStart < fileArray.length; batchStart += BATCH_SIZE) {
+      const batch = fileArray.slice(batchStart, batchStart + BATCH_SIZE);
       
-      setUploadProgress({ current: i + 1, total: files.length });
-      
-      // Преобразуем "123" или "123.mp3" в "cell_123"
-      let cellKey = fileName;
-      if (!fileName.startsWith('cell_')) {
-        // Если это просто цифра - добавляем префикс cell_
-        const cellNumber = parseInt(fileName, 10);
-        if (!isNaN(cellNumber)) {
-          cellKey = `cell_${cellNumber}`;
-          console.log(`🔄 Переименовано: ${fileName} → ${cellKey}`);
-        }
-      }
-      
-      // Проверяем, есть ли такая ячейка в списке
-      if (cellKey.startsWith('cell_')) {
-        const fileConfig = CELL_FILES.find(f => f.key === cellKey);
+      const uploadPromises = batch.map(async (file) => {
+        const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
         
-        if (fileConfig) {
-          try {
-            const url = await audioStorage.saveFile(cellKey, file);
-            newFiles[cellKey] = url;
-            successCount++;
-            console.log(`✅ ${cellKey}`);
-          } catch (error) {
-            errorCount++;
-            console.error(`❌ ${cellKey}:`, error);
+        // Преобразуем "123" в "cell_123"
+        let cellKey = fileName;
+        if (!fileName.startsWith('cell_')) {
+          const cellNumber = parseInt(fileName, 10);
+          if (!isNaN(cellNumber)) {
+            cellKey = `cell_${cellNumber}`;
           }
-        } else {
-          console.warn(`⚠️ Пропущен: ${cellKey} (вне диапазона 1-482)`);
         }
-      } else {
-        console.warn(`⚠️ Пропущен: ${fileName} (не является номером ячейки)`);
-      }
+        
+        // Проверяем, есть ли такая ячейка в списке
+        if (cellKey.startsWith('cell_')) {
+          const fileConfig = CELL_FILES.find(f => f.key === cellKey);
+          
+          if (fileConfig) {
+            try {
+              const url = await audioStorage.saveFile(cellKey, file);
+              return { success: true, key: cellKey, url };
+            } catch (error) {
+              console.error(`❌ ${cellKey}:`, error);
+              return { success: false, key: cellKey };
+            }
+          }
+        }
+        return { success: false, key: cellKey };
+      });
+
+      const results = await Promise.all(uploadPromises);
+      
+      // Обновляем результаты
+      results.forEach(result => {
+        if (result.success && result.url) {
+          newFiles[result.key] = result.url;
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      });
+
+      setUploadProgress({ current: batchStart + batch.length, total: fileArray.length });
+      setUploadedFiles({ ...newFiles });
     }
 
-    setUploadedFiles(newFiles);
     setIsUploading(false);
     setUploadProgress({ current: 0, total: 0 });
     alert(`Загружено ячеек: ${successCount} из ${files.length}\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
