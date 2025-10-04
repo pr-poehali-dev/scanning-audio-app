@@ -41,6 +41,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
     console.log('▶️ Запрос озвучки:', phraseKey, 'Всего файлов:', Object.keys(uploadedFiles).length);
+    console.log('📋 Доступные файлы:', Object.keys(uploadedFiles));
     
     const isEnabled = audioSettings.enabled[phraseKey];
     if (!isEnabled) {
@@ -48,34 +49,30 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
+    // Маппинг системных ключей на реальные названия файлов
+    const keyMapping: { [key: string]: string } = {
+      'delivery-cell-info': 'goods',
+      'delivery-check-product': 'please_check_good_under_camera',
+      'delivery-thanks': 'thanks_for_order_rate_pickpoint',
+      'payment-cod': 'payment_on_delivery'
+    };
+
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       const audioSequence: string[] = [];
       
-      // 1. Файл номера ячейки: cell-123.mp3
-      const cellAudioKey = `cell-${cellNumber}`;
-      const cellAudio = uploadedFiles[cellAudioKey];
+      // 1. Озвучка "товары"
+      const goodsAudio = uploadedFiles['goods'];
       
-      // 2. Файл количества товаров: count-2.mp3
-      const countAudioKey = itemCount ? `count-${itemCount}` : undefined;
-      const countAudio = countAudioKey ? uploadedFiles[countAudioKey] : undefined;
-      
-      // 3. Файл слова "товаров": word-items.mp3
-      const wordItemsAudio = uploadedFiles['word-items'];
-      
-      // 4. Файл "оплата при получении": payment-cod.mp3
-      const paymentAudio = uploadedFiles['payment-cod'];
+      // 2. Оплата при получении
+      const paymentAudio = uploadedFiles['payment_on_delivery'];
 
       // Собираем последовательность из загруженных файлов
-      if (cellAudio) audioSequence.push(cellAudio);
-      if (countAudio) audioSequence.push(countAudio);
-      if (wordItemsAudio) audioSequence.push(wordItemsAudio);
+      if (goodsAudio) audioSequence.push(goodsAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
-        cell: !!cellAudio,
-        count: !!countAudio,
-        word: !!wordItemsAudio,
+        goods: !!goodsAudio,
         payment: !!paymentAudio,
         total: audioSequence.length
       });
@@ -89,18 +86,21 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
+    // Преобразуем системный ключ в реальное название файла
+    const mappedKey = keyMapping[phraseKey] || phraseKey;
+    
     // Проверяем сначала загруженный пользователем файл
-    let audioUrl = uploadedFiles[phraseKey];
+    let audioUrl = uploadedFiles[mappedKey];
     
     // Если нет загруженного файла, пытаемся использовать файл из /public/audio
     if (!audioUrl) {
       audioUrl = AUDIO_FILE_MAP[phraseKey];
     }
     
-    console.log('🎵 Файл:', phraseKey, '→', audioUrl ? 'ЕСТЬ' : 'НЕТ');
+    console.log('🎵 Ищем:', phraseKey, '→', mappedKey, '→', audioUrl ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
     
     if (!audioUrl) {
-      console.log('❌ Файл не найден');
+      console.log('❌ Файл не найден. Проверьте названия:', mappedKey);
       return;
     }
 
