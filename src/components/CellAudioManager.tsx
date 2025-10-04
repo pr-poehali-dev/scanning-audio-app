@@ -25,15 +25,9 @@ export const CellAudioManager = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      const url = await audioStorage.saveFile(key, file);
-      const newFiles = { ...uploadedFiles, [key]: url };
-      setUploadedFiles(newFiles);
-      console.log(`✅ Файл "${key}" сохранен`);
-    } catch (error) {
-      console.error('Ошибка сохранения:', error);
-      alert('Ошибка сохранения файла');
-    }
+    const url = await audioStorage.saveFile(key, file);
+    setUploadedFiles({ ...uploadedFiles, [key]: url });
+    console.log('✅', key);
   };
 
   const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,25 +37,19 @@ export const CellAudioManager = ({
     const newFiles = { ...uploadedFiles };
     let uploadedCount = 0;
 
-    try {
-      for (const file of Array.from(files)) {
-        const match = file.name.match(/(\d+)\.mp3$/i);
-        if (match) {
-          const cellNumber = match[1];
-          const key = `cell-${cellNumber}`;
-          const url = await audioStorage.saveFile(key, file);
-          newFiles[key] = url;
-          uploadedCount++;
-        }
+    for (const file of Array.from(files)) {
+      const match = file.name.match(/(\d+)\.mp3$/i);
+      if (match) {
+        const cellNumber = match[1];
+        const key = `cell-${cellNumber}`;
+        const url = await audioStorage.saveFile(key, file);
+        newFiles[key] = url;
+        uploadedCount++;
       }
-
-      setUploadedFiles(newFiles);
-      alert(`Загружено ${uploadedCount} файлов ячеек в IndexedDB`);
-      console.log(`✅ Массовая загрузка: ${uploadedCount} файлов`);
-    } catch (error) {
-      console.error('Ошибка массовой загрузки:', error);
-      alert('Ошибка при загрузке файлов');
     }
+
+    setUploadedFiles(newFiles);
+    alert(`Загружено ${uploadedCount} файлов`);
   };
 
   const getCellNumbers = (): number[] => {
@@ -172,7 +160,7 @@ export const CellAudioManager = ({
                   
                   setUploadedFiles(newFiles);
                   if (uploadedCount > 0) {
-                    alert(`Загружено ${uploadedCount} файлов количества`);
+                    alert(`Загружено ${uploadedCount}`);
                   }
                 }}
               />

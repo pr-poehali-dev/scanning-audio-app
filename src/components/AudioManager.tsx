@@ -49,14 +49,10 @@ export const AudioManager = ({
   
   useEffect(() => {
     const loadFiles = async () => {
-      try {
-        const files = await audioStorage.getAllFiles();
-        console.log('📂 Загружено из IndexedDB:', Object.keys(files));
-        if (Object.keys(files).length > 0) {
-          setUploadedFiles(files);
-        }
-      } catch (error) {
-        console.error('❌ Ошибка загрузки:', error);
+      const files = await audioStorage.getAllFiles();
+      console.log('📂 Загружено:', Object.keys(files));
+      if (Object.keys(files).length > 0) {
+        setUploadedFiles(files);
       }
     };
     
@@ -67,14 +63,9 @@ export const AudioManager = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      console.log('💾 Сохранение:', phraseKey, file.name);
-      const url = await audioStorage.saveFile(phraseKey, file);
-      setUploadedFiles({ ...uploadedFiles, [phraseKey]: url });
-      console.log('✅ Сохранено:', phraseKey);
-    } catch (error) {
-      console.error('❌ Ошибка:', error);
-    }
+    const url = await audioStorage.saveFile(phraseKey, file);
+    setUploadedFiles({ ...uploadedFiles, [phraseKey]: url });
+    console.log('✅', phraseKey);
   };
 
   const handleTogglePhrase = (phraseKey: string, enabled: boolean) => {

@@ -27,18 +27,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Загрузка файлов из IndexedDB при монтировании
   useEffect(() => {
     const loadAudioFiles = async () => {
-      try {
-        await audioStorage.init();
-        const files = await audioStorage.getAllFiles();
-        setUploadedFiles(files);
-      } catch (error) {
-        console.error('Ошибка загрузки:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      const files = await audioStorage.getAllFiles();
+      setUploadedFiles(files);
+      setIsLoading(false);
     };
 
     loadAudioFiles();
