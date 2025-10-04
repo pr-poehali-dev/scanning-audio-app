@@ -56,15 +56,15 @@ const TabContent = ({
 
     // Изначальное состояние - сканирование клиента
     return (
-      <div className="max-w-md mx-auto text-center space-y-8">
+      <div className="max-w-md mx-auto text-center space-y-6 sm:space-y-8 px-4">
         {/* QR Scanner */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-gray-700">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-medium text-gray-700">
             Отсканируйте QR-код клиента или курьера
           </h2>
           
           <div 
-            className={`relative w-48 h-48 mx-auto transition-all duration-300 ${
+            className={`relative w-40 h-40 sm:w-48 sm:h-48 mx-auto transition-all duration-300 ${
               isScanning ? 'animate-pulse' : ''
             }`}
             onClick={onQRScan}
@@ -88,21 +88,22 @@ const TabContent = ({
         </div>
 
         {/* Divider */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex-1 h-px bg-gray-300" />
           <span className="text-gray-500 text-sm font-medium">ИЛИ</span>
           <div className="flex-1 h-px bg-gray-300" />
         </div>
 
         {/* Phone Input */}
-        <div className="space-y-4">
-          <h3 className="text-base font-medium text-gray-700">
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-sm sm:text-base font-medium text-gray-700">
             Введите номер телефона клиента
           </h3>
           
           <div className="space-y-2">
             <input
               type="text"
+              inputMode="numeric"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="Последние 4 цифры номера"
@@ -113,9 +114,9 @@ const TabContent = ({
             <button
               onClick={() => onPhoneSubmit(phoneNumber)}
               disabled={phoneNumber.length !== 4}
-              className={`w-full py-3 rounded-lg font-medium transition-colors ${
+              className={`w-full py-3 sm:py-3 text-base rounded-lg font-medium transition-colors ${
                 phoneNumber.length === 4
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white active:bg-purple-800'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >

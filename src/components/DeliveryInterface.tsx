@@ -45,95 +45,96 @@ const DeliveryInterface = ({
   const allProductsSelected = selectedProducts.length === order.items.length;
 
   return (
-    <div className="h-full flex bg-gray-50">
+    <div className="h-full flex flex-col sm:flex-row bg-gray-50 overflow-y-auto">
       {/* Левая панель - информация */}
-      <div className="w-1/3 bg-white p-6 space-y-6">
+      <div className="w-full sm:w-1/3 bg-white p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* ID пользователя */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 sm:p-4 rounded-lg">
           <div className="text-xs text-purple-100">ID 50001234</div>
           <div className="text-xs text-purple-100">V.1.0.51</div>
           <div className="mt-2 flex items-center gap-2">
             <Icon name="User" size={16} />
-            <span className="text-sm">Личный кабинет</span>
+            <span className="text-xs sm:text-sm">Личный кабинет</span>
           </div>
         </div>
 
         {/* Информация о клиенте */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <div>
-            <div className="text-sm text-gray-500">Клиент</div>
-            <div className="font-medium">+7 (***) **{order.phone}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Клиент</div>
+            <div className="text-sm sm:text-base font-medium">+7 (***) **{order.phone}</div>
           </div>
           
           <div>
-            <div className="text-sm text-gray-500">Ячейка</div>
-            <div className="text-4xl font-bold">{order.cellNumber}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Ячейка</div>
+            <div className="text-3xl sm:text-4xl font-bold">{order.cellNumber}</div>
           </div>
           
           <div>
-            <div className="text-sm text-gray-500">Товаров</div>
-            <div className="text-2xl font-semibold">{order.items.length} из {order.items.length}</div>
+            <div className="text-xs sm:text-sm text-gray-500">Товаров</div>
+            <div className="text-xl sm:text-2xl font-semibold">{order.items.length} из {order.items.length}</div>
           </div>
 
           {/* Пакетов */}
-          <div className="flex items-center justify-center w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg">
-            <Icon name="Plus" size={24} className="text-gray-400" />
+          <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 border-2 border-dashed border-gray-300 rounded-lg">
+            <Icon name="Plus" size={20} className="sm:w-6 sm:h-6 text-gray-400" />
           </div>
           <div className="text-center">
-            <div className="text-sm text-gray-500">Пакетов</div>
-            <div className="text-2xl font-semibold">0</div>
+            <div className="text-xs sm:text-sm text-gray-500">Пакетов</div>
+            <div className="text-xl sm:text-2xl font-semibold">0</div>
           </div>
 
           {/* К оплате */}
-          <div className="space-y-2">
-            <div className="text-sm text-gray-500">К оплате</div>
+          <div className="space-y-1 sm:space-y-2">
+            <div className="text-xs sm:text-sm text-gray-500">К оплате</div>
             <div className="flex items-center gap-2">
-              <Icon name="CreditCard" size={20} className="text-purple-500" />
-              <span className="text-xl font-semibold text-purple-600">{order.totalAmount} ₽</span>
+              <Icon name="CreditCard" size={18} className="sm:w-5 sm:h-5 text-purple-500" />
+              <span className="text-lg sm:text-xl font-semibold text-purple-600">{order.totalAmount} ₽</span>
             </div>
             <div className="text-xs text-gray-400">Подробнее</div>
           </div>
         </div>
 
         {/* Кнопки действий */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <button
             onClick={onDeliverProduct}
             disabled={!allProductsSelected}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+            className={`w-full py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg font-medium transition-colors ${
               allProductsSelected
-                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             Выдать
           </button>
           
-          <button className="w-full py-3 px-4 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors">
+          <button className="w-full py-2.5 sm:py-3 px-4 text-sm sm:text-base border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 active:bg-red-100 transition-colors">
             Снять с примерки
           </button>
         </div>
       </div>
 
       {/* Правая панель - товары */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 sm:p-6">
         {/* Кнопка "Снять все" */}
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Товары</h3>
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold">Товары</h3>
           <button
             onClick={() => {
               setSelectedProducts(order.items.map((_, index) => index));
               playAudio?.('check-product-under-camera');
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:bg-purple-300 transition-colors"
           >
-            <Icon name="Check" size={16} />
-            Снять все
+            <Icon name="Check" size={14} className="sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Снять все</span>
+            <span className="sm:hidden">Все</span>
           </button>
         </div>
 
         {/* Список товаров */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {order.items.map((item, index) => {
             const isSelected = selectedProducts.includes(index);
             const isPaid = Math.random() > 0.5; // Случайно определяем статус оплаты

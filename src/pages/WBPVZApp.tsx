@@ -47,7 +47,7 @@ const WBPVZApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       <Header
         onMenuOpen={() => appState.setShowSideMenu(true)}
         onSettingsOpen={() => appState.setShowSettings(true)}
@@ -55,7 +55,7 @@ const WBPVZApp = () => {
         setActiveTab={handleTabChange}
       />
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3 sm:p-6">
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
