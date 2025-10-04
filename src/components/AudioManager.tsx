@@ -17,8 +17,13 @@ interface AudioManagerProps {
 
 const REQUIRED_FILES = [
   { key: 'goods', label: 'Файл "goods.mp3" - озвучка товары', testKey: 'delivery-cell-info' },
+  { key: 'count_1', label: 'Файл "count_1.mp3" - цифра 1', testKey: 'delivery-cell-info' },
+  { key: 'count_2', label: 'Файл "count_2.mp3" - цифра 2', testKey: 'delivery-cell-info' },
+  { key: 'count_3', label: 'Файл "count_3.mp3" - цифра 3', testKey: 'delivery-cell-info' },
+  { key: 'count_4', label: 'Файл "count_4.mp3" - цифра 4', testKey: 'delivery-cell-info' },
+  { key: 'count_5', label: 'Файл "count_5.mp3" - цифра 5', testKey: 'delivery-cell-info' },
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
-  { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'delivery-check-product' },
+  { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
 ];
 

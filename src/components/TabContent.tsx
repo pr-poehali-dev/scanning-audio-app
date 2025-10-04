@@ -18,6 +18,7 @@ interface TabContentProps {
   onScanProduct: () => void;
   onDeliverProduct: () => void;
   currentOrder?: any;
+  playAudio?: (key: string) => void;
 }
 
 const TabContent = ({
@@ -33,7 +34,8 @@ const TabContent = ({
   onCellClick,
   onScanProduct,
   onDeliverProduct,
-  currentOrder
+  currentOrder,
+  playAudio
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи  
@@ -47,6 +49,7 @@ const TabContent = ({
           isProductScanned={isProductScanned}
           scannedData={scannedData}
           deliveryStep={deliveryStep}
+          playAudio={playAudio}
         />
       );
     }

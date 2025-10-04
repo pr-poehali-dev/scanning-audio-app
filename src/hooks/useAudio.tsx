@@ -63,6 +63,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     const keyMapping: { [key: string]: string } = {
       'delivery-cell-info': 'goods',
       'delivery-check-product': 'please_check_good_under_camera',
+      'check-product-under-camera': 'please_check_good_under_camera',
       'delivery-thanks': 'thanks_for_order_rate_pickpoint',
       'payment-cod': 'payment_on_delivery'
     };
@@ -74,15 +75,20 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // 1. Озвучка "товары"
       const goodsAudio = currentFiles['goods'];
       
-      // 2. Оплата при получении
+      // 2. Озвучка количества (если передано)
+      const countAudio = itemCount ? currentFiles[`count_${itemCount}`] : null;
+      
+      // 3. Оплата при получении
       const paymentAudio = currentFiles['payment_on_delivery'];
 
       // Собираем последовательность из загруженных файлов
       if (goodsAudio) audioSequence.push(goodsAudio);
+      if (countAudio) audioSequence.push(countAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
         goods: !!goodsAudio,
+        count: !!countAudio,
         payment: !!paymentAudio,
         total: audioSequence.length
       });

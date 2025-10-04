@@ -48,6 +48,7 @@ export const useAppState = () => {
       'delivery-cell-info': true,
       'delivery-scan-items': true,
       'delivery-check-product': true,
+      'check-product-under-camera': true,
       'delivery-thanks': true,
       'receiving-start': true,
       'receiving-scan': true,

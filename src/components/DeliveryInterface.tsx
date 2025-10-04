@@ -10,6 +10,7 @@ interface DeliveryInterfaceProps {
   isProductScanned: boolean;
   scannedData: string;
   deliveryStep?: string;
+  playAudio?: (key: string) => void;
 }
 
 const DeliveryInterface = ({
@@ -19,7 +20,8 @@ const DeliveryInterface = ({
   onDeliverProduct,
   isProductScanned,
   scannedData,
-  deliveryStep = 'client-scanned'
+  deliveryStep = 'client-scanned',
+  playAudio
 }: DeliveryInterfaceProps) => {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
@@ -119,7 +121,10 @@ const DeliveryInterface = ({
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">Товары</h3>
           <button
-            onClick={() => setSelectedProducts(order.items.map((_, index) => index))}
+            onClick={() => {
+              setSelectedProducts(order.items.map((_, index) => index));
+              playAudio?.('check-product-under-camera');
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
           >
             <Icon name="Check" size={16} />

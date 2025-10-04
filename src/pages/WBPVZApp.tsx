@@ -70,6 +70,7 @@ const WBPVZApp = () => {
           onScanProduct={appHandlers.handleScanProduct}
           onDeliverProduct={appHandlers.handleDeliverProduct}
           currentOrder={appState.currentOrder}
+          playAudio={playAudio}
         />
       </div>
 
