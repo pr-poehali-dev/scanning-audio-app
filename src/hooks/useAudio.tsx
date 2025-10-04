@@ -77,7 +77,10 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const countAudioKey = itemCount ? `count-${itemCount}` : undefined;
       const countAudio = countAudioKey ? uploadedFiles[countAudioKey] : undefined;
       
-      // 3. Файл "оплата при получении": payment-cod.mp3
+      // 3. Файл слова "товаров": word-items.mp3
+      const wordItemsAudio = uploadedFiles['word-items'];
+      
+      // 4. Файл "оплата при получении": payment-cod.mp3
       const paymentAudio = uploadedFiles['payment-cod'];
 
       console.log(`📦 Проверка составной озвучки:`, {
@@ -85,12 +88,14 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         cellAudio: cellAudioKey + ' → ' + (cellAudio ? 'ЕСТЬ' : 'НЕТ'),
         itemCount,
         countAudio: countAudioKey + ' → ' + (countAudio ? 'ЕСТЬ' : 'НЕТ'),
+        wordItemsAudio: 'word-items → ' + (wordItemsAudio ? 'ЕСТЬ' : 'НЕТ'),
         paymentAudio: 'payment-cod → ' + (paymentAudio ? 'ЕСТЬ' : 'НЕТ')
       });
 
       // Собираем последовательность из загруженных файлов
       if (cellAudio) audioSequence.push(cellAudio);
       if (countAudio) audioSequence.push(countAudio);
+      if (wordItemsAudio) audioSequence.push(wordItemsAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       // Если есть хотя бы один файл - играем последовательность
@@ -100,7 +105,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         return;
       } else {
         console.warn('⚠️ Не загружены файлы для составной озвучки!');
-        console.warn(`   Нужны файлы: ${cellAudioKey}.mp3, ${countAudioKey}.mp3, payment-cod.mp3`);
+        console.warn(`   Нужны файлы: ${cellAudioKey}.mp3, ${countAudioKey}.mp3, word-items.mp3, payment-cod.mp3`);
         return;
       }
     }

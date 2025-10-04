@@ -109,12 +109,13 @@ export const CellAudioManager = ({
           <AlertDescription>
             <p className="text-sm font-medium mb-2">🎯 Как работает составная озвучка:</p>
             <ul className="text-xs space-y-1">
-              <li>• <strong>Шаг 1:</strong> Озвучка номера ячейки (cell-123.mp3)</li>
-              <li>• <strong>Шаг 2:</strong> Озвучка количества товаров (count-2.mp3 = "два товара")</li>
-              <li>• <strong>Шаг 3:</strong> Озвучка способа оплаты (payment-cod.mp3)</li>
+              <li>• <strong>Шаг 1:</strong> Озвучка номера ячейки (cell-123.mp3 = "ячейка сто двадцать три")</li>
+              <li>• <strong>Шаг 2:</strong> Озвучка количества (count-2.mp3 = "два")</li>
+              <li>• <strong>Шаг 3:</strong> Озвучка слова "товаров" (word-items.mp3 = "товаров")</li>
+              <li>• <strong>Шаг 4:</strong> Озвучка способа оплаты (payment-cod.mp3 = "оплата при получении")</li>
             </ul>
             <p className="text-xs mt-2 text-blue-600 font-medium">
-              Пример: "Ячейка сто двадцать три" → "Два товара" → "Оплата при получении"
+              Пример: "Ячейка сто двадцать три" → "Два" → "Товаров" → "Оплата при получении"
             </p>
           </AlertDescription>
         </Alert>
@@ -132,11 +133,12 @@ export const CellAudioManager = ({
                 <p className="text-sm font-medium mb-2">📝 Составная озвучка:</p>
                 <ul className="text-xs space-y-1">
                   <li>• <strong>cell-123.mp3</strong> - "Ячейка сто двадцать три"</li>
-                  <li>• <strong>count-2.mp3</strong> - "Два товара" или просто "два"</li>
+                  <li>• <strong>count-2.mp3</strong> - "Два" (просто число)</li>
+                  <li>• <strong>word-items.mp3</strong> - "Товаров" (само слово)</li>
                   <li>• <strong>payment-cod.mp3</strong> - "Оплата при получении"</li>
                 </ul>
                 <p className="text-xs mt-2 text-blue-600">
-                  Будет играть: cell-123 → count-2 → payment-cod
+                  Будет играть: cell-123 → count-2 → word-items → payment-cod
                 </p>
               </AlertDescription>
             </Alert>
@@ -180,6 +182,36 @@ export const CellAudioManager = ({
             </div>
 
             <div className="border rounded-lg p-3 space-y-2">
+              <Label className="text-sm font-medium">Слово "товаров"</Label>
+              <p className="text-xs text-gray-600 mb-2">
+                Озвучка слова "товаров" для составной фразы (например: "два товаров")
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => handleFileUpload('word-items', e)}
+                  className="flex-1"
+                />
+                {uploadedFiles['word-items'] && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onTestAudio('word-items')}
+                  >
+                    <Icon name="Play" className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              {uploadedFiles['word-items'] && (
+                <div className="text-xs text-green-600 flex items-center gap-1">
+                  <Icon name="Check" className="w-3 h-3" />
+                  Файл загружен
+                </div>
+              )}
+            </div>
+
+            <div className="border rounded-lg p-3 space-y-2">
               <Label className="text-sm font-medium">Оплата при получении</Label>
               <div className="flex gap-2">
                 <Input
@@ -198,6 +230,12 @@ export const CellAudioManager = ({
                   </Button>
                 )}
               </div>
+              {uploadedFiles['payment-cod'] && (
+                <div className="text-xs text-green-600 flex items-center gap-1">
+                  <Icon name="Check" className="w-3 h-3" />
+                  Файл загружен
+                </div>
+              )}
             </div>
           </TabsContent>
 
@@ -280,6 +318,9 @@ export const CellAudioManager = ({
           </div>
           <div className="text-xs text-green-700">
             • Количество товаров: {Object.keys(uploadedFiles).filter(k => k.startsWith('count-')).length}
+          </div>
+          <div className="text-xs text-green-700">
+            • Слово "товаров": {uploadedFiles['word-items'] ? '✅' : '❌'}
           </div>
           <div className="text-xs text-green-700">
             • Оплата при получении: {uploadedFiles['payment-cod'] ? '✅' : '❌'}
