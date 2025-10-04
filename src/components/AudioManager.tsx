@@ -15,17 +15,20 @@ interface AudioManagerProps {
   onTestAudio: (phraseKey: string) => void;
 }
 
-const REQUIRED_FILES = [
+const BASIC_FILES = [
   { key: 'goods', label: 'Файл "goods.mp3" - озвучка товары', testKey: 'delivery-cell-info' },
-  { key: 'count_1', label: 'Файл "count_1.mp3" - цифра 1', testKey: 'delivery-cell-info' },
-  { key: 'count_2', label: 'Файл "count_2.mp3" - цифра 2', testKey: 'delivery-cell-info' },
-  { key: 'count_3', label: 'Файл "count_3.mp3" - цифра 3', testKey: 'delivery-cell-info' },
-  { key: 'count_4', label: 'Файл "count_4.mp3" - цифра 4', testKey: 'delivery-cell-info' },
-  { key: 'count_5', label: 'Файл "count_5.mp3" - цифра 5', testKey: 'delivery-cell-info' },
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
   { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
 ];
+
+const CELL_FILES = Array.from({ length: 482 }, (_, i) => ({
+  key: `cell_${i + 1}`,
+  label: `Файл "cell_${i + 1}.mp3" - ячейка ${i + 1}`,
+  testKey: 'delivery-cell-info'
+}));
+
+const REQUIRED_FILES = [...BASIC_FILES, ...CELL_FILES];
 
 export const AudioManager = ({
   uploadedFiles,
@@ -62,41 +65,86 @@ export const AudioManager = ({
           Загрузка аудиофайлов
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
-          <strong>Важно:</strong> Загрузите 4 файла с ТОЧНЫМИ названиями как указано ниже
+          <strong>Важно:</strong> Загрузите файлы с ТОЧНЫМИ названиями как указано ниже
         </div>
 
-        {REQUIRED_FILES.map((file) => (
-          <div key={file.key} className="border rounded-lg p-3 space-y-2">
-            <Label className="text-sm font-medium">{file.label}</Label>
-            
-            <div className="flex gap-2">
-              <Input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => handleFileUpload(file.key, e)}
-                className="flex-1"
-              />
+        <div className="space-y-4">
+          <h3 className="font-semibold text-sm">Основные файлы</h3>
+          {BASIC_FILES.map((file) => (
+            <div key={file.key} className="border rounded-lg p-3 space-y-2">
+              <Label className="text-sm font-medium">{file.label}</Label>
+              
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => handleFileUpload(file.key, e)}
+                  className="flex-1"
+                />
+                {uploadedFiles[file.key] && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onTestAudio(file.testKey)}
+                  >
+                    <Icon name="Play" className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              
               {uploadedFiles[file.key] && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onTestAudio(file.testKey)}
-                >
-                  <Icon name="Play" className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-1 text-xs text-green-600">
+                  <Icon name="CheckCircle" className="w-3 h-3" />
+                  <span>Файл загружен</span>
+                </div>
               )}
             </div>
-            
-            {uploadedFiles[file.key] && (
-              <div className="flex items-center gap-1 text-xs text-green-600">
-                <Icon name="CheckCircle" className="w-3 h-3" />
-                <span>Файл загружен</span>
-              </div>
-            )}
+          ))}
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-sm">Озвучки ячеек (1-482)</h3>
+            <span className="text-xs text-gray-500">
+              Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
+            </span>
           </div>
-        ))}
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
+            {CELL_FILES.map((file) => {
+              const cellNum = file.key.replace('cell_', '');
+              const isUploaded = uploadedFiles[file.key];
+              
+              return (
+                <div key={file.key} className="relative">
+                  <Input
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => handleFileUpload(file.key, e)}
+                    className="hidden"
+                    id={`upload-${file.key}`}
+                  />
+                  <label
+                    htmlFor={`upload-${file.key}`}
+                    className={`
+                      flex items-center justify-center gap-1 p-2 border rounded cursor-pointer
+                      transition-colors text-xs
+                      ${isUploaded 
+                        ? 'bg-green-50 border-green-300 text-green-700' 
+                        : 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    {isUploaded && <Icon name="CheckCircle" className="w-3 h-3" />}
+                    <span>Ячейка {cellNum}</span>
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

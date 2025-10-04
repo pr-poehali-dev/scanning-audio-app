@@ -75,19 +75,24 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // 1. Озвучка "товары"
       const goodsAudio = currentFiles['goods'];
       
-      // 2. Озвучка количества (если передано)
-      const countAudio = itemCount ? currentFiles[`count_${itemCount}`] : null;
+      // 2. Озвучка номера ячейки
+      const cellAudio = currentFiles[`cell_${cellNumber}`];
       
-      // 3. Оплата при получении
+      // 3. Озвучка количества (если передано)
+      const countAudio = itemCount ? currentFiles[`cell_${itemCount}`] : null;
+      
+      // 4. Оплата при получении
       const paymentAudio = currentFiles['payment_on_delivery'];
 
       // Собираем последовательность из загруженных файлов
       if (goodsAudio) audioSequence.push(goodsAudio);
+      if (cellAudio) audioSequence.push(cellAudio);
       if (countAudio) audioSequence.push(countAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
         goods: !!goodsAudio,
+        cell: !!cellAudio,
         count: !!countAudio,
         payment: !!paymentAudio,
         total: audioSequence.length
