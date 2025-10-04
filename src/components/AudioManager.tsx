@@ -101,6 +101,52 @@ export const AudioManager = ({
     alert(`Загружено: ${successCount} файлов\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
   };
 
+  const handleCellBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    console.log(`📦 Массовая загрузка ячеек: ${files.length} файлов`);
+    const newFiles: { [key: string]: string } = { ...uploadedFiles };
+    let successCount = 0;
+    let errorCount = 0;
+
+    setUploadProgress({ current: 0, total: files.length });
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
+      
+      setUploadProgress({ current: i + 1, total: files.length });
+      
+      // Только файлы cell_*
+      if (fileName.startsWith('cell_')) {
+        const fileConfig = CELL_FILES.find(f => f.key === fileName);
+        
+        if (fileConfig) {
+          try {
+            const url = await audioStorage.saveFile(fileName, file);
+            newFiles[fileName] = url;
+            successCount++;
+            console.log(`✅ ${fileName}`);
+          } catch (error) {
+            errorCount++;
+            console.error(`❌ ${fileName}:`, error);
+          }
+        } else {
+          console.warn(`⚠️ Пропущен: ${fileName} (вне диапазона 1-482)`);
+        }
+      } else {
+        console.warn(`⚠️ Пропущен: ${fileName} (не cell_*)`);
+      }
+    }
+
+    setUploadedFiles(newFiles);
+    setIsUploading(false);
+    setUploadProgress({ current: 0, total: 0 });
+    alert(`Загружено ячеек: ${successCount} из ${files.length}\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -198,9 +244,34 @@ export const AudioManager = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm">Озвучки ячеек (1-482)</h3>
-            <span className="text-xs text-gray-500">
-              Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
-            </span>
+            <div className="flex items-center gap-3">
+              <Input
+                type="file"
+                accept="audio/*"
+                multiple
+                onChange={handleCellBulkUpload}
+                className="hidden"
+                id="cell-bulk-upload"
+                disabled={isUploading}
+              />
+              <label htmlFor="cell-bulk-upload">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="gap-2 cursor-pointer" 
+                  asChild
+                  disabled={isUploading}
+                >
+                  <span>
+                    <Icon name="Upload" className="w-3 h-3" />
+                    Загрузить массово
+                  </span>
+                </Button>
+              </label>
+              <span className="text-xs text-gray-500">
+                Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
+              </span>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
