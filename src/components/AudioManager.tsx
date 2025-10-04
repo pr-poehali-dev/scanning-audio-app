@@ -130,25 +130,36 @@ export const AudioManager = ({
       
       setUploadProgress({ current: i + 1, total: files.length });
       
-      // Только файлы cell_*
-      if (fileName.startsWith('cell_')) {
-        const fileConfig = CELL_FILES.find(f => f.key === fileName);
+      // Преобразуем "123" или "123.mp3" в "cell_123"
+      let cellKey = fileName;
+      if (!fileName.startsWith('cell_')) {
+        // Если это просто цифра - добавляем префикс cell_
+        const cellNumber = parseInt(fileName, 10);
+        if (!isNaN(cellNumber)) {
+          cellKey = `cell_${cellNumber}`;
+          console.log(`🔄 Переименовано: ${fileName} → ${cellKey}`);
+        }
+      }
+      
+      // Проверяем, есть ли такая ячейка в списке
+      if (cellKey.startsWith('cell_')) {
+        const fileConfig = CELL_FILES.find(f => f.key === cellKey);
         
         if (fileConfig) {
           try {
-            const url = await audioStorage.saveFile(fileName, file);
-            newFiles[fileName] = url;
+            const url = await audioStorage.saveFile(cellKey, file);
+            newFiles[cellKey] = url;
             successCount++;
-            console.log(`✅ ${fileName}`);
+            console.log(`✅ ${cellKey}`);
           } catch (error) {
             errorCount++;
-            console.error(`❌ ${fileName}:`, error);
+            console.error(`❌ ${cellKey}:`, error);
           }
         } else {
-          console.warn(`⚠️ Пропущен: ${fileName} (вне диапазона 1-482)`);
+          console.warn(`⚠️ Пропущен: ${cellKey} (вне диапазона 1-482)`);
         }
       } else {
-        console.warn(`⚠️ Пропущен: ${fileName} (не cell_*)`);
+        console.warn(`⚠️ Пропущен: ${fileName} (не является номером ячейки)`);
       }
     }
 
@@ -199,7 +210,7 @@ export const AudioManager = ({
                 </div>
               </label>
               <div className="text-xs text-gray-600 flex items-center">
-                Выберите все файлы сразу (goods.mp3, cell_1.mp3, cell_2.mp3, ...)
+                Можно загружать файлы с именами: goods.mp3, 1.mp3, 2.mp3, 3.mp3 или cell_1.mp3, cell_2.mp3
               </div>
             </div>
             
@@ -255,30 +266,35 @@ export const AudioManager = ({
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm">Озвучки ячеек (1-482)</h3>
-            <div className="flex items-center gap-3">
-              <Input
-                type="file"
-                accept="audio/*"
-                multiple
-                onChange={handleCellBulkUpload}
-                className="hidden"
-                id="cell-bulk-upload"
-                disabled={isUploading}
-              />
-              <label 
-                htmlFor="cell-bulk-upload"
-                className="inline-block"
-              >
-                <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
-                  <Icon name="Upload" className="w-3 h-3" />
-                  <span>Загрузить массово</span>
-                </div>
-              </label>
-              <span className="text-xs text-gray-500">
-                Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
-              </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-sm">Озвучки ячеек (1-482)</h3>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  multiple
+                  onChange={handleCellBulkUpload}
+                  className="hidden"
+                  id="cell-bulk-upload"
+                  disabled={isUploading}
+                />
+                <label 
+                  htmlFor="cell-bulk-upload"
+                  className="inline-block"
+                >
+                  <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                    <Icon name="Upload" className="w-3 h-3" />
+                    <span>Загрузить массово</span>
+                  </div>
+                </label>
+                <span className="text-xs text-gray-500">
+                  Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
+                </span>
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              💡 Файлы можно называть просто: 1.mp3, 2.mp3, 3.mp3, ..., 482.mp3
             </div>
           </div>
           
