@@ -112,22 +112,34 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       audioRef.current = null;
     }
 
+    console.log('🔊 СОЗДАЮ АУДИО ОБЪЕКТ');
+    console.log('📏 Размер URL:', audioUrl.length, 'символов');
+    
     const audio = new Audio(audioUrl);
     audio.playbackRate = audioSettings.speed;
     audioRef.current = audio;
     setIsPlaying(true);
 
-    audio.play().catch(() => {
-      setIsPlaying(false);
-    });
+    console.log('▶️ НАЧИНАЮ ВОСПРОИЗВЕДЕНИЕ...');
+    audio.play()
+      .then(() => {
+        console.log('✅ ВОСПРОИЗВЕДЕНИЕ НАЧАЛОСЬ');
+      })
+      .catch((err) => {
+        console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ:', err);
+        console.error('Детали:', err.message, err.name);
+        setIsPlaying(false);
+      });
 
     audio.onended = () => {
+      console.log('✅ ВОСПРОИЗВЕДЕНИЕ ЗАВЕРШЕНО');
       setIsPlaying(false);
       audioRef.current = null;
     };
 
     audio.onerror = (e) => {
-      console.error(`❌ Ошибка загрузки аудио "${phraseKey}":`, e);
+      console.error(`❌ ОШИБКА ЗАГРУЗКИ АУДИО "${phraseKey}":`, e);
+      console.error('Audio error event:', audio.error);
       setIsPlaying(false);
       audioRef.current = null;
     };
