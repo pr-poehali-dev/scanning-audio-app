@@ -77,39 +77,38 @@ const SideMenu = ({
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
               
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">ID ПВЗ</label>
-                  <input
-                    type="text"
-                    value={pvzInfo.id}
-                    onChange={(e) => updatePvzInfo('id', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Введите ID ПВЗ"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Адрес</label>
-                  <textarea
-                    value={pvzInfo.address}
-                    onChange={(e) => updatePvzInfo('address', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                    rows={2}
-                    placeholder="Введите адрес ПВЗ"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">ID сотрудника</label>
-                  <input
-                    type="text"
-                    value={pvzInfo.employeeId}
-                    onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Введите ID сотрудника"
-                  />
-                </div>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">ID ПВЗ</label>
+                <input
+                  type="text"
+                  value={pvzInfo.id}
+                  onChange={(e) => updatePvzInfo('id', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Введите ID ПВЗ"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Адрес</label>
+                <textarea
+                  value={pvzInfo.address}
+                  onChange={(e) => updatePvzInfo('address', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={2}
+                  placeholder="Введите адрес ПВЗ"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">ID сотрудника</label>
+                <input
+                  type="text"
+                  value={pvzInfo.employeeId}
+                  onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Введите ID сотрудника"
+                />
               </div>
             </div>
 
