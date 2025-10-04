@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ export const AudioManager = ({
   setUploadedFiles,
   onTestAudio
 }: AudioManagerProps) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   
   useEffect(() => {
     const loadFiles = async () => {
@@ -57,6 +59,48 @@ export const AudioManager = ({
     console.log('✅ Загружен:', fileKey);
   };
 
+  const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    console.log(`📦 Массовая загрузка: ${files.length} файлов`);
+    const newFiles: { [key: string]: string } = { ...uploadedFiles };
+    let successCount = 0;
+    let errorCount = 0;
+
+    setUploadProgress({ current: 0, total: files.length });
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
+      
+      setUploadProgress({ current: i + 1, total: files.length });
+      
+      // Проверяем, есть ли такой ключ в REQUIRED_FILES
+      const fileConfig = REQUIRED_FILES.find(f => f.key === fileName);
+      
+      if (fileConfig) {
+        try {
+          const url = await audioStorage.saveFile(fileName, file);
+          newFiles[fileName] = url;
+          successCount++;
+          console.log(`✅ ${fileName}`);
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ ${fileName}:`, error);
+        }
+      } else {
+        console.warn(`⚠️ Пропущен: ${fileName} (не найден в списке)`);
+      }
+    }
+
+    setUploadedFiles(newFiles);
+    setIsUploading(false);
+    setUploadProgress({ current: 0, total: 0 });
+    alert(`Загружено: ${successCount} файлов\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -66,8 +110,55 @@ export const AudioManager = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
-          <strong>Важно:</strong> Загрузите файлы с ТОЧНЫМИ названиями как указано ниже
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+          <div className="text-sm text-blue-900">
+            <strong>Важно:</strong> Загрузите файлы с ТОЧНЫМИ названиями как указано ниже
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                type="file"
+                accept="audio/*"
+                multiple
+                onChange={handleBulkUpload}
+                className="hidden"
+                id="bulk-upload"
+                disabled={isUploading}
+              />
+              <label htmlFor="bulk-upload">
+                <Button 
+                  variant="default" 
+                  className="gap-2 cursor-pointer" 
+                  asChild
+                  disabled={isUploading}
+                >
+                  <span>
+                    <Icon name="Upload" className="w-4 h-4" />
+                    {isUploading ? 'Загрузка...' : 'Массовая загрузка файлов'}
+                  </span>
+                </Button>
+              </label>
+              <div className="text-xs text-gray-600 flex items-center">
+                Выберите все файлы сразу (goods.mp3, cell_1.mp3, cell_2.mp3, ...)
+              </div>
+            </div>
+            
+            {isUploading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>Загрузка файлов...</span>
+                  <span>{uploadProgress.current} / {uploadProgress.total}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">
