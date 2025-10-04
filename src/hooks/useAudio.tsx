@@ -26,6 +26,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
+  const uploadedFilesRef = useRef<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    uploadedFilesRef.current = uploadedFiles;
+  }, [uploadedFiles]);
 
   useEffect(() => {
     const loadAudioFiles = async () => {
@@ -33,6 +38,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       console.log('📦 Загружено файлов:', Object.keys(files).length);
       console.log('📋 Список файлов:', Object.keys(files));
       setUploadedFiles(files);
+      uploadedFilesRef.current = files;
       setIsLoading(false);
     };
 
@@ -40,10 +46,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
+    const currentFiles = uploadedFilesRef.current;
     console.log('🎵 ========== ЗАПРОС ОЗВУЧКИ ==========');
     console.log('▶️ Ключ:', phraseKey);
-    console.log('📦 Всего файлов:', Object.keys(uploadedFiles).length);
-    console.log('📋 Доступные файлы:', Object.keys(uploadedFiles));
+    console.log('📦 Всего файлов:', Object.keys(currentFiles).length);
+    console.log('📋 Доступные файлы:', Object.keys(currentFiles));
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     
     const isEnabled = audioSettings.enabled[phraseKey];
@@ -65,10 +72,10 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const audioSequence: string[] = [];
       
       // 1. Озвучка "товары"
-      const goodsAudio = uploadedFiles['goods'];
+      const goodsAudio = currentFiles['goods'];
       
       // 2. Оплата при получении
-      const paymentAudio = uploadedFiles['payment_on_delivery'];
+      const paymentAudio = currentFiles['payment_on_delivery'];
 
       // Собираем последовательность из загруженных файлов
       if (goodsAudio) audioSequence.push(goodsAudio);
@@ -93,7 +100,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     const mappedKey = keyMapping[phraseKey] || phraseKey;
     
     // Проверяем сначала загруженный пользователем файл
-    let audioUrl = uploadedFiles[mappedKey];
+    let audioUrl = currentFiles[mappedKey];
     
     // Если нет загруженного файла, пытаемся использовать файл из /public/audio
     if (!audioUrl) {
@@ -143,7 +150,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       setIsPlaying(false);
       audioRef.current = null;
     };
-  }, [audioSettings, uploadedFiles]);
+  }, [audioSettings]);
 
   const playSequentialAudio = useCallback((audioUrls: string[]) => {
     if (audioUrls.length === 0) return;
