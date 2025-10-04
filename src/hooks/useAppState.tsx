@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Order } from '@/data/mockOrders';
 
 export interface PvzInfo {
@@ -67,20 +67,7 @@ export const useAppState = () => {
     };
   });
 
-  // Восстанавливаем информацию о загруженных аудиофайлах при запуске
-  useEffect(() => {
-    const savedAudioFiles = localStorage.getItem('wb-pvz-uploaded-audio-files');
-    if (savedAudioFiles) {
-      try {
-        const fileNames = JSON.parse(savedAudioFiles);
-        console.log(`🔄 Найдено ${fileNames.length} сохраненных аудиофайлов в localStorage`);
-        // Здесь могли бы восстановить файлы, но URL объекты не переживают перезагрузку
-        // Показываем пользователю информацию о том, что файлы нужно загрузить заново
-      } catch (e) {
-        console.warn('Ошибка восстановления списка аудиофайлов:', e);
-      }
-    }
-  }, []);
+
 
   return {
     // Основные состояния

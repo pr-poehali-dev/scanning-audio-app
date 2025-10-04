@@ -45,8 +45,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
+    console.log('▶️ Запрос озвучки:', phraseKey, 'Всего файлов:', Object.keys(uploadedFiles).length);
+    
     const isEnabled = audioSettings.enabled[phraseKey];
-    if (!isEnabled) return;
+    if (!isEnabled) {
+      console.log('❌ Озвучка отключена');
+      return;
+    }
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
@@ -72,11 +77,20 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       if (wordItemsAudio) audioSequence.push(wordItemsAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
+      console.log('🎵 Составная озвучка:', {
+        cell: !!cellAudio,
+        count: !!countAudio,
+        word: !!wordItemsAudio,
+        payment: !!paymentAudio,
+        total: audioSequence.length
+      });
+
       // Если есть хотя бы один файл - играем последовательность
       if (audioSequence.length > 0) {
         playSequentialAudio(audioSequence);
         return;
       }
+      console.log('❌ Нет файлов для составной озвучки');
       return;
     }
 
@@ -88,7 +102,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       audioUrl = AUDIO_FILE_MAP[phraseKey];
     }
     
-    if (!audioUrl) return;
+    console.log('🎵 Файл:', phraseKey, '→', audioUrl ? 'ЕСТЬ' : 'НЕТ');
+    
+    if (!audioUrl) {
+      console.log('❌ Файл не найден');
+      return;
+    }
 
     if (audioRef.current) {
       audioRef.current.pause();

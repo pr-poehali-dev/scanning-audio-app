@@ -51,11 +51,12 @@ export const AudioManager = ({
     const loadFiles = async () => {
       try {
         const files = await audioStorage.getAllFiles();
+        console.log('📂 Загружено из IndexedDB:', Object.keys(files));
         if (Object.keys(files).length > 0) {
           setUploadedFiles(files);
         }
       } catch (error) {
-        console.error('Ошибка загрузки:', error);
+        console.error('❌ Ошибка загрузки:', error);
       }
     };
     
@@ -67,10 +68,12 @@ export const AudioManager = ({
     if (!file) return;
 
     try {
+      console.log('💾 Сохранение:', phraseKey, file.name);
       const url = await audioStorage.saveFile(phraseKey, file);
       setUploadedFiles({ ...uploadedFiles, [phraseKey]: url });
+      console.log('✅ Сохранено:', phraseKey);
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('❌ Ошибка:', error);
     }
   };
 
