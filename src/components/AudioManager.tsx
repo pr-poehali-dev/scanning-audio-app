@@ -102,11 +102,22 @@ export const AudioManager = ({
   };
 
   const handleCellBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🔥 handleCellBulkUpload вызван');
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    console.log('📁 Файлов выбрано:', files?.length || 0);
+    
+    if (!files || files.length === 0) {
+      console.log('❌ Нет файлов для загрузки');
+      return;
+    }
 
     setIsUploading(true);
     console.log(`📦 Массовая загрузка ячеек: ${files.length} файлов`);
+    
+    // Покажем имена первых 5 файлов
+    for (let i = 0; i < Math.min(5, files.length); i++) {
+      console.log(`  Файл ${i + 1}: ${files[i].name}`);
+    }
     const newFiles: { [key: string]: string } = { ...uploadedFiles };
     let successCount = 0;
     let errorCount = 0;
@@ -172,18 +183,20 @@ export const AudioManager = ({
                 id="bulk-upload"
                 disabled={isUploading}
               />
-              <label htmlFor="bulk-upload">
-                <Button 
-                  variant="default" 
-                  className="gap-2 cursor-pointer" 
-                  asChild
-                  disabled={isUploading}
-                >
-                  <span>
-                    <Icon name="Upload" className="w-4 h-4" />
-                    {isUploading ? 'Загрузка...' : 'Массовая загрузка файлов'}
-                  </span>
-                </Button>
+              <label 
+                htmlFor="bulk-upload"
+                className="inline-block"
+              >
+                <div className={`
+                  flex items-center gap-2 px-4 py-2 rounded-md cursor-pointer transition-colors
+                  ${isUploading 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }
+                `}>
+                  <Icon name="Upload" className="w-4 h-4" />
+                  <span>{isUploading ? 'Загрузка...' : 'Массовая загрузка файлов'}</span>
+                </div>
               </label>
               <div className="text-xs text-gray-600 flex items-center">
                 Выберите все файлы сразу (goods.mp3, cell_1.mp3, cell_2.mp3, ...)
@@ -254,19 +267,14 @@ export const AudioManager = ({
                 id="cell-bulk-upload"
                 disabled={isUploading}
               />
-              <label htmlFor="cell-bulk-upload">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="gap-2 cursor-pointer" 
-                  asChild
-                  disabled={isUploading}
-                >
-                  <span>
-                    <Icon name="Upload" className="w-3 h-3" />
-                    Загрузить массово
-                  </span>
-                </Button>
+              <label 
+                htmlFor="cell-bulk-upload"
+                className="inline-block"
+              >
+                <div className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                  <Icon name="Upload" className="w-3 h-3" />
+                  <span>Загрузить массово</span>
+                </div>
               </label>
               <span className="text-xs text-gray-500">
                 Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
