@@ -64,8 +64,12 @@ const InstallPrompt = () => {
       </button>
 
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-400 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Icon name="Download" size={24} className="text-white" />
+        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+          <img 
+            src="https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png" 
+            alt="WB ПВЗ" 
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <div className="flex-1">

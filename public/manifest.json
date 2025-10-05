@@ -10,8 +10,8 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
+      "src": "https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png",
+      "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any"
     },

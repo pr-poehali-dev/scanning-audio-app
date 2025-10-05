@@ -1,24 +1,10 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="grad512" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
   <!-- Фон с закругленными углами -->
-  <rect width="512" height="512" rx="115" fill="url(#grad512)"/>
+  <rect width="512" height="512" rx="115" fill="#e5e7eb"/>
   
-  <!-- Текст WB -->
-  <text x="256" y="300" font-family="Arial, sans-serif" font-size="160" font-weight="bold" fill="white" text-anchor="middle">WB</text>
-  
-  <!-- Подпись ПВЗ -->
-  <text x="256" y="360" font-family="Arial, sans-serif" font-size="40" font-weight="normal" fill="rgba(255,255,255,0.8)" text-anchor="middle">ПВЗ</text>
-  
-  <!-- Иконка коробки снизу -->
-  <g transform="translate(200, 390)">
-    <rect x="0" y="0" width="112" height="80" rx="8" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="3"/>
-    <line x1="56" y1="0" x2="56" y2="80" stroke="white" stroke-width="3"/>
-    <line x1="0" y1="40" x2="112" y2="40" stroke="white" stroke-width="3"/>
-  </g>
+  <!-- Встроенное изображение WB вывески -->
+  <image href="https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png" 
+         x="0" y="0" 
+         width="512" height="512"
+         preserveAspectRatio="xMidYMid slice"/>
 </svg>
