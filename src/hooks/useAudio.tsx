@@ -27,6 +27,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
   const uploadedFilesRef = useRef<{ [key: string]: string }>({});
+  const audioContextInitialized = useRef(false);
 
   useEffect(() => {
     uploadedFilesRef.current = uploadedFiles;
@@ -43,6 +44,30 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     };
 
     loadAudioFiles();
+    
+    // Инициализация аудио-контекста для мобильных браузеров
+    const initAudioContext = () => {
+      if (!audioContextInitialized.current) {
+        console.log('🎵 Инициализация аудио-контекста для мобильного');
+        const tempAudio = new Audio();
+        tempAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4SRUbpxAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+xDEDwPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+        tempAudio.play().then(() => {
+          console.log('✅ Аудио-контекст инициализирован');
+          audioContextInitialized.current = true;
+        }).catch(() => {
+          console.log('⚠️ Не удалось инициализировать аудио-контекст (требуется взаимодействие пользователя)');
+        });
+      }
+    };
+    
+    // Инициализируем при первом взаимодействии
+    document.addEventListener('touchstart', initAudioContext, { once: true });
+    document.addEventListener('click', initAudioContext, { once: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', initAudioContext);
+      document.removeEventListener('click', initAudioContext);
+    };
   }, []);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
@@ -133,21 +158,37 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('🔊 СОЗДАЮ АУДИО ОБЪЕКТ');
     console.log('📏 Размер URL:', audioUrl.length, 'символов');
     
-    const audio = new Audio(audioUrl);
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.src = audioUrl;
     audio.playbackRate = audioSettings.speed;
     audioRef.current = audio;
     setIsPlaying(true);
 
     console.log('▶️ НАЧИНАЮ ВОСПРОИЗВЕДЕНИЕ...');
-    audio.play()
-      .then(() => {
-        console.log('✅ ВОСПРОИЗВЕДЕНИЕ НАЧАЛОСЬ');
-      })
-      .catch((err) => {
-        console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ:', err);
-        console.error('Детали:', err.message, err.name);
-        setIsPlaying(false);
-      });
+    
+    // Для мобильных устройств - дополнительная обработка
+    const playWithRetry = async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await audio.play();
+          console.log('✅ ВОСПРОИЗВЕДЕНИЕ НАЧАЛОСЬ (попытка', i + 1, ')');
+          return;
+        } catch (err: any) {
+          console.warn(`⚠️ Попытка ${i + 1} не удалась:`, err.message);
+          if (i === retries - 1) {
+            console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ:', err);
+            console.error('Детали:', err.message, err.name);
+            setIsPlaying(false);
+          } else {
+            // Небольшая задержка перед следующей попыткой
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+      }
+    };
+    
+    playWithRetry();
 
     audio.onended = () => {
       console.log('✅ ВОСПРОИЗВЕДЕНИЕ ЗАВЕРШЕНО');
@@ -181,17 +222,26 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         audioRef.current = null;
       }
 
-      const audio = new Audio(audioUrls[currentIndex]);
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.src = audioUrls[currentIndex];
       audio.playbackRate = audioSettings.speed;
       audioRef.current = audio;
 
       console.log(`🔊 Воспроизведение части ${currentIndex + 1}/${audioUrls.length}`);
 
-      audio.play().catch(err => {
-        console.error('Ошибка воспроизведения:', err);
-        currentIndex++;
-        playNext();
-      });
+      const playWithRetry = async () => {
+        try {
+          await audio.play();
+          console.log(`✅ Часть ${currentIndex + 1} воспроизводится`);
+        } catch (err) {
+          console.error('Ошибка воспроизведения:', err);
+          currentIndex++;
+          playNext();
+        }
+      };
+      
+      playWithRetry();
 
       audio.onended = () => {
         currentIndex++;

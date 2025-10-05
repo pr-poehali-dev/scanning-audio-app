@@ -8,6 +8,8 @@ import { AudioSettings } from '@/components/AudioSettings';
 import Footer from '@/components/Footer';
 import InstallPrompt from '@/components/InstallPrompt';
 import MobileBottomNav from '@/components/MobileBottomNav';
+import MobileAudioTest from '@/components/MobileAudioTest';
+import DebugConsole from '@/components/DebugConsole';
 
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
@@ -127,6 +129,15 @@ const WBPVZApp = () => {
       />
 
       <InstallPrompt />
+      
+      <MobileAudioTest 
+        onTest={() => {
+          // Тестируем любую озвучку для инициализации
+          playAudio('delivery-cell-info', 44, 3);
+        }}
+      />
+      
+      <DebugConsole />
     </div>
   );
 };
