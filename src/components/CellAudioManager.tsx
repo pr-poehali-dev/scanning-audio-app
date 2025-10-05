@@ -138,7 +138,7 @@ export const CellAudioManager = ({
               </p>
               <Input
                 type="file"
-                accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/*"
+                accept="audio/*,.mp3,.wav,.m4a,.ogg"
                 multiple
                 onChange={async (e) => {
                   const files = e.target.files;
@@ -177,7 +177,7 @@ export const CellAudioManager = ({
               <div className="flex gap-2">
                 <Input
                   type="file"
-                  accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/*"
+                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
                   onChange={(e) => handleFileUpload('word-items', e)}
                   className="flex-1"
                 />
@@ -204,7 +204,7 @@ export const CellAudioManager = ({
               <div className="flex gap-2">
                 <Input
                   type="file"
-                  accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/*"
+                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
                   onChange={(e) => handleFileUpload('payment-cod', e)}
                   className="flex-1"
                 />
@@ -237,7 +237,7 @@ export const CellAudioManager = ({
               </p>
               <Input
                 type="file"
-                accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/*"
+                accept="audio/*,.mp3,.wav,.m4a,.ogg"
                 multiple
                 onChange={handleBulkUpload}
               />
@@ -270,7 +270,7 @@ export const CellAudioManager = ({
                     </span>
                     <Input
                       type="file"
-                      accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/m4a,audio/*"
+                      accept="audio/*,.mp3,.wav,.m4a,.ogg"
                       onChange={(e) => handleFileUpload(`cell-${num}`, e)}
                       className="flex-1 text-xs"
                     />
