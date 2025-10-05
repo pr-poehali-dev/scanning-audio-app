@@ -97,6 +97,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       const audioSequence: string[] = [];
       
+      console.log('🔍 Поиск файлов для составной озвучки:');
+      console.log('  - Ищем ячейку:', `cell-${cellNumber}`);
+      console.log('  - Ищем количество:', itemCount ? `count-${itemCount}` : 'НЕ ПЕРЕДАНО');
+      console.log('  - Ищем слово "товаров":', 'word-items');
+      console.log('  - Ищем оплату:', 'payment-cod');
+      
       // 1. Озвучка номера ячейки (первая!)
       const cellAudio = currentFiles[`cell-${cellNumber}`];
       
@@ -108,6 +114,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       
       // 4. Оплата при получении
       const paymentAudio = currentFiles['payment-cod'];
+
+      console.log('✅ Результаты поиска:');
+      console.log('  - Ячейка:', cellAudio ? `НАЙДЕН (${cellAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
+      console.log('  - Количество:', countAudio ? `НАЙДЕН (${countAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
+      console.log('  - Слово:', wordItemsAudio ? `НАЙДЕН (${wordItemsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
+      console.log('  - Оплата:', paymentAudio ? `НАЙДЕН (${paymentAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
 
       // Собираем последовательность: ячейка → количество → "товаров" → оплата
       if (cellAudio) audioSequence.push(cellAudio);
