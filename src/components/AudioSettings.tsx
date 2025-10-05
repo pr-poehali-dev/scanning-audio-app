@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AudioManager } from './AudioManager';
 import { AudioUploadGuide } from './AudioUploadGuide';
+import { TTSGenerator } from './TTSGenerator';
 import { AudioSettings as AudioSettingsType } from '@/hooks/useAppState';
 import { audioStorage } from '@/utils/audioStorage';
 import { Button } from './ui/button';
@@ -53,6 +54,11 @@ export const AudioSettings = ({
         
         <div className="space-y-4">
           <AudioUploadGuide />
+          
+          <TTSGenerator
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+          />
           
           <AudioManager
             audioSettings={audioSettings}
