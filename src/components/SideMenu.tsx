@@ -41,12 +41,14 @@ const SideMenu = ({
       }`}>
         <div className="flex flex-col h-full">
           {/* Header with Logo and ID */}
-          <div className="p-4 border-b bg-gradient-to-r from-purple-50 to-white">
+          <div className="p-4 border-b bg-white">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">WB</span>
-                </div>
+                <img 
+                  src="https://cdn.poehali.dev/files/85c8d8ae-4b8f-45da-8f82-ca7b135fbe9f.png" 
+                  alt="WB" 
+                  className="w-12 h-12 object-contain"
+                />
                 <div>
                   <div className="text-xs text-gray-500">ID {pvzInfo.id || '50001234'}</div>
                   <div className="text-sm font-medium text-gray-900">V.1.0.51</div>
@@ -54,7 +56,7 @@ const SideMenu = ({
               </div>
               <button 
                 onClick={onClose}
-                className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Icon name="X" size={20} />
               </button>
