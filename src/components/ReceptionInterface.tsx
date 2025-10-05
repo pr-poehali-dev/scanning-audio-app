@@ -108,14 +108,14 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
   const currentProduct = currentBox?.products.find(p => p.barcode === currentScannedBarcode);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4">
       {/* Заголовок */}
-      <div className="bg-white rounded-xl p-4 sm:p-6 mb-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Приёмка товаров</h2>
+      <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-6 mb-3 sm:mb-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Приёмка товаров</h2>
           <div className="flex items-center gap-2">
-            <Icon name="Package" size={24} className="text-purple-600" />
-            <span className="text-lg font-semibold text-purple-600">
+            <Icon name="Package" size={20} className="sm:w-6 sm:h-6 text-purple-600" />
+            <span className="text-base sm:text-lg font-semibold text-purple-600">
               {step === 'scan-box' ? 'Сканируйте коробку' : `${scannedCount} / ${totalProducts}`}
             </span>
           </div>
@@ -125,24 +125,24 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
         <button
           onClick={handleScanClick}
           disabled={isScanning}
-          className={`w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
+          className={`w-full py-3 sm:py-4 rounded-lg sm:rounded-xl font-semibold text-base sm:text-lg transition-all flex items-center justify-center gap-2 sm:gap-3 ${
             isScanning
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95'
           }`}
         >
-          <Icon name={isScanning ? 'Loader2' : 'Scan'} size={24} className={isScanning ? 'animate-spin' : ''} />
-          {isScanning ? 'Сканирование...' : step === 'scan-box' ? 'Сканировать коробку' : 'Сканировать товар'}
+          <Icon name={isScanning ? 'Loader2' : 'Scan'} size={20} className={`sm:w-6 sm:h-6 ${isScanning ? 'animate-spin' : ''}`} />
+          <span className="text-sm sm:text-lg">{isScanning ? 'Сканирование...' : step === 'scan-box' ? 'Сканировать коробку' : 'Сканировать товар'}</span>
         </button>
 
         {/* Информация о текущей коробке */}
         {currentBox && (
-          <div className="mt-4 p-4 bg-purple-50 rounded-lg">
+          <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-purple-50 rounded-lg">
             <div className="flex items-center gap-2 text-purple-700">
-              <Icon name="Box" size={20} />
-              <span className="font-semibold">Коробка: {currentBox.boxBarcode}</span>
+              <Icon name="Box" size={18} className="sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base font-semibold">Коробка: {currentBox.boxBarcode}</span>
             </div>
-            <div className="text-sm text-purple-600 mt-1">
+            <div className="text-xs sm:text-sm text-purple-600 mt-1">
               Товаров в коробке: {totalProducts}
             </div>
           </div>
@@ -151,44 +151,44 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
 
       {/* Текущий отсканированный товар */}
       {currentProduct && step === 'scan-products' && (
-        <div className="bg-white rounded-xl overflow-hidden shadow-lg mb-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="bg-white rounded-lg sm:rounded-xl overflow-hidden shadow-lg mb-3 sm:mb-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="relative">
             {/* Изображение */}
             <img
               src={currentProduct.image}
               alt={currentProduct.name}
-              className="w-full h-80 sm:h-96 object-cover"
+              className="w-full h-64 sm:h-80 md:h-96 object-cover"
             />
             
             {/* Номер ячейки поверх изображения */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="bg-purple-600 text-white px-12 py-8 rounded-3xl shadow-2xl animate-pulse">
-                <div className="text-6xl sm:text-8xl font-bold text-center">{currentProduct.cell}</div>
-                <div className="text-xl sm:text-2xl text-center mt-2 opacity-90">Ячейка</div>
+              <div className="bg-purple-600 text-white px-8 py-6 sm:px-12 sm:py-8 rounded-2xl sm:rounded-3xl shadow-2xl animate-pulse">
+                <div className="text-5xl sm:text-6xl md:text-8xl font-bold text-center">{currentProduct.cell}</div>
+                <div className="text-lg sm:text-xl md:text-2xl text-center mt-1 sm:mt-2 opacity-90">Ячейка</div>
               </div>
             </div>
           </div>
 
           {/* Информация о товаре */}
-          <div className="p-6 bg-white">
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <div className="text-2xl font-bold text-gray-900">{currentProduct.barcode}</div>
-              <div className="px-4 py-2 bg-green-500 text-white rounded-full font-semibold">
+          <div className="p-4 sm:p-6 bg-white">
+            <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+              <div className="text-lg sm:text-2xl font-bold text-gray-900">{currentProduct.barcode}</div>
+              <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-500 text-white rounded-full text-sm sm:text-base font-semibold">
                 Принят
               </div>
             </div>
             
-            <div className="text-lg text-gray-700">{currentProduct.name}</div>
+            <div className="text-base sm:text-lg text-gray-700">{currentProduct.name}</div>
             
-            <div className="mt-4 p-4 bg-purple-50 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Icon name="MapPin" size={24} className="text-purple-600" />
+            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-purple-50 rounded-lg flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Icon name="MapPin" size={20} className="sm:w-6 sm:h-6 text-purple-600" />
                 <div>
-                  <div className="text-sm text-purple-600">Разместите товар в ячейку</div>
-                  <div className="text-2xl font-bold text-purple-700">{currentProduct.cell}</div>
+                  <div className="text-xs sm:text-sm text-purple-600">Разместите товар в ячейку</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-700">{currentProduct.cell}</div>
                 </div>
               </div>
-              <Icon name="ArrowRight" size={32} className="text-purple-600 animate-bounce" />
+              <Icon name="ArrowRight" size={24} className="sm:w-8 sm:h-8 text-purple-600 animate-bounce" />
             </div>
           </div>
         </div>
@@ -196,9 +196,9 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
 
       {/* Список товаров в коробке */}
       {currentBox && step === 'scan-products' && (
-        <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Товары в коробке</h3>
-          <div className="space-y-3">
+        <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-6 shadow-sm">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Товары в коробке</h3>
+          <div className="space-y-2 sm:space-y-3">
             {currentBox.products.map((product) => {
               const isScanned = scannedProducts.includes(product.barcode);
               const isCurrent = currentScannedBarcode === product.barcode;
@@ -206,7 +206,7 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
               return (
                 <div
                   key={product.barcode}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                     isCurrent
                       ? 'border-purple-600 bg-purple-50'
                       : isScanned
@@ -214,27 +214,27 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
                       : 'border-gray-200 bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       isScanned ? 'bg-green-500' : 'bg-gray-300'
                     }`}>
                       {isScanned ? (
-                        <Icon name="Check" size={20} className="text-white" />
+                        <Icon name="Check" size={18} className="sm:w-5 sm:h-5 text-white" />
                       ) : (
-                        <span className="text-white font-semibold">
+                        <span className="text-white text-sm sm:text-base font-semibold">
                           {currentBox.products.indexOf(product) + 1}
                         </span>
                       )}
                     </div>
                     
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900">{product.barcode}</div>
-                      <div className="text-sm text-gray-600">{product.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm sm:text-base font-semibold text-gray-900 truncate">{product.barcode}</div>
+                      <div className="text-xs sm:text-sm text-gray-600 truncate">{product.name}</div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <Icon name="MapPin" size={18} className="text-purple-600" />
-                      <span className="font-bold text-purple-600">{product.cell}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      <Icon name="MapPin" size={16} className="sm:w-[18px] sm:h-[18px] text-purple-600" />
+                      <span className="text-sm sm:text-base font-bold text-purple-600">{product.cell}</span>
                     </div>
                   </div>
                 </div>

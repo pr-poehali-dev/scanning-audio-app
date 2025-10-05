@@ -98,53 +98,53 @@ const ReturnsTab = () => {
     .reduce((sum, item) => sum + (item.refundAmount || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-3 sm:px-4">
       {/* Заголовок и статистика */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Icon name="RotateCcw" size={28} className="text-purple-600" />
-          <h2 className="text-2xl font-bold text-gray-800">Возврат товаров</h2>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+          <Icon name="RotateCcw" size={24} className="sm:w-7 sm:h-7 text-purple-600" />
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Возврат товаров</h2>
         </div>
         
         {/* Статистика */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-blue-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.processing || 0}</div>
-            <div className="text-sm text-blue-700">В обработке</div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
+          <div className="bg-blue-50 p-2 sm:p-3 rounded-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{stats.processing || 0}</div>
+            <div className="text-xs sm:text-sm text-blue-700">В обработке</div>
           </div>
-          <div className="bg-green-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.approved || 0}</div>
-            <div className="text-sm text-green-700">Одобрено</div>
+          <div className="bg-green-50 p-2 sm:p-3 rounded-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.approved || 0}</div>
+            <div className="text-xs sm:text-sm text-green-700">Одобрено</div>
           </div>
-          <div className="bg-red-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.rejected || 0}</div>
-            <div className="text-sm text-red-700">Отклонено</div>
+          <div className="bg-red-50 p-2 sm:p-3 rounded-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.rejected || 0}</div>
+            <div className="text-xs sm:text-sm text-red-700">Отклонено</div>
           </div>
-          <div className="bg-purple-50 p-3 rounded-lg text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.completed || 0}</div>
-            <div className="text-sm text-purple-700">Завершено</div>
+          <div className="bg-purple-50 p-2 sm:p-3 rounded-lg text-center">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{stats.completed || 0}</div>
+            <div className="text-xs sm:text-sm text-purple-700">Завершено</div>
           </div>
-          <div className="bg-gray-50 p-3 rounded-lg text-center">
-            <div className="text-lg font-bold text-gray-600">{totalRefunds.toLocaleString('ru-RU')} ₽</div>
-            <div className="text-sm text-gray-700">Возвращено</div>
+          <div className="bg-gray-50 p-2 sm:p-3 rounded-lg text-center col-span-2 md:col-span-1">
+            <div className="text-base sm:text-lg font-bold text-gray-600">{totalRefunds.toLocaleString('ru-RU')} ₽</div>
+            <div className="text-xs sm:text-sm text-gray-700">Возвращено</div>
           </div>
         </div>
 
         {/* Кнопка для создания возврата */}
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button
             onClick={() => setShowScanner(true)}
-            className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base"
           >
-            <Icon name="Scan" size={20} />
-            <span>Сканировать заказ для возврата</span>
+            <Icon name="Scan" size={18} className="sm:w-5 sm:h-5" />
+            <span>Сканировать заказ</span>
           </button>
           
           <button
             onClick={() => setShowReturnForm(true)}
-            className="flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base"
           >
-            <Icon name="User" size={20} />
+            <Icon name="User" size={18} className="sm:w-5 sm:h-5" />
             <span>Ручной ввод</span>
           </button>
         </div>
@@ -152,10 +152,10 @@ const ReturnsTab = () => {
 
       {/* Форма создания возврата */}
       {showReturnForm && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Оформление возврата</h3>
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Оформление возврата</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Номер заказа *
@@ -212,16 +212,16 @@ const ReturnsTab = () => {
             </div>
           </div>
           
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <button
               onClick={handleCreateReturn}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors"
+              className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-2 sm:py-2 rounded-lg transition-colors text-sm sm:text-base"
             >
               Оформить возврат
             </button>
             <button
               onClick={() => setShowReturnForm(false)}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-2 rounded-lg transition-colors text-sm sm:text-base"
             >
               Отмена
             </button>
@@ -231,40 +231,40 @@ const ReturnsTab = () => {
 
       {/* Список возвратов */}
       <div className="bg-white rounded-lg shadow-md">
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-800">История возвратов</h3>
+        <div className="p-3 sm:p-4 border-b">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">История возвратов</h3>
         </div>
         
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-[500px] overflow-y-auto">
           {returnItems.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Icon name="RotateCcw" size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Пока нет оформленных возвратов</p>
-              <p className="text-sm">Отсканируйте заказ для создания возврата</p>
+            <div className="p-6 sm:p-8 text-center text-gray-500">
+              <Icon name="RotateCcw" size={40} className="sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+              <p className="text-sm sm:text-base">Пока нет оформленных возвратов</p>
+              <p className="text-xs sm:text-sm">Отсканируйте заказ для создания возврата</p>
             </div>
           ) : (
-            <div className="space-y-2 p-4">
+            <div className="space-y-2 p-3 sm:p-4">
               {returnItems.map((item) => (
                 <div 
                   key={item.id}
-                  className={`p-4 rounded-lg border-2 transition-colors ${
+                  className={`p-3 sm:p-4 rounded-lg border-2 transition-colors ${
                     item.status === 'completed' ? 'border-purple-200 bg-purple-50' :
                     item.status === 'approved' ? 'border-green-200 bg-green-50' :
                     item.status === 'rejected' ? 'border-red-200 bg-red-50' :
                     'border-blue-200 bg-blue-50'
                   }`}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-medium text-gray-800">{item.productName}</h4>
-                      <p className="text-sm text-gray-600">Заказ: {item.orderNumber}</p>
-                      <p className="text-sm text-gray-600">Телефон: {item.customerPhone}</p>
-                      <p className="text-sm text-gray-600">Причина: {item.returnReason}</p>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-sm sm:text-base font-medium text-gray-800">{item.productName}</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">Заказ: {item.orderNumber}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Телефон: {item.customerPhone}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Причина: {item.returnReason}</p>
                       {item.refundAmount && (
-                        <p className="text-sm font-medium text-green-600">К возврату: {item.refundAmount.toLocaleString('ru-RU')} ₽</p>
+                        <p className="text-xs sm:text-sm font-medium text-green-600">К возврату: {item.refundAmount.toLocaleString('ru-RU')} ₽</p>
                       )}
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    <div className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium self-start ${
                       item.status === 'completed' ? 'bg-purple-100 text-purple-800' :
                       item.status === 'approved' ? 'bg-green-100 text-green-800' :
                       item.status === 'rejected' ? 'bg-red-100 text-red-800' :

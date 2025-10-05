@@ -59,7 +59,7 @@ const WBPVZApp = () => {
         setActiveTab={handleTabChange}
       />
 
-      <div className="flex-1 p-3 sm:p-6">
+      <div className="flex-1 overflow-auto">
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
