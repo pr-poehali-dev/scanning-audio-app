@@ -59,6 +59,9 @@ const DeliveryInterface = ({
     itemsCount: client.items.length,
     totalAmount: client.totalAmount || client.items.reduce((sum, item) => sum + item.price, 0)
   }));
+  
+  console.log('🔍 DeliveryInterface - activeClients:', activeClients.length, activeClients);
+  console.log('🔍 DeliveryInterface - clientsData:', clientsData);
 
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">
