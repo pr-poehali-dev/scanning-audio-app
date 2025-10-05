@@ -83,7 +83,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
       // 2. Генерация количества (1-20)
       setStatus('Генерация чисел для количества...');
       for (let i = 1; i <= 20; i++) {
-        const text = i === 1 ? 'один товар' : `${i} товара`;
+        const text = String(i);
         const blob = await textToAudioBlob(text);
         newFiles[`count-${i}`] = await blobToBase64(blob);
         await audioStorage.saveFile(`count-${i}`, new File([blob], `count-${i}.webm`));
@@ -96,7 +96,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
       // 3. Генерация номеров ячеек (1-482)
       setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
       for (let i = 1; i <= 482; i++) {
-        const text = `ячейка ${i}`;
+        const text = String(i);
         const blob = await textToAudioBlob(text);
         newFiles[`cell-${i}`] = await blobToBase64(blob);
         await audioStorage.saveFile(`cell-${i}`, new File([blob], `cell-${i}.webm`));
