@@ -36,8 +36,14 @@ export const CellAudioManager = ({
 
     const newFiles = { ...uploadedFiles };
     let uploadedCount = 0;
+    const totalFiles = files.length;
 
-    for (const file of Array.from(files)) {
+    // Показываем прогресс
+    const startTime = Date.now();
+    console.log(`🚀 Начинаем загрузку ${totalFiles} файлов...`);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const match = file.name.match(/(\d+)\.(mp3|wav|ogg|m4a|mpeg)$/i);
       if (match) {
         const cellNumber = match[1];
@@ -45,11 +51,18 @@ export const CellAudioManager = ({
         const url = await audioStorage.saveFile(key, file);
         newFiles[key] = url;
         uploadedCount++;
+        
+        // Лог каждые 50 файлов
+        if (uploadedCount % 50 === 0) {
+          console.log(`📦 Загружено ${uploadedCount}/${totalFiles}...`);
+        }
       }
     }
 
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
     setUploadedFiles(newFiles);
-    alert(`Загружено ${uploadedCount} файлов`);
+    alert(`✅ Загружено ${uploadedCount} файлов за ${duration} сек`);
+    console.log(`✅ Загрузка завершена: ${uploadedCount} файлов за ${duration} сек`);
   };
 
   const getCellNumbers = (): number[] => {
@@ -230,17 +243,34 @@ export const CellAudioManager = ({
           {/* Номера ячеек */}
           <TabsContent value="cells" className="space-y-3">
             {/* Массовая загрузка */}
-            <div className="border rounded-lg p-3 space-y-2 bg-blue-50">
-              <Label className="text-sm font-medium">Массовая загрузка ячеек</Label>
-              <p className="text-xs text-gray-600">
-                Выберите несколько MP3 файлов с названиями: 1.mp3, 2.mp3, 123.mp3 и т.д.
-              </p>
+            <div className="border rounded-lg p-3 space-y-3 bg-blue-50">
+              <div>
+                <Label className="text-sm font-medium">📱 Массовая загрузка ячеек</Label>
+                <p className="text-xs text-gray-600 mt-1">
+                  Выберите СРАЗУ ВСЕ файлы с названиями: 1.mp3, 2.mp3, 3.mp3 ... 482.mp3
+                </p>
+              </div>
+              
               <Input
                 type="file"
                 accept="audio/*,.mp3,.wav,.m4a,.ogg"
                 multiple
+                webkitdirectory=""
+                directory=""
                 onChange={handleBulkUpload}
               />
+              
+              <Alert className="bg-white">
+                <AlertDescription>
+                  <p className="text-xs font-medium mb-1">💡 Как загрузить на телефоне:</p>
+                  <ol className="text-xs space-y-1 ml-3 list-decimal">
+                    <li>Нажмите на кнопку выбора файлов выше</li>
+                    <li>Выберите ВСЕ файлы сразу (нажмите "Выбрать" → выберите все)</li>
+                    <li>Файлы должны называться: 1.mp3, 2.mp3, 3.mp3 и т.д.</li>
+                    <li>Загрузка может занять 1-2 минуты</li>
+                  </ol>
+                </AlertDescription>
+              </Alert>
             </div>
 
             {/* Выбор номеров для отображения */}
