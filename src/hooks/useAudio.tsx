@@ -89,8 +89,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       'delivery-cell-info': 'goods',
       'delivery-check-product': 'please_check_good_under_camera',
       'check-product-under-camera': 'please_check_good_under_camera',
-      'delivery-thanks': 'thanks_for_order_rate_pickpoint',
-      'payment-cod': 'payment_on_delivery'
+      'delivery-thanks': 'thanks_for_order_rate_pickpoint'
     };
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
@@ -113,7 +112,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const wordItemsAudio = currentFiles['word-items'];
       
       // 4. Оплата при получении
-      const paymentAudio = currentFiles['payment-cod'];
+      const paymentAudio = currentFiles['payment_on_delivery'];
 
       console.log('✅ Результаты поиска:');
       console.log('  - Ячейка:', cellAudio ? `НАЙДЕН (${cellAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');

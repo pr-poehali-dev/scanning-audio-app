@@ -17,18 +17,25 @@ interface AudioManagerProps {
 
 const BASIC_FILES = [
   { key: 'goods', label: 'Файл "goods.mp3" - озвучка товары', testKey: 'delivery-cell-info' },
+  { key: 'word-items', label: 'Файл "word-items.mp3" - слово "товаров"', testKey: 'delivery-cell-info' },
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
   { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
 ];
 
-const CELL_FILES = Array.from({ length: 482 }, (_, i) => ({
-  key: `cell_${i + 1}`,
-  label: `Файл "cell_${i + 1}.mp3" - ячейка ${i + 1}`,
+const COUNT_FILES = Array.from({ length: 20 }, (_, i) => ({
+  key: `count-${i + 1}`,
+  label: `Файл "${i + 1}.mp3" - количество ${i + 1}`,
   testKey: 'delivery-cell-info'
 }));
 
-const REQUIRED_FILES = [...BASIC_FILES, ...CELL_FILES];
+const CELL_FILES = Array.from({ length: 482 }, (_, i) => ({
+  key: `cell-${i + 1}`,
+  label: `Файл "${i + 1}.mp3" - ячейка ${i + 1}`,
+  testKey: 'delivery-cell-info'
+}));
+
+const REQUIRED_FILES = [...BASIC_FILES, ...COUNT_FILES, ...CELL_FILES];
 
 export const AudioManager = ({
   uploadedFiles,
@@ -130,12 +137,12 @@ export const AudioManager = ({
       const uploadPromises = batch.map(async (file) => {
         const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
         
-        // Преобразуем "123" в "cell_123"
+        // Преобразуем "123" в "cell-123"
         let cellKey = fileName;
-        if (!fileName.startsWith('cell_')) {
+        if (!fileName.startsWith('cell-')) {
           const cellNumber = parseInt(fileName, 10);
           if (!isNaN(cellNumber) && cellNumber >= 1 && cellNumber <= 482) {
-            cellKey = `cell_${cellNumber}`;
+            cellKey = `cell-${cellNumber}`;
           } else {
             return { success: false, key: fileName };
           }

@@ -75,8 +75,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
       setProgress(Math.round((processed / totalFiles) * 100));
 
       const paymentBlob = await textToAudioBlob('оплата при получении');
-      newFiles['payment-cod'] = await blobToBase64(paymentBlob);
-      await audioStorage.saveFile('payment-cod', new File([paymentBlob], 'payment-cod.webm'));
+      newFiles['payment_on_delivery'] = await blobToBase64(paymentBlob);
+      await audioStorage.saveFile('payment_on_delivery', new File([paymentBlob], 'payment_on_delivery.webm'));
       processed++;
       setProgress(Math.round((processed / totalFiles) * 100));
 
@@ -121,7 +121,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
   const cellCount = Object.keys(uploadedFiles).filter(k => k.startsWith('cell-')).length;
   const countCount = Object.keys(uploadedFiles).filter(k => k.startsWith('count-')).length;
   const hasWordItems = !!uploadedFiles['word-items'];
-  const hasPayment = !!uploadedFiles['payment-cod'];
+  const hasPayment = !!uploadedFiles['payment_on_delivery'];
 
   const isComplete = cellCount === 482 && countCount >= 20 && hasWordItems && hasPayment;
 
