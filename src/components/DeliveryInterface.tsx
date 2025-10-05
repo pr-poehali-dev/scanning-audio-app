@@ -207,69 +207,73 @@ const DeliveryInterface = ({
             const isPaid = Math.random() > 0.5; // Случайно определяем статус оплаты
             
             return (
-              <div key={index} className="bg-white rounded-xl p-4 relative">
-                {/* Чекбокс */}
-                <div className="absolute top-4 left-4 z-10">
+              <div key={index} className="bg-gray-200 rounded-2xl relative overflow-hidden">
+                {/* Чекбокс и кнопка возврата вверху */}
+                <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
                   <button
                     onClick={() => handleProductSelect(index)}
-                    className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
+                    className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
                       isSelected
-                        ? 'bg-purple-600 border-purple-600'
-                        : 'border-gray-300 hover:border-purple-400'
+                        ? 'bg-purple-600'
+                        : 'bg-white/90 backdrop-blur'
                     }`}
                   >
-                    {isSelected && <Icon name="Check" size={16} className="text-white" />}
+                    {isSelected && <Icon name="Check" size={20} className="text-white" />}
+                  </button>
+
+                  <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-md flex items-center justify-center hover:bg-white transition-colors">
+                    <Icon name="RotateCcw" size={18} className="text-gray-600" />
                   </button>
                 </div>
 
                 {/* Статус оплаты */}
-                <div className="absolute top-4 right-4">
-                  <span className={`px-2 py-1 text-xs font-medium rounded ${
-                    isPaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
+                  <span className={`px-4 py-1.5 text-sm font-medium rounded-full ${
+                    isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                   }`}>
                     {isPaid ? 'Оплачен' : 'Не оплачен'}
                   </span>
                 </div>
 
-                {/* Кнопка возврата */}
-                <div className="absolute top-12 right-4">
-                  <button className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                    <Icon name="RotateCcw" size={16} className="text-gray-600" />
-                  </button>
-                </div>
-
                 {/* Изображение товара */}
-                <div className="mt-8 mb-4">
+                <div className="relative">
                   <img
                     src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                     alt={item.name}
-                    className="w-full h-40 object-cover rounded-lg"
+                    className="w-full h-80 sm:h-96 object-cover"
                   />
+                  
+                  {/* Кнопка лупы поверх изображения */}
+                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg">
+                    <Icon name="Search" size={22} className="text-gray-700" />
+                  </button>
                 </div>
 
                 {/* Информация о товаре */}
-                <div className="space-y-2">
-                  <div className="text-sm font-semibold text-gray-900">{item.barcode}</div>
-                  <div className="text-sm text-gray-600 line-clamp-2">{item.name}</div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Icon name="CreditCard" size={16} className="text-purple-500" />
-                    <span className="text-lg font-semibold text-purple-600">{item.price} ₽</span>
-                    <span className="text-sm text-gray-400 line-through">{(item.price * 1.2).toFixed(0)} ₽</span>
+                <div className="p-4 space-y-2 bg-white">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-lg font-bold text-gray-900">{item.barcode}</div>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <Icon name="Copy" size={18} />
+                    </button>
                   </div>
                   
-                  <div className="text-xs text-gray-500">
-                    Цвет: {item.color || 'черный'} Размер: {item.size || 'M'}
+                  <div className="text-sm text-gray-600 line-clamp-1">{item.name}</div>
+                  
+                  <div className="flex items-center gap-2 pt-1">
+                    <Icon name="Tag" size={18} className="text-purple-500" />
+                    <span className="text-xl font-bold text-purple-600">{item.price} ₽</span>
+                    <span className="text-sm text-gray-400 line-through">{(item.price * 1.3).toFixed(0)} ₽</span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Баркод: {item.barcode}
+                  
+                  <div className="text-sm text-gray-500 pt-1">
+                    <span className="font-medium">Цвет:</span> {item.color || 'черный'} <span className="ml-3 font-medium">Размер:</span> {item.size || 'M'}
+                  </div>
+                  
+                  <div className="text-sm text-gray-500">
+                    <span className="font-medium">Баркод:</span> {item.barcode}
                   </div>
                 </div>
-
-                {/* Кнопка поиска */}
-                <button className="absolute bottom-4 right-4 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
-                  <Icon name="Search" size={16} className="text-gray-600" />
-                </button>
               </div>
             );
           })}
