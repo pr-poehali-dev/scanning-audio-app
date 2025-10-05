@@ -74,119 +74,27 @@ const SideMenu = ({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-              
-            <div className="space-y-2">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">ID ПВЗ</label>
-                <input
-                  type="text"
-                  value={pvzInfo.id}
-                  onChange={(e) => updatePvzInfo('id', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Введите ID ПВЗ"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Адрес</label>
-                <textarea
-                  value={pvzInfo.address}
-                  onChange={(e) => updatePvzInfo('address', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  rows={2}
-                  placeholder="Введите адрес ПВЗ"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">ID сотрудника</label>
-                <input
-                  type="text"
-                  value={pvzInfo.employeeId}
-                  onChange={(e) => updatePvzInfo('employeeId', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Введите ID сотрудника"
-                />
-              </div>
-            </div>
-
-            {/* Menu Items */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-600 uppercase tracking-wide">
-                Инструменты
-              </h3>
-              
-              <div className="space-y-2">
-                {/* Озвучка */}
-                {onAudioSettingsOpen && (
+          {/* Content - Cells Grid */}
+          <div className="flex-1 overflow-y-auto bg-gray-50">
+            {/* Cells Section */}
+            <div className="p-3">
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { cell: 4, items: 2 },
+                  { cell: 521, items: 2 }
+                ].map((data, index) => (
                   <button
-                    onClick={() => {
-                      onAudioSettingsOpen();
-                      onClose();
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    key={index}
+                    className="bg-white border-2 border-purple-600 rounded-lg p-4 hover:bg-purple-50 transition-colors active:scale-95"
                   >
-                    <Icon name="Volume2" size={18} />
-                    <span className="text-sm">Озвучка</span>
+                    <div className="text-4xl font-bold text-gray-900 leading-none mb-1">
+                      {data.cell}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {data.items}<sup className="ml-0.5">2</sup>
+                    </div>
                   </button>
-                )}
-                
-                {/* Настройки */}
-                <button
-                  onClick={() => {
-                    onSettingsOpen();
-                    onClose();
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Icon name="Settings" size={18} />
-                  <span className="text-sm">Настройки</span>
-                </button>
-
-                {/* Статистика */}
-                <button
-                  onClick={() => toggleMenuItem('stats')}
-                  className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon name="BarChart3" size={18} />
-                    <span className="text-sm">Статистика</span>
-                  </div>
-                  <Icon name={expandedMenuItems.stats ? "ChevronUp" : "ChevronDown"} size={16} />
-                </button>
-                
-                {expandedMenuItems.stats && (
-                  <div className="ml-6 space-y-1">
-                    <div className="text-xs text-gray-600 py-2">
-                      <div>Выдано сегодня: 0</div>
-                      <div>Принято товаров: 0</div>
-                      <div>Возвратов: 0</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Справка */}
-                <button
-                  onClick={() => toggleMenuItem('help')}
-                  className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon name="HelpCircle" size={18} />
-                    <span className="text-sm">Справка</span>
-                  </div>
-                  <Icon name={expandedMenuItems.help ? "ChevronUp" : "ChevronDown"} size={16} />
-                </button>
-                
-                {expandedMenuItems.help && (
-                  <div className="ml-6 space-y-1">
-                    <div className="text-xs text-gray-600 py-2">
-                      <div>Версия: 1.0.51</div>
-                      <div>Поддержка: support@wb.ru</div>
-                    </div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
