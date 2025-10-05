@@ -98,16 +98,16 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const audioSequence: string[] = [];
       
       // 1. Озвучка номера ячейки (первая!)
-      const cellAudio = currentFiles[`cell_${cellNumber}`];
+      const cellAudio = currentFiles[`cell-${cellNumber}`];
       
       // 2. Озвучка "товары"
       const goodsAudio = currentFiles['goods'];
       
       // 3. Озвучка количества товаров (если передано)
-      const countAudio = itemCount ? currentFiles[`cell_${itemCount}`] : null;
+      const countAudio = itemCount ? currentFiles[`count-${itemCount}`] : null;
       
       // 4. Оплата при получении
-      const paymentAudio = currentFiles['payment_on_delivery'];
+      const paymentAudio = currentFiles['payment-cod'];
 
       // Собираем последовательность: ячейка → товары → количество → оплата
       if (cellAudio) audioSequence.push(cellAudio);
