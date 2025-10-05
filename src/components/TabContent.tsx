@@ -2,6 +2,7 @@ import Icon from '@/components/ui/icon';
 import DeliveryInterface from './DeliveryInterface';
 import AcceptanceTab from './AcceptanceTab';
 import ReturnsTab from './ReturnsTab';
+import ReceptionInterface from './ReceptionInterface';
 import { findOrderByPhone } from '@/data/mockOrders';
 
 interface TabContentProps {
@@ -138,7 +139,7 @@ const TabContent = ({
   }
 
   if (activeTab === 'acceptance') {
-    return <AcceptanceTab />;
+    return <ReceptionInterface playAudio={playAudio || (() => {})} />;
   }
 
   if (activeTab === 'returns') {
