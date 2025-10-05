@@ -14,7 +14,7 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
     <div className="bg-gray-100">
       <div className="bg-white pt-safe safe-area-inset-top">
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-14 sm:h-16 mt-2 md:mt-0">
+          <div className="flex items-center justify-between h-14 sm:h-16 mt-4 md:mt-0">
             {/* Left side - Logo */}
             <div className="flex items-center gap-2">
               <img 
