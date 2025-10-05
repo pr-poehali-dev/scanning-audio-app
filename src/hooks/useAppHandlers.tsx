@@ -20,6 +20,10 @@ interface UseAppHandlersProps {
   setExpandedMenuItems: (items: Record<string, boolean>) => void;
   setPvzInfo: (info: PvzInfo) => void;
   setAudioSettings: (settings: AudioSettings) => void;
+  activeClients: any[];
+  setActiveClients: (clients: any[]) => void;
+  currentClientId: string | null;
+  setCurrentClientId: (id: string | null) => void;
 }
 
 export const useAppHandlers = (props: UseAppHandlersProps) => {
@@ -27,7 +31,8 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     activeTab, deliveryStep, currentOrder, expandedMenuItems, audioSettings, playAudio,
     setIsScanning, setShowQRScanner, setCurrentOrder, 
     setDeliveryStep, setScannedData, setIsProductScanned, setPhoneNumber,
-    setExpandedMenuItems, setPvzInfo, setAudioSettings
+    setExpandedMenuItems, setPvzInfo, setAudioSettings,
+    activeClients, setActiveClients, currentClientId, setCurrentClientId
   } = props;
 
   // Создаем обработчики QR
@@ -51,7 +56,11 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     setIsProductScanned,
     setScannedData,
     setPhoneNumber,
-    playAudio
+    playAudio,
+    activeClients,
+    setActiveClients,
+    currentClientId,
+    setCurrentClientId
   });
 
   // Создаем обработчики настроек
@@ -75,6 +84,7 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     handleScanProduct: deliveryHandlers.handleScanProduct,
     handleDeliverProduct: deliveryHandlers.handleDeliverProduct,
     handleTabChange: deliveryHandlers.handleTabChange,
+    handleClientSwitch: deliveryHandlers.handleClientSwitch,
     toggleMenuItem: settingsHandlers.toggleMenuItem,
     updatePvzInfo: settingsHandlers.updatePvzInfo,
     updateAudioSetting: settingsHandlers.updateAudioSetting,

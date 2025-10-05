@@ -17,6 +17,8 @@ export interface Order {
   items: OrderItem[];
   createdAt: Date;
   updatedAt: Date;
+  totalAmount?: number;
+  isActive?: boolean;
 }
 
 export const getOrderStatusText = (status: Order['status']) => {
@@ -30,6 +32,10 @@ export const getOrderStatusText = (status: Order['status']) => {
     default:
       return { text: 'Неизвестно', color: 'text-gray-600' };
   }
+};
+
+const calculateTotal = (items: OrderItem[]): number => {
+  return items.reduce((sum, item) => sum + item.price, 0);
 };
 
 export const mockOrders: Order[] = [
@@ -68,6 +74,7 @@ export const mockOrders: Order[] = [
         price: 1497
       }
     ],
+    totalAmount: 5367,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-16')
   },

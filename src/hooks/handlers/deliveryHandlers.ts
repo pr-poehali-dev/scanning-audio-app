@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { findOrderByPhone } from '@/data/mockOrders';
+import { findOrderByPhone, Order } from '@/data/mockOrders';
 
 interface DeliveryHandlersProps {
   currentOrder: any;
@@ -9,13 +9,17 @@ interface DeliveryHandlersProps {
   setScannedData: (data: string) => void;
   setPhoneNumber: (value: string) => void;
   playAudio?: (phraseKey: string, cellNumber?: number, itemCount?: number) => void;
+  activeClients: Order[];
+  setActiveClients: (clients: Order[]) => void;
+  currentClientId: string | null;
+  setCurrentClientId: (id: string | null) => void;
 }
 
 export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
   const {
     currentOrder, setCurrentOrder,
     setDeliveryStep, setIsProductScanned, setScannedData, setPhoneNumber,
-    playAudio
+    playAudio, activeClients, setActiveClients, currentClientId, setCurrentClientId
   } = props;
 
   // Обработчик ввода номера телефона
@@ -26,17 +30,21 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
     if (order) {
       console.log(`✅ ЗАКАЗ НАЙДЕН:`, order);
       
-      setCurrentOrder(order);
-      setDeliveryStep('client-scanned');
-      
       // Генерируем случайную ячейку от 1 до 482
       const randomCellNumber = Math.floor(Math.random() * 482) + 1;
-      order.cellNumber = randomCellNumber.toString();
+      const orderWithCell = { ...order, cellNumber: randomCellNumber.toString() };
       
-      console.log(`🏠 Назначена ячейка: ${order.cellNumber}`);
+      // Добавляем клиента в список активных
+      const updatedClients = [...activeClients, orderWithCell];
+      setActiveClients(updatedClients);
+      setCurrentClientId(orderWithCell.id);
+      setCurrentOrder(orderWithCell);
+      setDeliveryStep('client-scanned');
+      
+      console.log(`🏠 Назначена ячейка: ${orderWithCell.cellNumber}`);
       
       // Озвучка: номер ячейки, количество товаров, оплата
-      const itemCount = order.items?.length || 0;
+      const itemCount = orderWithCell.items?.length || 0;
       if (playAudio) {
         playAudio('delivery-cell-info', randomCellNumber, itemCount);
       }
@@ -47,7 +55,7 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       console.log('❌ Заказ не найден');
       alert('Заказ не найден');
     }
-  }, [setPhoneNumber, setCurrentOrder, setDeliveryStep, playAudio]);
+  }, [setPhoneNumber, setCurrentOrder, setDeliveryStep, playAudio, activeClients, setActiveClients, setCurrentClientId]);
 
   // Обработчик сканирования товара
   const handleScanProduct = useCallback(async () => {
@@ -78,14 +86,29 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
     
     console.log('✅ Товар выдан');
     
-    // Сброс состояния через некоторое время
-    setTimeout(() => {
-      setDeliveryStep('initial');
-      setCurrentOrder(null);
-      setIsProductScanned(false);
-      setScannedData('');
-    }, 5000); // Увеличиваем время для показа сообщения
-  }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData, playAudio]);
+    // Удаляем клиента из списка активных
+    const updatedClients = activeClients.filter(client => client.id !== currentClientId);
+    setActiveClients(updatedClients);
+    
+    // Переключаемся на следующего клиента или сбрасываем
+    if (updatedClients.length > 0) {
+      const nextClient = updatedClients[0];
+      setCurrentClientId(nextClient.id);
+      setCurrentOrder(nextClient);
+      setDeliveryStep('client-scanned');
+    } else {
+      setTimeout(() => {
+        setDeliveryStep('initial');
+        setCurrentOrder(null);
+        setCurrentClientId(null);
+        setIsProductScanned(false);
+        setScannedData('');
+      }, 3000);
+    }
+    
+    setIsProductScanned(false);
+    setScannedData('');
+  }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData, playAudio, activeClients, setActiveClients, currentClientId, setCurrentClientId]);
 
   // Обработчик смены вкладки
   const handleTabChange = useCallback((tab: string) => {
@@ -97,10 +120,23 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
     }
   }, [setDeliveryStep, setCurrentOrder, setIsProductScanned, setScannedData]);
 
+  // Обработчик переключения между клиентами
+  const handleClientSwitch = useCallback((clientId: string) => {
+    const client = activeClients.find(c => c.id === clientId);
+    if (client) {
+      setCurrentClientId(clientId);
+      setCurrentOrder(client);
+      setDeliveryStep('client-scanned');
+      setIsProductScanned(false);
+      setScannedData('');
+    }
+  }, [activeClients, setCurrentClientId, setCurrentOrder, setDeliveryStep, setIsProductScanned, setScannedData]);
+
   return {
     handlePhoneSubmit,
     handleScanProduct,
     handleDeliverProduct,
-    handleTabChange
+    handleTabChange,
+    handleClientSwitch
   };
 };

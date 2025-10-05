@@ -29,6 +29,10 @@ export const useAppState = () => {
   const [deliveryStep, setDeliveryStep] = useState<'initial' | 'client-scanned' | 'product-scanned' | 'completed'>('initial');
   const [isProductScanned, setIsProductScanned] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  
+  // Состояния для работы с несколькими клиентами
+  const [activeClients, setActiveClients] = useState<Order[]>([]);
+  const [currentClientId, setCurrentClientId] = useState<string | null>(null);
 
   // Состояния меню и настроек
   const [expandedMenuItems, setExpandedMenuItems] = useState<{ [key: string]: boolean }>(() => {
@@ -96,6 +100,12 @@ export const useAppState = () => {
     setIsProductScanned,
     currentOrder,
     setCurrentOrder,
+    
+    // Состояния для работы с несколькими клиентами
+    activeClients,
+    setActiveClients,
+    currentClientId,
+    setCurrentClientId,
 
     // Состояния настроек
     expandedMenuItems,

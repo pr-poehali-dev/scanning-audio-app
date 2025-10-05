@@ -38,6 +38,10 @@ const WBPVZApp = () => {
     setExpandedMenuItems: appState.setExpandedMenuItems,
     setPvzInfo: appState.setPvzInfo,
     setAudioSettings: appState.setAudioSettings,
+    activeClients: appState.activeClients,
+    setActiveClients: appState.setActiveClients,
+    currentClientId: appState.currentClientId,
+    setCurrentClientId: appState.setCurrentClientId,
   });
 
   // Функция для смены вкладки с сбросом состояния
@@ -71,6 +75,9 @@ const WBPVZApp = () => {
           onDeliverProduct={appHandlers.handleDeliverProduct}
           currentOrder={appState.currentOrder}
           playAudio={playAudio}
+          activeClients={appState.activeClients}
+          currentClientId={appState.currentClientId}
+          onClientSwitch={appHandlers.handleClientSwitch}
         />
       </div>
 

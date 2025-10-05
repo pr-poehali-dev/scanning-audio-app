@@ -19,6 +19,9 @@ interface TabContentProps {
   onDeliverProduct: () => void;
   currentOrder?: any;
   playAudio?: (key: string) => void;
+  activeClients?: any[];
+  currentClientId?: string | null;
+  onClientSwitch?: (clientId: string) => void;
 }
 
 const TabContent = ({
@@ -35,7 +38,10 @@ const TabContent = ({
   onScanProduct,
   onDeliverProduct,
   currentOrder,
-  playAudio
+  playAudio,
+  activeClients = [],
+  currentClientId,
+  onClientSwitch
 }: TabContentProps) => {
   if (activeTab === 'delivery') {
     // Если клиент отсканирован, показываем интерфейс выдачи  
@@ -50,6 +56,9 @@ const TabContent = ({
           scannedData={scannedData}
           deliveryStep={deliveryStep}
           playAudio={playAudio}
+          activeClients={activeClients}
+          currentClientId={currentClientId}
+          onClientSwitch={onClientSwitch}
         />
       );
     }
