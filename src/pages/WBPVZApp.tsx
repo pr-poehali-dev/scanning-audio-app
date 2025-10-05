@@ -7,6 +7,7 @@ import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';
 import Footer from '@/components/Footer';
 import InstallPrompt from '@/components/InstallPrompt';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
@@ -60,7 +61,7 @@ const WBPVZApp = () => {
         setActiveTab={handleTabChange}
       />
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto pb-16 md:pb-0">
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
@@ -83,6 +84,12 @@ const WBPVZApp = () => {
       </div>
 
       <Footer />
+      
+      <MobileBottomNav
+        activeTab={appState.activeTab}
+        setActiveTab={handleTabChange}
+        onMenuOpen={() => appState.setShowSideMenu(true)}
+      />
 
       <SideMenu
         isOpen={appState.showSideMenu}

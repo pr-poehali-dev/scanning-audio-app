@@ -13,30 +13,22 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
     <div className="bg-gray-100">
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-between h-16 sm:h-[72px]">
-            {/* Left side - Logo and Menu icons */}
-            <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            {/* Left side - Logo */}
+            <div className="flex items-center gap-2">
               <img 
-                src="https://cdn.poehali.dev/files/85c8d8ae-4b8f-45da-8f82-ca7b135fbe9f.png" 
-                alt="WB" 
-                className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                src="https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png" 
+                alt="WB ПВЗ" 
+                className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg shadow-sm"
               />
-              <button 
-                className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                onClick={onMenuOpen}
-              >
-                <Icon name="Menu" size={24} />
-              </button>
-              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                <Icon name="ShoppingCart" size={24} />
-              </button>
-              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                <Icon name="Search" size={24} />
-              </button>
+              <div className="hidden sm:block">
+                <div className="text-sm font-semibold text-gray-900">ПВЗ WB</div>
+                <div className="text-xs text-gray-500">Пункт выдачи</div>
+              </div>
             </div>
 
-            {/* Center - Tabs */}
-            <div className="flex items-center gap-1">
+            {/* Center - Tabs (Desktop only) */}
+            <div className="hidden md:flex items-center gap-1">
               <button
                 onClick={() => setActiveTab('delivery')}
                 className={`relative h-16 sm:h-[72px] px-3 sm:px-5 text-sm sm:text-base font-normal transition-colors border-b-2 ${
@@ -82,18 +74,15 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
             </div>
 
             {/* Right side - icons */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                <Icon name="Volume2" size={20} className="sm:w-6 sm:h-6" />
+              </button>
               <button 
                 className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                 onClick={onSettingsOpen}
               >
-                <Icon name="Grid3x3" size={24} />
-              </button>
-              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                <Icon name="RotateCcw" size={24} />
-              </button>
-              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                <Icon name="MessageCircle" size={24} />
+                <Icon name="Settings" size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>

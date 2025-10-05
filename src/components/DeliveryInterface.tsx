@@ -82,30 +82,46 @@ const DeliveryInterface = ({
 
   return (
     <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden">
-      {/* Панель с ячейками */}
-      <CellsPanel 
-        activeClients={clientsData}
-        currentClientId={currentClientId || undefined}
-        onClientClick={onClientSwitch}
-      />
+      {/* Панель с ячейками - только desktop */}
+      <div className="hidden lg:block">
+        <CellsPanel 
+          activeClients={clientsData}
+          currentClientId={currentClientId || undefined}
+          onClientClick={onClientSwitch}
+        />
+      </div>
 
-      {/* Средняя панель - информация */}
-      <div className="w-full lg:w-80 bg-white p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6 overflow-y-auto border-b lg:border-b-0 lg:border-r">
+      {/* Мобильная шапка с информацией */}
+      <div className="lg:hidden bg-white border-b">
+        <div className="px-4 py-3">
+          {/* Большой номер ячейки и количество товаров */}
+          <div className="flex items-end gap-2 mb-2">
+            <div className="text-5xl font-bold text-gray-900">{order.cellNumber}</div>
+            <div className="text-2xl text-gray-400 font-medium pb-1">{order.items.length} шт</div>
+          </div>
+          
+          {/* Телефон */}
+          <div className="text-base text-gray-600">+7 (***) ***-{order.phone}</div>
+        </div>
+      </div>
+
+      {/* Desktop панель - информация */}
+      <div className="hidden lg:block w-80 bg-white p-6 space-y-6 overflow-y-auto border-r">
         {/* Информация о клиенте */}
-        <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 sm:gap-4 lg:space-y-0">
+        <div className="space-y-4">
           <div>
-            <div className="text-xs sm:text-sm text-gray-500">Клиент</div>
-            <div className="text-xs sm:text-sm lg:text-base font-medium">+7 (***) **{order.phone}</div>
+            <div className="text-sm text-gray-500">Клиент</div>
+            <div className="text-base font-medium">+7 (***) **{order.phone}</div>
           </div>
           
           <div>
-            <div className="text-xs sm:text-sm text-gray-500">Ячейка</div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{order.cellNumber}</div>
+            <div className="text-sm text-gray-500">Ячейка</div>
+            <div className="text-4xl font-bold">{order.cellNumber}</div>
           </div>
           
           <div>
-            <div className="text-xs sm:text-sm text-gray-500">Товаров</div>
-            <div className="text-lg sm:text-xl lg:text-2xl font-semibold">{order.items.length} из {order.items.length}</div>
+            <div className="text-sm text-gray-500">Товаров</div>
+            <div className="text-2xl font-semibold">{order.items.length} из {order.items.length}</div>
           </div>
 
           {/* Пакетов */}
@@ -183,100 +199,182 @@ const DeliveryInterface = ({
       </div>
 
       {/* Правая панель - товары */}
-      <div className="flex-1 p-3 sm:p-4 lg:p-6 overflow-y-auto">
-        {/* Кнопка "Снять все" */}
-        <div className="flex justify-between items-center mb-3 sm:mb-4 lg:mb-6">
-          <h3 className="text-sm sm:text-base lg:text-lg font-semibold">Товары</h3>
+      <div className="flex-1 overflow-y-auto">
+        {/* Мобильная кнопка проверки товаров */}
+        <div className="lg:hidden sticky top-0 bg-white border-b px-4 py-3 z-10">
           <button
             onClick={() => {
               setSelectedProducts(order.items.map((_, index) => index));
               playAudio?.('check-product-under-camera');
             }}
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:bg-purple-300 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors font-medium"
           >
-            <Icon name="Check" size={14} className="sm:w-4 sm:h-4" />
+            <Icon name="ScanBarcode" size={20} />
+            <span>Проверить товары</span>
+          </button>
+          
+          <div className="flex items-center justify-between mt-3 text-sm">
+            <button className="text-purple-600 font-medium">Выбрать все</button>
+            <span className="text-gray-600">{selectedProducts.length} из {order.items.length} выбрано</span>
+          </div>
+        </div>
+        
+        {/* Desktop кнопка "Снять все" */}
+        <div className="hidden lg:flex justify-between items-center mb-6 p-6 pb-0">
+          <h3 className="text-lg font-semibold">Товары</h3>
+          <button
+            onClick={() => {
+              setSelectedProducts(order.items.map((_, index) => index));
+              playAudio?.('check-product-under-camera');
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:bg-purple-300 transition-colors"
+          >
+            <Icon name="Check" size={16} />
             <span>Снять все</span>
           </button>
         </div>
 
         {/* Список товаров */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-          {order.items.map((item, index) => {
-            const isSelected = selectedProducts.includes(index);
-            const isPaid = Math.random() > 0.5; // Случайно определяем статус оплаты
-            
-            return (
-              <div key={index} className="bg-gray-200 rounded-xl sm:rounded-2xl relative overflow-hidden">
-                {/* Чекбокс и кнопка возврата вверху */}
-                <div className="absolute top-2 sm:top-3 left-2 sm:left-3 right-2 sm:right-3 flex justify-between items-start z-10">
-                  <button
-                    onClick={() => handleProductSelect(index)}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center transition-colors ${
-                      isSelected
-                        ? 'bg-purple-600'
-                        : 'bg-white/90 backdrop-blur'
-                    }`}
-                  >
-                    {isSelected && <Icon name="Check" size={18} className="sm:w-5 sm:h-5 text-white" />}
-                  </button>
-
-                  <button className="w-7 h-7 sm:w-8 sm:h-8 bg-white/90 backdrop-blur rounded-md flex items-center justify-center hover:bg-white transition-colors">
-                    <Icon name="RotateCcw" size={16} className="sm:w-[18px] sm:h-[18px] text-gray-600" />
-                  </button>
-                </div>
-
-                {/* Статус оплаты */}
-                <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 z-10">
-                  <span className={`px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full ${
-                    isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                  }`}>
-                    {isPaid ? 'Оплачен' : 'Не оплачен'}
-                  </span>
-                </div>
-
-                {/* Изображение товара */}
-                <div className="relative">
-                  <img
-                    src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
-                    alt={item.name}
-                    className="w-full h-64 sm:h-80 lg:h-96 object-cover"
-                  />
-                  
-                  {/* Кнопка лупы поверх изображения */}
-                  <button className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg">
-                    <Icon name="Search" size={20} className="sm:w-[22px] sm:h-[22px] text-gray-700" />
-                  </button>
-                </div>
-
-                {/* Информация о товаре */}
-                <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2 bg-white">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="text-base sm:text-lg font-bold text-gray-900">{item.barcode}</div>
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <Icon name="Copy" size={16} className="sm:w-[18px] sm:h-[18px]" />
-                    </button>
+        <div className="p-4 lg:p-6 lg:pt-0">
+          <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4">
+            {order.items.map((item, index) => {
+              const isSelected = selectedProducts.includes(index);
+              const isPaid = Math.random() > 0.5;
+              
+              return (
+                <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 lg:shadow-none lg:border-0 lg:bg-gray-200">
+                  {/* Мобильная версия карточки */}
+                  <div className="lg:hidden">
+                    <div className="flex gap-3 p-3">
+                      {/* Чекбокс */}
+                      <button
+                        onClick={() => handleProductSelect(index)}
+                        className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+                          isSelected ? 'bg-purple-600' : 'border-2 border-gray-300'
+                        }`}
+                      >
+                        {isSelected && <Icon name="Check" size={16} className="text-white" />}
+                      </button>
+                      
+                      {/* Изображение */}
+                      <div className="flex-shrink-0 w-32 h-32 bg-gray-100 rounded-xl overflow-hidden">
+                        <img
+                          src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* Информация */}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-lg font-bold text-gray-900">{item.barcode.slice(-4)}</div>
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${
+                            isPaid ? 'bg-green-100 text-green-700' : 'bg-pink-100 text-pink-700'
+                          }`}>
+                            {isPaid ? 'ОПЛАЧЕН' : 'НЕ ОПЛАЧЕН'}
+                          </span>
+                        </div>
+                        
+                        {item.statusBadge && (
+                          <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
+                            item.statusBadge === 'НЕВОЗВРАТНЫЙ' ? 'bg-green-100 text-green-700' : ''
+                          }`}>
+                            {item.statusBadge}
+                          </span>
+                        )}
+                        
+                        <div className="text-sm text-gray-700 line-clamp-2">{item.name}</div>
+                        
+                        <div className="text-xs text-gray-500">{item.brand || 'Pepe Jeans'}</div>
+                        
+                        <div className="text-lg font-bold text-gray-900">{item.price.toLocaleString()} ₽</div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="text-xs sm:text-sm text-gray-600 line-clamp-1">{item.name}</div>
-                  
-                  <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5 sm:pt-1">
-                    <Icon name="Tag" size={16} className="sm:w-[18px] sm:h-[18px] text-purple-500" />
-                    <span className="text-lg sm:text-xl font-bold text-purple-600">{item.price} ₽</span>
-                    <span className="text-xs sm:text-sm text-gray-400 line-through">{(item.price * 1.3).toFixed(0)} ₽</span>
-                  </div>
-                  
-                  <div className="text-xs sm:text-sm text-gray-500 pt-0.5 sm:pt-1">
-                    <span className="font-medium">Цвет:</span> {item.color || 'черный'} <span className="ml-2 sm:ml-3 font-medium">Размер:</span> {item.size || 'M'}
-                  </div>
-                  
-                  <div className="text-xs sm:text-sm text-gray-500">
-                    <span className="font-medium">Баркод:</span> {item.barcode}
+                  {/* Desktop версия карточки */}
+                  <div className="hidden lg:block relative">
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                      <button
+                        onClick={() => handleProductSelect(index)}
+                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
+                          isSelected ? 'bg-purple-600' : 'bg-white/90 backdrop-blur'
+                        }`}
+                      >
+                        {isSelected && <Icon name="Check" size={20} className="text-white" />}
+                      </button>
+
+                      <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-md flex items-center justify-center hover:bg-white transition-colors">
+                        <Icon name="RotateCcw" size={18} className="text-gray-600" />
+                      </button>
+                    </div>
+
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
+                      <span className={`px-4 py-1.5 text-sm font-medium rounded-full ${
+                        isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                      }`}>
+                        {isPaid ? 'Оплачен' : 'Не оплачен'}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <img
+                        src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
+                        alt={item.name}
+                        className="w-full h-96 object-cover"
+                      />
+                      
+                      <button className="absolute bottom-4 right-4 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg">
+                        <Icon name="Search" size={22} className="text-gray-700" />
+                      </button>
+                    </div>
+
+                    <div className="p-4 space-y-2 bg-white">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="text-lg font-bold text-gray-900">{item.barcode}</div>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <Icon name="Copy" size={18} />
+                        </button>
+                      </div>
+                      
+                      <div className="text-sm text-gray-600 line-clamp-1">{item.name}</div>
+                      
+                      <div className="flex items-center gap-2 pt-1">
+                        <Icon name="Tag" size={18} className="text-purple-500" />
+                        <span className="text-xl font-bold text-purple-600">{item.price} ₽</span>
+                        <span className="text-sm text-gray-400 line-through">{(item.price * 1.3).toFixed(0)} ₽</span>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500 pt-1">
+                        <span className="font-medium">Цвет:</span> {item.color || 'черный'} <span className="ml-3 font-medium">Размер:</span> {item.size || 'M'}
+                      </div>
+                      
+                      <div className="text-sm text-gray-500">
+                        <span className="font-medium">Баркод:</span> {item.barcode}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+      </div>
+
+      {/* Нижняя фиксированная кнопка для мобильной версии */}
+      <div className="lg:hidden fixed bottom-16 left-0 right-0 bg-white border-t p-4 shadow-lg z-30">
+        <button
+          onClick={onDeliverProduct}
+          disabled={!allProductsSelected}
+          className={`w-full py-4 rounded-xl font-semibold text-base transition-all ${
+            allProductsSelected
+              ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-lg'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {allProductsSelected ? `Выдать ${order.items.length} товара на ${totalAmount} ₽` : `Проверьте товары (${selectedProducts.length}/${order.items.length})`}
+        </button>
       </div>
 
       <PackageModal

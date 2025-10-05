@@ -6,6 +6,8 @@ export interface OrderItem {
   size: string;
   image: string;
   price: number;
+  brand?: string;
+  statusBadge?: string;
 }
 
 export interface Order {
