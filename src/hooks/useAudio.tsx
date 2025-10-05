@@ -100,25 +100,25 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // 1. Озвучка номера ячейки (первая!)
       const cellAudio = currentFiles[`cell-${cellNumber}`];
       
-      // 2. Озвучка "товары"
-      const goodsAudio = currentFiles['goods'];
-      
-      // 3. Озвучка количества товаров (если передано)
+      // 2. Озвучка количества товаров (если передано)
       const countAudio = itemCount ? currentFiles[`count-${itemCount}`] : null;
+      
+      // 3. Озвучка слова "товаров"
+      const wordItemsAudio = currentFiles['word-items'];
       
       // 4. Оплата при получении
       const paymentAudio = currentFiles['payment-cod'];
 
-      // Собираем последовательность: ячейка → товары → количество → оплата
+      // Собираем последовательность: ячейка → количество → "товаров" → оплата
       if (cellAudio) audioSequence.push(cellAudio);
-      if (goodsAudio) audioSequence.push(goodsAudio);
       if (countAudio) audioSequence.push(countAudio);
+      if (wordItemsAudio) audioSequence.push(wordItemsAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
         cell: !!cellAudio,
-        goods: !!goodsAudio,
         count: !!countAudio,
+        wordItems: !!wordItemsAudio,
         payment: !!paymentAudio,
         total: audioSequence.length
       });
