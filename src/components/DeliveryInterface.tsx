@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Order } from '@/data/mockOrders';
+import CellsPanel from './CellsPanel';
 
 interface DeliveryInterfaceProps {
   order: Order | null;
@@ -44,20 +45,22 @@ const DeliveryInterface = ({
 
   const allProductsSelected = selectedProducts.length === order.items.length;
 
-  return (
-    <div className="h-full flex flex-col sm:flex-row bg-gray-50 overflow-y-auto">
-      {/* Левая панель - информация */}
-      <div className="w-full sm:w-1/3 bg-white p-4 sm:p-6 space-y-4 sm:space-y-6">
-        {/* ID пользователя */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-3 sm:p-4 rounded-lg">
-          <div className="text-xs text-purple-100">ID 50001234</div>
-          <div className="text-xs text-purple-100">V.1.0.51</div>
-          <div className="mt-2 flex items-center gap-2">
-            <Icon name="User" size={16} />
-            <span className="text-xs sm:text-sm">Личный кабинет</span>
-          </div>
-        </div>
+  const cellsData = [
+    { cell: 4, items: 2 },
+    { cell: 521, items: 2 }
+  ];
 
+  return (
+    <div className="h-full flex bg-gray-50 overflow-hidden">
+      {/* Панель с ячейками */}
+      <CellsPanel 
+        cells={cellsData} 
+        currentCell={Number(order.cellNumber)}
+        onCellClick={(cell) => console.log('Cell clicked:', cell)}
+      />
+
+      {/* Средняя панель - информация */}
+      <div className="w-80 bg-white p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
         {/* Информация о клиенте */}
         <div className="space-y-2 sm:space-y-3">
           <div>
