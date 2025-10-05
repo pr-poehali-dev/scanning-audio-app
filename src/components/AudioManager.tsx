@@ -68,7 +68,11 @@ export const AudioManager = ({
 
   const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    console.log('🔥 handleBulkUpload вызван, файлов:', files?.length);
+    if (!files || files.length === 0) {
+      console.log('❌ Нет файлов');
+      return;
+    }
 
     setIsUploading(true);
     console.log(`📦 Массовая загрузка: ${files.length} файлов`);
@@ -80,32 +84,27 @@ export const AudioManager = ({
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
+      const fileName = file.name.replace(/\.(mp3|wav|ogg|m4a|webm)$/i, '');
       
+      console.log(`📁 Файл ${i+1}/${files.length}: "${file.name}" → ключ: "${fileName}"`);
       setUploadProgress({ current: i + 1, total: files.length });
       
-      // Проверяем, есть ли такой ключ в REQUIRED_FILES
-      const fileConfig = REQUIRED_FILES.find(f => f.key === fileName);
-      
-      if (fileConfig) {
-        try {
-          const url = await audioStorage.saveFile(fileName, file);
-          newFiles[fileName] = url;
-          successCount++;
-          console.log(`✅ ${fileName}`);
-        } catch (error) {
-          errorCount++;
-          console.error(`❌ ${fileName}:`, error);
-        }
-      } else {
-        console.warn(`⚠️ Пропущен: ${fileName} (не найден в списке)`);
+      try {
+        const url = await audioStorage.saveFile(fileName, file);
+        newFiles[fileName] = url;
+        successCount++;
+        console.log(`✅ ${fileName}`);
+      } catch (error) {
+        errorCount++;
+        console.error(`❌ ${fileName}:`, error);
       }
     }
 
     setUploadedFiles(newFiles);
     setIsUploading(false);
     setUploadProgress({ current: 0, total: 0 });
-    alert(`Загружено: ${successCount} файлов\n${errorCount > 0 ? `Ошибок: ${errorCount}` : ''}`);
+    console.log(`✅ Загрузка завершена: ${successCount} файлов, ошибок: ${errorCount}`);
+    alert(`Загружено: ${successCount} файлов${errorCount > 0 ? `\nОшибок: ${errorCount}` : ''}`);
   };
 
   const handleCellBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

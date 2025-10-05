@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
@@ -17,6 +17,19 @@ import { useAudio } from '@/hooks/useAudio';
 
 const WBPVZApp = () => {
   const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      setIsMobile(mobile);
+      console.log('📱 Устройство:', mobile ? 'Мобильное' : 'ПК', 'User Agent:', navigator.userAgent);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
@@ -55,7 +68,8 @@ const WBPVZApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
+      {/* Хедер - всегда показываем */}
       <Header
         onMenuOpen={() => appState.setShowSideMenu(true)}
         onSettingsOpen={() => appState.setShowSettings(true)}
@@ -64,7 +78,8 @@ const WBPVZApp = () => {
         setActiveTab={handleTabChange}
       />
 
-      <div className="flex-1 overflow-auto pb-16 md:pb-0">
+      {/* Основной контент */}
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : 'pb-0'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
@@ -86,13 +101,17 @@ const WBPVZApp = () => {
         />
       </div>
 
-      <Footer />
+      {/* Футер - только на ПК */}
+      {!isMobile && <Footer />}
       
-      <MobileBottomNav
-        activeTab={appState.activeTab}
-        setActiveTab={handleTabChange}
-        onMenuOpen={() => appState.setShowSideMenu(true)}
-      />
+      {/* Мобильное меню - только на мобильных */}
+      {isMobile && (
+        <MobileBottomNav
+          activeTab={appState.activeTab}
+          setActiveTab={handleTabChange}
+          onMenuOpen={() => appState.setShowSideMenu(true)}
+        />
+      )}
 
       <SideMenu
         isOpen={appState.showSideMenu}
