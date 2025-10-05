@@ -57,6 +57,7 @@ const WBPVZApp = () => {
       <Header
         onMenuOpen={() => appState.setShowSideMenu(true)}
         onSettingsOpen={() => appState.setShowSettings(true)}
+        onAudioSettingsOpen={() => setShowAudioSettings(true)}
         activeTab={appState.activeTab}
         setActiveTab={handleTabChange}
       />

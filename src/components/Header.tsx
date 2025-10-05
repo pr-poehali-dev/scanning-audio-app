@@ -4,11 +4,12 @@ import Icon from '@/components/ui/icon';
 interface HeaderProps {
   onMenuOpen: () => void;
   onSettingsOpen: () => void;
+  onAudioSettingsOpen: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
+const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
   return (
     <div className="bg-gray-100">
       <div className="bg-white">
@@ -75,12 +76,17 @@ const Header = ({ onMenuOpen, onSettingsOpen, activeTab, setActiveTab }: HeaderP
 
             {/* Right side - icons */}
             <div className="flex items-center gap-1 sm:gap-2">
-              <button className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+              <button 
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                onClick={onAudioSettingsOpen}
+                title="Настройки озвучки"
+              >
                 <Icon name="Volume2" size={20} className="sm:w-6 sm:h-6" />
               </button>
               <button 
                 className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
                 onClick={onSettingsOpen}
+                title="Настройки"
               >
                 <Icon name="Settings" size={20} className="sm:w-6 sm:h-6" />
               </button>
