@@ -6,6 +6,7 @@ import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';
 import Footer from '@/components/Footer';
+import InstallPrompt from '@/components/InstallPrompt';
 
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
@@ -116,6 +117,8 @@ const WBPVZApp = () => {
         onScan={appHandlers.handleQRScanResult}
         onClose={() => appState.setShowQRScanner(false)}
       />
+
+      <InstallPrompt />
     </div>
   );
 };
