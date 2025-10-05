@@ -2,6 +2,13 @@ import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Order } from '@/data/mockOrders';
 import CellsPanel, { ActiveClient } from './CellsPanel';
+import PackageModal from './PackageModal';
+
+interface Package {
+  type: string;
+  price: number;
+  quantity: number;
+}
 
 interface DeliveryInterfaceProps {
   order: Order | null;
@@ -31,6 +38,8 @@ const DeliveryInterface = ({
   onClientSwitch
 }: DeliveryInterfaceProps) => {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [showPackageModal, setShowPackageModal] = useState(false);
 
   if (!order) {
     return (
@@ -48,6 +57,14 @@ const DeliveryInterface = ({
         : [...prev, productIndex]
     );
   };
+
+  const handleAddPackages = (newPackages: Package[]) => {
+    setPackages(newPackages);
+  };
+
+  const totalPackages = packages.reduce((sum, p) => sum + p.quantity, 0);
+  const packagesCost = packages.reduce((sum, p) => sum + p.price * p.quantity, 0);
+  const totalAmount = (order.totalAmount || 0) + packagesCost;
 
   const allProductsSelected = selectedProducts.length === order.items.length;
 
@@ -92,12 +109,42 @@ const DeliveryInterface = ({
           </div>
 
           {/* Пакетов */}
-          <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 border-2 border-dashed border-gray-300 rounded-lg">
-            <Icon name="Plus" size={20} className="sm:w-6 sm:h-6 text-gray-400" />
-          </div>
-          <div className="text-center">
-            <div className="text-xs sm:text-sm text-gray-500">Пакетов</div>
-            <div className="text-xl sm:text-2xl font-semibold">0</div>
+          <div>
+            <div className="text-xs sm:text-sm text-gray-500 mb-2">Пакеты</div>
+            <button
+              onClick={() => setShowPackageModal(true)}
+              className="w-full p-4 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center">
+                    <Icon name="Plus" size={20} className="text-purple-600" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-gray-700">
+                      {totalPackages > 0 ? `${totalPackages} шт` : 'Добавить'}
+                    </div>
+                    {packagesCost > 0 && (
+                      <div className="text-xs text-gray-500">{packagesCost} ₽</div>
+                    )}
+                  </div>
+                </div>
+                {totalPackages > 0 && (
+                  <div className="text-2xl font-bold text-purple-600">{totalPackages}</div>
+                )}
+              </div>
+              
+              {packages.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-left space-y-1">
+                  {packages.map((pkg, idx) => (
+                    <div key={idx} className="flex justify-between text-gray-600">
+                      <span>{pkg.type} × {pkg.quantity}</span>
+                      <span>{pkg.price * pkg.quantity} ₽</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </button>
           </div>
 
           {/* К оплате */}
@@ -105,9 +152,13 @@ const DeliveryInterface = ({
             <div className="text-xs sm:text-sm text-gray-500">К оплате</div>
             <div className="flex items-center gap-2">
               <Icon name="CreditCard" size={18} className="sm:w-5 sm:h-5 text-purple-500" />
-              <span className="text-lg sm:text-xl font-semibold text-purple-600">{order.totalAmount} ₽</span>
+              <span className="text-lg sm:text-xl font-semibold text-purple-600">{totalAmount} ₽</span>
             </div>
-            <div className="text-xs text-gray-400">Подробнее</div>
+            {packagesCost > 0 && (
+              <div className="text-xs text-gray-500">
+                Товары: {order.totalAmount} ₽ + Пакеты: {packagesCost} ₽
+              </div>
+            )}
           </div>
         </div>
 
@@ -224,6 +275,12 @@ const DeliveryInterface = ({
           })}
         </div>
       </div>
+
+      <PackageModal
+        isOpen={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        onAdd={handleAddPackages}
+      />
     </div>
   );
 };
