@@ -47,7 +47,7 @@ export const CellAudioManager = ({
       const match = file.name.match(/(\d+)\.(mp3|wav|ogg|m4a|mpeg)$/i);
       if (match) {
         const cellNumber = match[1];
-        const key = `cell-${cellNumber}`;
+        const key = `cell_${cellNumber}`;
         const url = await audioStorage.saveFile(key, file);
         newFiles[key] = url;
         uploadedCount++;
@@ -110,10 +110,10 @@ export const CellAudioManager = ({
           <AlertDescription>
             <p className="text-sm font-medium mb-2">🎯 Как работает составная озвучка:</p>
             <ul className="text-xs space-y-1">
-              <li>• <strong>Шаг 1:</strong> Озвучка номера ячейки (cell-123.mp3 = "ячейка сто двадцать три")</li>
-              <li>• <strong>Шаг 2:</strong> Озвучка количества (count-2.mp3 = "два")</li>
-              <li>• <strong>Шаг 3:</strong> Озвучка слова "товаров" (word-items.mp3 = "товаров")</li>
-              <li>• <strong>Шаг 4:</strong> Озвучка способа оплаты (payment-cod.mp3 = "оплата при получении")</li>
+              <li>• <strong>Шаг 1:</strong> Озвучка "goods" (goods.mp3 = "товар в ячейке")</li>
+              <li>• <strong>Шаг 2:</strong> Озвучка номера ячейки (cell_123.mp3 = "сто двадцать три")</li>
+              <li>• <strong>Шаг 3:</strong> Озвучка количества (count_2.mp3 = "два")</li>
+              <li>• <strong>Шаг 4:</strong> Озвучка слова "товаров" (word_items.mp3 = "товаров")</li>
             </ul>
             <p className="text-xs mt-2 text-blue-600 font-medium">
               Пример: "Ячейка сто двадцать три" → "Два" → "Товаров" → "Оплата при получении"
@@ -133,13 +133,13 @@ export const CellAudioManager = ({
               <AlertDescription>
                 <p className="text-sm font-medium mb-2">📝 Составная озвучка:</p>
                 <ul className="text-xs space-y-1">
-                  <li>• <strong>cell-123.mp3</strong> - "Ячейка сто двадцать три"</li>
-                  <li>• <strong>count-2.mp3</strong> - "Два" (просто число)</li>
-                  <li>• <strong>word-items.mp3</strong> - "Товаров" (само слово)</li>
-                  <li>• <strong>payment-cod.mp3</strong> - "Оплата при получении"</li>
+                  <li>• <strong>goods.mp3</strong> - "Товар в ячейке"</li>
+                  <li>• <strong>cell_123.mp3</strong> - "Сто двадцать три"</li>
+                  <li>• <strong>count_2.mp3</strong> - "Два" (просто число)</li>
+                  <li>• <strong>word_items.mp3</strong> - "Товаров" (само слово)</li>
                 </ul>
                 <p className="text-xs mt-2 text-blue-600">
-                  Будет играть: cell-123 → count-2 → word-items → payment-cod
+                  Будет играть: goods → cell_123 → count_2 → word_items
                 </p>
               </AlertDescription>
             </Alert>
@@ -147,7 +147,7 @@ export const CellAudioManager = ({
             <div className="border rounded-lg p-3 space-y-2">
               <Label className="text-sm font-medium">Количество товаров (1-20)</Label>
               <p className="text-xs text-gray-600 mb-2">
-                Загрузите файлы: count-1.mp3 ("один товар"), count-2.mp3 ("два товара") и т.д.
+                Загрузите файлы: count_1.mp3 ("один товар"), count_2.mp3 ("два товара") и т.д.
               </p>
               <Input
                 type="file"
@@ -161,10 +161,10 @@ export const CellAudioManager = ({
                   const newFiles = { ...uploadedFiles };
                   
                   for (const file of Array.from(files)) {
-                    const match = file.name.match(/count-(\d+)\.(mp3|wav|ogg|m4a|mpeg)$/i);
+                    const match = file.name.match(/count_(\d+)\.(mp3|wav|ogg|m4a|mpeg)$/i);
                     if (match) {
                       const count = match[1];
-                      const key = `count-${count}`;
+                      const key = `count_${count}`;
                       const url = await audioStorage.saveFile(key, file);
                       newFiles[key] = url;
                       uploadedCount++;
@@ -178,7 +178,7 @@ export const CellAudioManager = ({
                 }}
               />
               <div className="text-xs text-gray-500 mt-1">
-                Загружено: {Object.keys(uploadedFiles).filter(k => k.startsWith('count-')).length} файлов
+                Загружено: {Object.keys(uploadedFiles).filter(k => k.startsWith('count_')).length} файлов
               </div>
             </div>
 
@@ -191,20 +191,20 @@ export const CellAudioManager = ({
                 <Input
                   type="file"
                   accept=".mp3,.wav,.m4a,.ogg,.mpeg"
-                  onChange={(e) => handleFileUpload('word-items', e)}
+                  onChange={(e) => handleFileUpload('word_items', e)}
                   className="flex-1"
                 />
-                {uploadedFiles['word-items'] && (
+                {uploadedFiles['word_items'] && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onTestAudio('word-items')}
+                    onClick={() => onTestAudio('word_items')}
                   >
                     <Icon name="Play" className="w-4 h-4" />
                   </Button>
                 )}
               </div>
-              {uploadedFiles['word-items'] && (
+              {uploadedFiles['word_items'] && (
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <Icon name="Check" className="w-3 h-3" />
                   Файл загружен
@@ -218,20 +218,20 @@ export const CellAudioManager = ({
                 <Input
                   type="file"
                   accept=".mp3,.wav,.m4a,.ogg,.mpeg"
-                  onChange={(e) => handleFileUpload('payment-cod', e)}
+                  onChange={(e) => handleFileUpload('payment_on_delivery', e)}
                   className="flex-1"
                 />
-                {uploadedFiles['payment-cod'] && (
+                {uploadedFiles['payment_on_delivery'] && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onTestAudio('payment-cod')}
+                    onClick={() => onTestAudio('payment_on_delivery')}
                   >
                     <Icon name="Play" className="w-4 h-4" />
                   </Button>
                 )}
               </div>
-              {uploadedFiles['payment-cod'] && (
+              {uploadedFiles['payment_on_delivery'] && (
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <Icon name="Check" className="w-3 h-3" />
                   Файл загружен
@@ -299,14 +299,14 @@ export const CellAudioManager = ({
                     <Input
                       type="file"
                       accept=".mp3,.wav,.m4a,.ogg,.mpeg"
-                      onChange={(e) => handleFileUpload(`cell-${num}`, e)}
+                      onChange={(e) => handleFileUpload(`cell_${num}`, e)}
                       className="flex-1 text-xs"
                     />
-                    {uploadedFiles[`cell-${num}`] && (
+                    {uploadedFiles[`cell_${num}`] && (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onTestAudio(`cell-${num}`)}
+                        onClick={() => onTestAudio(`cell_${num}`)}
                       >
                         <Icon name="Play" className="w-4 h-4" />
                       </Button>
@@ -330,16 +330,19 @@ export const CellAudioManager = ({
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 space-y-1 text-sm">
           <div className="font-medium text-green-800">📊 Статистика загруженных файлов:</div>
           <div className="text-xs text-green-700">
-            • Номеров ячеек: {Object.keys(uploadedFiles).filter(k => k.startsWith('cell-')).length}
+            • Номеров ячеек: {Object.keys(uploadedFiles).filter(k => k.startsWith('cell_')).length}
           </div>
           <div className="text-xs text-green-700">
-            • Количество товаров: {Object.keys(uploadedFiles).filter(k => k.startsWith('count-')).length}
+            • Количество товаров: {Object.keys(uploadedFiles).filter(k => k.startsWith('count_')).length}
           </div>
           <div className="text-xs text-green-700">
-            • Слово "товаров": {uploadedFiles['word-items'] ? '✅' : '❌'}
+            • Файл "goods": {uploadedFiles['goods'] ? '✅' : '❌'}
           </div>
           <div className="text-xs text-green-700">
-            • Оплата при получении: {uploadedFiles['payment-cod'] ? '✅' : '❌'}
+            • Слово "товаров": {uploadedFiles['word_items'] ? '✅' : '❌'}
+          </div>
+          <div className="text-xs text-green-700">
+            • Оплата при получении: {uploadedFiles['payment_on_delivery'] ? '✅' : '❌'}
           </div>
         </div>
       </CardContent>

@@ -17,21 +17,21 @@ interface AudioManagerProps {
 
 const BASIC_FILES = [
   { key: 'goods', label: 'Файл "goods.mp3" - озвучка товары', testKey: 'delivery-cell-info' },
-  { key: 'word-items', label: 'Файл "word-items.mp3" - слово "товаров"', testKey: 'delivery-cell-info' },
+  { key: 'word_items', label: 'Файл "word_items.mp3" - слово "товаров"', testKey: 'delivery-cell-info' },
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
   { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
 ];
 
 const COUNT_FILES = Array.from({ length: 20 }, (_, i) => ({
-  key: `count-${i + 1}`,
-  label: `Файл "${i + 1}.mp3" - количество ${i + 1}`,
+  key: `count_${i + 1}`,
+  label: `Файл "count_${i + 1}.mp3" - количество ${i + 1}`,
   testKey: 'delivery-cell-info'
 }));
 
 const CELL_FILES = Array.from({ length: 482 }, (_, i) => ({
-  key: `cell-${i + 1}`,
-  label: `Файл "${i + 1}.mp3" - ячейка ${i + 1}`,
+  key: `cell_${i + 1}`,
+  label: `Файл "cell_${i + 1}.mp3" - ячейка ${i + 1}`,
   testKey: 'delivery-cell-info'
 }));
 
