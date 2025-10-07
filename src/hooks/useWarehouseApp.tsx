@@ -17,18 +17,35 @@ export interface Product {
 export const useWarehouseApp = (audioSettings: AudioSettings) => {
   const { playAudio, stopAudio, isPlaying, uploadedFiles, setUploadedFiles } = useAudio({ audioSettings });
   
+  // Загрузка сохраненного состояния из localStorage
+  const loadSavedState = () => {
+    try {
+      const saved = localStorage.getItem('deliveryState');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const savedState = loadSavedState();
+
   // Основные состояния
   const [activeTab, setActiveTab] = useState('delivery');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(savedState?.isProcessing || false);
   
   // Состояния для выдачи
-  const [cellNumber, setCellNumber] = useState(() => Math.floor(Math.random() * 482) + 1);
+  const [cellNumber, setCellNumber] = useState(() => 
+    savedState?.cellNumber || Math.floor(Math.random() * 482) + 1
+  );
   const [currentOrder, setCurrentOrder] = useState(null);
-  const [currentStep, setCurrentStep] = useState('scan');
-  const [itemsCount] = useState(() => Math.floor(Math.random() * 8) + 1);
+  const [currentStep, setCurrentStep] = useState(savedState?.currentStep || 'scan');
+  const [itemsCount] = useState(() => 
+    savedState?.itemsCount || Math.floor(Math.random() * 8) + 1
+  );
   const [customerPhone] = useState(() => {
+    if (savedState?.customerPhone) return savedState.customerPhone;
     const codes = ['9', '8', '7', '6', '5'];
     const code = codes[Math.floor(Math.random() * codes.length)];
     const digits = Math.floor(Math.random() * 9000) + 1000;
@@ -78,6 +95,18 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       originalPrice
     };
   });
+
+  // Сохранение состояния в localStorage
+  useEffect(() => {
+    const stateToSave = {
+      cellNumber,
+      currentStep,
+      itemsCount,
+      customerPhone,
+      isProcessing
+    };
+    localStorage.setItem('deliveryState', JSON.stringify(stateToSave));
+  }, [cellNumber, currentStep, itemsCount, customerPhone, isProcessing]);
 
   // Эффекты
   useEffect(() => {
@@ -158,6 +187,9 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       setPhoneNumber('');
       setCurrentOrder(null); // Сбрасываем заказ
       setIsProcessing(false);
+      
+      // Очищаем сохраненное состояние
+      localStorage.removeItem('deliveryState');
       
     } catch (error) {
       console.error('Ошибка в процессе выдачи:', error);
