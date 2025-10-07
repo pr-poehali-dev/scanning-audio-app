@@ -100,12 +100,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       
       const audioSequence: string[] = [];
       
-      console.log('🔍 Поиск файлов для составной озвучки:');
-      console.log('  - Ищем ячейку:', `cell_${cellNumber}`);
-      console.log('  - Ищем goods:', 'goods');
-      console.log('  - Ищем количество:', itemCount ? `count_${itemCount}` : 'НЕ ПЕРЕДАНО');
-      console.log('  - Ищем "товаров":', 'word_items');
-      
       // 1. Озвучка номера ячейки
       const cellAudio = currentFiles[`cell_${cellNumber}`];
       
@@ -113,7 +107,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const goodsAudio = currentFiles['goods'];
       
       // 3. Озвучка количества товаров (если передано)
-      // Пробуем найти по разным вариантам названия
       const countAudio = itemCount ? (
         currentFiles[`count_${itemCount}`] || 
         currentFiles[`${itemCount}`] || 
@@ -122,18 +115,16 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       
       // 4. Озвучка слова "товаров"
       const wordItemsAudio = currentFiles['word_items'];
+      
+      // 5. Озвучка "оплата при получении"
+      const paymentAudio = currentFiles['payment_on_delivery'];
 
-      console.log('✅ Результаты поиска:');
-      console.log('  - Ячейка:', cellAudio ? `НАЙДЕН (${cellAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
-      console.log('  - Goods:', goodsAudio ? `НАЙДЕН (${goodsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
-      console.log('  - Количество:', countAudio ? `НАЙДЕН (${countAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
-      console.log('  - Слово:', wordItemsAudio ? `НАЙДЕН (${wordItemsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
-
-      // Собираем последовательность: ЯЧЕЙКА → GOODS → количество → "товаров"
+      // Собираем последовательность: ЯЧЕЙКА → GOODS → количество → "товаров" → "оплата при получении"
       if (cellAudio) audioSequence.push(cellAudio);
       if (goodsAudio) audioSequence.push(goodsAudio);
       if (countAudio) audioSequence.push(countAudio);
       if (wordItemsAudio) audioSequence.push(wordItemsAudio);
+      if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
         cell: !!cellAudio,
