@@ -100,8 +100,13 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ QR!');
         
-        // Озвучка: номер ячейки, количество товаров, оплата при получении
+        // Озвучка: номер ячейки, количество товаров
         playAudio('delivery-cell-info', cellNumber, itemsCount);
+        
+        // Озвучка: оплата при получении
+        setTimeout(() => {
+          playAudio('payment_on_delivery');
+        }, 100);
         
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
