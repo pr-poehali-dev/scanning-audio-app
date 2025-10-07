@@ -94,6 +94,9 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
+      console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));
+      console.log('🔢 Файлы count:', Object.keys(currentFiles).filter(k => k.startsWith('count')));
+      
       const audioSequence: string[] = [];
       
       console.log('🔍 Поиск файлов для составной озвучки:');
@@ -101,8 +104,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       console.log('  - Ищем goods:', 'goods');
       console.log('  - Ищем количество:', itemCount ? `count_${itemCount}` : 'НЕ ПЕРЕДАНО');
       console.log('  - Ищем "товаров":', 'word_items');
-      console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));
-      console.log('🔢 Файлы count:', Object.keys(currentFiles).filter(k => k.startsWith('count')));
       
       // 1. Озвучка номера ячейки
       const cellAudio = currentFiles[`cell_${cellNumber}`];
