@@ -89,7 +89,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       'delivery-cell-info': 'goods',
       'delivery-check-product': 'please_check_good_under_camera',
       'check-product-under-camera': 'please_check_good_under_camera',
-      'delivery-thanks': 'thanks_for_order_rate_pickpoint'
+      'delivery-thanks': 'thanks_for_order_rate_pickpoint',
+      'payment_on_delivery': 'payment_on_delivery'
     };
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
