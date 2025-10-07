@@ -112,7 +112,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const goodsAudio = currentFiles['goods'];
       
       // 3. Озвучка количества товаров (если передано)
-      const countAudio = itemCount ? currentFiles[`count_${itemCount}`] : null;
+      // Пробуем найти по разным вариантам названия
+      const countAudio = itemCount ? (
+        currentFiles[`count_${itemCount}`] || 
+        currentFiles[`${itemCount}`] || 
+        currentFiles[`count-${itemCount}`]
+      ) : null;
       
       // 4. Озвучка слова "товаров"
       const wordItemsAudio = currentFiles['word_items'];
