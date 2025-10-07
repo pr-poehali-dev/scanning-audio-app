@@ -98,45 +98,39 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       
       console.log('🔍 Поиск файлов для составной озвучки:');
       console.log('  - Ищем ячейку:', `cell_${cellNumber}`);
+      console.log('  - Ищем goods:', 'goods');
       console.log('  - Ищем количество:', itemCount ? `count_${itemCount}` : 'НЕ ПЕРЕДАНО');
       console.log('  - Ищем "товаров":', 'word_items');
-      console.log('  - Ищем goods:', 'goods');
       
-      // 1. ГЛАВНОЕ: Озвучка "goods" (вначале!)
-      const goodsAudio = currentFiles['goods'];
-      
-      // 2. Озвучка номера ячейки
+      // 1. Озвучка номера ячейки
       const cellAudio = currentFiles[`cell_${cellNumber}`];
+      
+      // 2. Озвучка "goods"
+      const goodsAudio = currentFiles['goods'];
       
       // 3. Озвучка количества товаров (если передано)
       const countAudio = itemCount ? currentFiles[`count_${itemCount}`] : null;
       
       // 4. Озвучка слова "товаров"
       const wordItemsAudio = currentFiles['word_items'];
-      
-      // 5. Оплата при получении
-      const paymentAudio = currentFiles['payment_on_delivery'];
 
       console.log('✅ Результаты поиска:');
-      console.log('  - Goods:', goodsAudio ? `НАЙДЕН (${goodsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
       console.log('  - Ячейка:', cellAudio ? `НАЙДЕН (${cellAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
+      console.log('  - Goods:', goodsAudio ? `НАЙДЕН (${goodsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
       console.log('  - Количество:', countAudio ? `НАЙДЕН (${countAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
       console.log('  - Слово:', wordItemsAudio ? `НАЙДЕН (${wordItemsAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
-      console.log('  - Оплата:', paymentAudio ? `НАЙДЕН (${paymentAudio.substring(0, 50)}...)` : 'НЕ НАЙДЕН');
 
-      // Собираем последовательность: GOODS → ЯЧЕЙКА → количество → "товаров" → оплата
-      if (goodsAudio) audioSequence.push(goodsAudio);
+      // Собираем последовательность: ЯЧЕЙКА → GOODS → количество → "товаров"
       if (cellAudio) audioSequence.push(cellAudio);
+      if (goodsAudio) audioSequence.push(goodsAudio);
       if (countAudio) audioSequence.push(countAudio);
       if (wordItemsAudio) audioSequence.push(wordItemsAudio);
-      if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
-        goods: !!goodsAudio,
         cell: !!cellAudio,
+        goods: !!goodsAudio,
         count: !!countAudio,
         wordItems: !!wordItemsAudio,
-        payment: !!paymentAudio,
         total: audioSequence.length
       });
 
