@@ -90,8 +90,22 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       'delivery-check-product': 'please_check_good_under_camera',
       'check-product-under-camera': 'please_check_good_under_camera',
       'delivery-thanks': 'thanks_for_order_rate_pickpoint',
-      'payment_on_delivery': 'payment_on_delivery'
+      'payment_on_delivery': 'payment_on_delivery',
+      'box_accepted': 'box_accepted'
     };
+
+    // Специальная обработка для озвучки только номера ячейки
+    if (phraseKey === 'cell-number' && cellNumber !== undefined) {
+      const cellAudio = currentFiles[`cell_${cellNumber}`];
+      
+      if (cellAudio) {
+        console.log(`🎵 Озвучка ячейки ${cellNumber}`);
+        playSequentialAudio([cellAudio]);
+        return;
+      }
+      console.log(`❌ Нет файла для ячейки ${cellNumber}`);
+      return;
+    }
 
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {

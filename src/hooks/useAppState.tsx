@@ -62,6 +62,8 @@ export const useAppState = () => {
       'return-scan-product': true,
       'return-confirm': true,
       'return-success': true,
+      'box_accepted': true,
+      'cell-number': true,
     };
     
     return {

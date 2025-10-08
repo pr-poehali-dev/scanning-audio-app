@@ -21,13 +21,19 @@ const MOCK_BOXES: Box[] = [
         barcode: '1646827678',
         name: 'GENESIS / Спортивный костюм',
         image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
-        cell: 'А-15'
+        cell: '15'
       },
       {
         barcode: '1667827368',
         name: 'Smite / Футболка оверсайз',
         image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
-        cell: 'Б-22'
+        cell: '22'
+      },
+      {
+        barcode: '1667827369',
+        name: 'Adidas / Кроссовки Superstar',
+        image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
+        cell: '105'
       }
     ]
   },
@@ -38,7 +44,36 @@ const MOCK_BOXES: Box[] = [
         barcode: '1234567890',
         name: 'Nike / Кроссовки Air Max',
         image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
-        cell: 'В-08'
+        cell: '8'
+      },
+      {
+        barcode: '1234567891',
+        name: 'Puma / Спортивные штаны',
+        image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
+        cell: '234'
+      }
+    ]
+  },
+  {
+    boxBarcode: 'BOX345678',
+    products: [
+      {
+        barcode: '9876543210',
+        name: 'Zara / Джинсы женские',
+        image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
+        cell: '67'
+      },
+      {
+        barcode: '9876543211',
+        name: 'H&M / Платье вечернее',
+        image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
+        cell: '412'
+      },
+      {
+        barcode: '9876543212',
+        name: 'Uniqlo / Рубашка мужская',
+        image: 'https://cdn.poehali.dev/files/37460f9f-5236-49a3-ad2d-20dfe5141e6d.png',
+        cell: '189'
       }
     ]
   }
@@ -67,6 +102,10 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
         setCurrentScannedBarcode(randomBox.boxBarcode);
         setStep('scan-products');
         setIsScanning(false);
+        
+        // Озвучка: коробка принята
+        playAudio('box_accepted');
+        
       } else if (step === 'scan-products' && currentBox) {
         // Сканируем товар из коробки
         const unscannedProducts = currentBox.products.filter(
@@ -78,8 +117,10 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
           setCurrentScannedBarcode(product.barcode);
           setScannedProducts([...scannedProducts, product.barcode]);
           
-          // Озвучка ячейки
-          playAudio('cell-announcement');
+          // Озвучка номера ячейки - передаём номер как параметр
+          // Используем существующую систему озвучки ячеек
+          const cellNumber = parseInt(product.cell);
+          playAudio('cell-number', cellNumber);
           
           // Проверяем, все ли товары отсканированы
           if (scannedProducts.length + 1 === currentBox.products.length) {
