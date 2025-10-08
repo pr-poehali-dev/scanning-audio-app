@@ -68,6 +68,7 @@ class CloudAudioStorage {
   async getAllFiles(): Promise<{ [key: string]: string }> {
     const response = await fetch(BACKEND_URL, {
       method: 'GET',
+      mode: 'cors',
       headers: {
         'X-User-Id': this.userId
       }
@@ -110,6 +111,7 @@ class CloudAudioStorage {
   async uploadFile(key: string, base64Data: string): Promise<void> {
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
         'X-User-Id': this.userId
@@ -121,7 +123,8 @@ class CloudAudioStorage {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to upload ${key}`);
+      const text = await response.text();
+      throw new Error(`Failed to upload ${key}: ${response.status} ${text}`);
     }
   }
 }
