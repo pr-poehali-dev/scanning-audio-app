@@ -19,16 +19,11 @@ def get_db_connection():
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
-    # Get origin for CORS
-    headers = event.get('headers', {})
-    origin = headers.get('origin', headers.get('Origin', '*'))
-    
     # CORS headers to use in all responses
     cors_headers = {
-        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
-        'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Max-Age': '86400'
     }
     
@@ -40,6 +35,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False,
             'body': ''
         }
+    
+    # Get user ID from custom header
+    headers = event.get('headers', {})
     
     # Get user ID from custom header
     user_id: str = headers.get('x-user-id', headers.get('X-User-Id', 'default'))

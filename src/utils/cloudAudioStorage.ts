@@ -24,7 +24,6 @@ class CloudAudioStorage {
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       mode: 'cors',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         'X-User-Id': this.userId
@@ -56,7 +55,6 @@ class CloudAudioStorage {
     const response = await fetch(`${BACKEND_URL}?key=${encodeURIComponent(key)}`, {
       method: 'GET',
       mode: 'cors',
-      credentials: 'include',
       headers: {
         'X-User-Id': this.userId
       }
@@ -74,7 +72,6 @@ class CloudAudioStorage {
     const response = await fetch(BACKEND_URL, {
       method: 'GET',
       mode: 'cors',
-      credentials: 'include',
       headers: {
         'X-User-Id': this.userId
       }
@@ -93,7 +90,6 @@ class CloudAudioStorage {
     const response = await fetch(`${BACKEND_URL}?key=${encodeURIComponent(key)}`, {
       method: 'DELETE',
       mode: 'cors',
-      credentials: 'include',
       headers: {
         'X-User-Id': this.userId
       }
@@ -120,7 +116,6 @@ class CloudAudioStorage {
     const response = await fetch(BACKEND_URL, {
       method: 'POST',
       mode: 'cors',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         'X-User-Id': this.userId
