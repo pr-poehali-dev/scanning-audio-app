@@ -1,0 +1,2 @@
+ALTER TABLE t_p72229687_scanning_audio_app.audio_files 
+DROP CONSTRAINT audio_files_cell_number_fkey;
