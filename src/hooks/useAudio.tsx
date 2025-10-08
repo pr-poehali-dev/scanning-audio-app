@@ -36,24 +36,28 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
   useEffect(() => {
     const loadAudioFiles = async () => {
-      // Сначала пробуем загрузить из облака
-      const cloudFiles = await cloudAudioStorage.getAllFiles();
-      console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
-      
-      if (Object.keys(cloudFiles).length > 0) {
-        console.log('📋 Загружено из облака:', Object.keys(cloudFiles).length);
-        setUploadedFiles(cloudFiles);
-        uploadedFilesRef.current = cloudFiles;
+      try {
+        // Сначала пробуем загрузить из облака
+        const cloudFiles = await cloudAudioStorage.getAllFiles();
+        console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
         
-        // Синхронизируем в локальное хранилище для быстрого доступа
-        for (const [key, data] of Object.entries(cloudFiles)) {
-          await audioStorage.saveFileFromBase64(key, data);
+        if (Object.keys(cloudFiles).length > 0) {
+          console.log('📋 Загружено из облака:', Object.keys(cloudFiles).length);
+          setUploadedFiles(cloudFiles);
+          uploadedFilesRef.current = cloudFiles;
+        } else {
+          // Если в облаке пусто, загружаем из локального хранилища
+          const files = await audioStorage.getAllFiles();
+          console.log('📦 Загружено локально:', Object.keys(files).length);
+          console.log('📋 Список файлов:', Object.keys(files));
+          setUploadedFiles(files);
+          uploadedFilesRef.current = files;
         }
-      } else {
-        // Если в облаке пусто, загружаем из локального хранилища
+      } catch (error) {
+        console.error('Ошибка загрузки из облака:', error);
+        // Fallback на локальное хранилище
         const files = await audioStorage.getAllFiles();
-        console.log('📦 Загружено локально:', Object.keys(files).length);
-        console.log('📋 Список файлов:', Object.keys(files));
+        console.log('📦 Загружено локально (fallback):', Object.keys(files).length);
         setUploadedFiles(files);
         uploadedFilesRef.current = files;
       }
