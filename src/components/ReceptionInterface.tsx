@@ -15,7 +15,7 @@ interface Box {
 
 // Функция генерации случайной коробки с товарами
 const generateRandomBox = (): Box => {
-  const productCount = Math.floor(Math.random() * 100) + 1; // От 1 до 100 товаров
+  const productCount = Math.floor(Math.random() * 15) + 1; // От 1 до 15 товаров
   
   const productNames = [
     'Nike / Кроссовки мужские Air Max',
