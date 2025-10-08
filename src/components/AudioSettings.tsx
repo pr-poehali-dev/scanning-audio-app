@@ -53,19 +53,46 @@ export const AudioSettings = ({
         return;
       }
 
+      console.log(`🚀 Начинаю загрузку ${fileCount} файлов в облако...`);
       let uploaded = 0;
-      for (const [key, data] of Object.entries(localFiles)) {
-        // Convert base64 data URL to blob, then to file
-        const response = await fetch(data);
-        const blob = await response.blob();
-        const file = new File([blob], `${key}.mp3`, { type: 'audio/mp3' });
+      let errors = 0;
+
+      // Upload in batches of 50 to avoid overwhelming the server
+      const entries = Object.entries(localFiles);
+      const batchSize = 50;
+      
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize);
         
-        await cloudAudioStorage.saveFile(key, file);
-        uploaded++;
+        await Promise.all(batch.map(async ([key, data]) => {
+          try {
+            // Send base64 data directly to backend
+            const response = await fetch('https://functions.poehali.dev/8339fb2e-ee81-4b48-b489-990d6cb5f3fb', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-User-Id': localStorage.getItem('audio-user-id') || 'default'
+              },
+              body: JSON.stringify({ key, data })
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+
+            uploaded++;
+            if (uploaded % 100 === 0) {
+              console.log(`📤 Загружено: ${uploaded}/${fileCount}`);
+            }
+          } catch (err) {
+            console.error(`❌ Ошибка загрузки ${key}:`, err);
+            errors++;
+          }
+        }));
       }
 
       setCloudFileCount(uploaded);
-      alert(`✅ Загружено в облако: ${uploaded} файлов`);
+      alert(`✅ Загружено в облако: ${uploaded} из ${fileCount} файлов${errors > 0 ? `\n⚠️ Ошибок: ${errors}` : ''}`);
     } catch (error) {
       console.error('Ошибка синхронизации:', error);
       alert('Ошибка при загрузке файлов в облако');
