@@ -12,7 +12,9 @@ from psycopg2.extras import RealDictCursor
 
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
-    return psycopg2.connect(dsn)
+    conn = psycopg2.connect(dsn)
+    conn.autocommit = True
+    return conn
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -53,9 +55,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if file_key:
                 # Get specific file
+                safe_user_id = user_id.replace("'", "''")
+                safe_file_key = file_key.replace("'", "''")
                 cur.execute(
-                    "SELECT file_key, file_data FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = %s AND file_key = %s",
-                    (user_id, file_key)
+                    f"SELECT file_key, file_data FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = '{safe_user_id}' AND file_key = '{safe_file_key}'"
                 )
                 row = cur.fetchone()
                 
@@ -75,9 +78,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
             else:
                 # List all files (return keys and data)
+                safe_user_id = user_id.replace("'", "''")
                 cur.execute(
-                    "SELECT file_key, file_data FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = %s",
-                    (user_id,)
+                    f"SELECT file_key, file_data FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = '{safe_user_id}'"
                 )
                 rows = cur.fetchall()
                 files = {row['file_key']: row['file_data'] for row in rows}
@@ -115,15 +118,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cell_number = None
             
             # Upsert file (insert or update if exists)
-            cur.execute("""
+            safe_user_id = user_id.replace("'", "''")
+            safe_file_key = file_key.replace("'", "''")
+            safe_file_data = file_data.replace("'", "''")
+            safe_file_type = file_type.replace("'", "''")
+            safe_file_name = f"{file_key}.mp3".replace("'", "''")
+            safe_cell_number = f"'{cell_number}'" if cell_number else "NULL"
+            
+            cur.execute(f"""
                 INSERT INTO t_p72229687_scanning_audio_app.audio_files 
                     (user_id, file_key, file_data, file_type, file_name, cell_number, created_at, is_active)
-                VALUES (%s, %s, %s, %s, %s, %s, NOW(), TRUE)
+                VALUES ('{safe_user_id}', '{safe_file_key}', '{safe_file_data}', '{safe_file_type}', '{safe_file_name}', {safe_cell_number}, NOW(), TRUE)
                 ON CONFLICT (user_id, file_key) 
                 DO UPDATE SET file_data = EXCLUDED.file_data, created_at = NOW()
-            """, (user_id, file_key, file_data, file_type, f"{file_key}.mp3", cell_number))
-            
-            conn.commit()
+            """)
             
             return {
                 'statusCode': 200,
@@ -149,12 +157,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Missing key parameter'})
                 }
             
+            safe_user_id = user_id.replace("'", "''")
+            safe_file_key = file_key.replace("'", "''")
             cur.execute(
-                "DELETE FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = %s AND file_key = %s",
-                (user_id, file_key)
+                f"DELETE FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = '{safe_user_id}' AND file_key = '{safe_file_key}'"
             )
             deleted_count = cur.rowcount
-            conn.commit()
             
             if deleted_count > 0:
                 return {
