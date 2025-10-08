@@ -205,62 +205,54 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
 
           {/* Шаг 2: Сканирование товаров */}
           {step === 2 && currentBox && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Большая карточка коробки */}
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 p-8">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md">
-                        <Icon name="Package" size={40} className="text-purple-600" />
+                <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-md">
+                        <Icon name="Package" size={32} className="text-purple-600" />
                       </div>
                       <div>
-                        <div className="text-sm text-purple-600 font-medium mb-1">Коробка</div>
-                        <div className="text-3xl font-bold text-gray-900">{currentBox.boxBarcode}</div>
+                        <div className="text-xs text-purple-600 font-medium mb-1">Коробка</div>
+                        <div className="text-2xl font-bold text-gray-900">{currentBox.boxBarcode}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-purple-600 font-medium mb-1">Товаров</div>
-                      <div className="text-5xl font-bold text-purple-600">
+                      <div className="text-xs text-purple-600 font-medium mb-1">Товаров</div>
+                      <div className="text-4xl font-bold text-purple-600">
                         {totalProducts}
                       </div>
                     </div>
                   </div>
                   
-                  {/* Прогресс */}
-                  <div className="mt-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-purple-700">Прогресс приёмки</span>
-                      <span className="text-sm font-bold text-purple-900">{scannedCount} / {totalProducts}</span>
-                    </div>
-                    <div className="w-full bg-purple-200 rounded-full h-3">
-                      <div 
-                        className="bg-purple-600 h-3 rounded-full transition-all duration-500"
-                        style={{ width: `${(scannedCount / totalProducts) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <button
-                    onClick={handleScanClick}
-                    disabled={isScanning}
-                    className={`w-full py-5 rounded-xl font-bold text-xl transition-all flex items-center justify-center gap-3 ${
-                      isScanning
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95 shadow-lg hover:shadow-xl'
-                    }`}
-                  >
-                    <Icon name={isScanning ? 'Loader2' : 'Scan'} size={28} className={isScanning ? 'animate-spin' : ''} />
-                    <span>{isScanning ? 'Сканирование...' : 'Сканировать товар'}</span>
-                  </button>
+                  <div className="text-lg text-gray-700">+7 (***) ***-7281</div>
                 </div>
               </div>
 
+              {/* Кнопка "Проверить товары" */}
+              <button
+                onClick={handleScanClick}
+                disabled={isScanning}
+                className={`w-full py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 ${
+                  isScanning
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95 shadow-lg hover:shadow-xl'
+                }`}
+              >
+                <Icon name={isScanning ? 'Loader2' : 'Scan'} size={24} className={isScanning ? 'animate-spin' : ''} />
+                <span>{isScanning ? 'Сканирование...' : 'Проверить товары'}</span>
+              </button>
+
+              {/* Выбрать все и счётчик */}
+              <div className="flex items-center justify-between px-2">
+                <button className="text-purple-600 font-semibold text-base">Выбрать все</button>
+                <span className="text-gray-600 font-medium">{scannedCount} из {totalProducts} выбрано</span>
+              </div>
+
               {/* Карточки товаров */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-700 px-2">Информация по товарам клиента</h3>
+              <div className="space-y-3">
                 {currentBox.products.map((product, index) => {
                   const isScanned = scannedProducts.includes(product.barcode);
                   
