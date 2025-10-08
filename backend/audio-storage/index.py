@@ -17,22 +17,29 @@ def get_db_connection():
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
+    # Get origin for CORS
+    headers = event.get('headers', {})
+    origin = headers.get('origin', headers.get('Origin', '*'))
+    
+    # CORS headers to use in all responses
+    cors_headers = {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Max-Age': '86400'
+    }
+    
     # Handle CORS OPTIONS request
     if method == 'OPTIONS':
         return {
             'statusCode': 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
-                'Access-Control-Max-Age': '86400'
-            },
+            'headers': cors_headers,
             'isBase64Encoded': False,
             'body': ''
         }
     
     # Get user ID from custom header
-    headers = event.get('headers', {})
     user_id: str = headers.get('x-user-id', headers.get('X-User-Id', 'default'))
     
     conn = get_db_connection()
@@ -55,20 +62,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 if row:
                     return {
                         'statusCode': 200,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        },
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
                         'isBase64Encoded': False,
                         'body': json.dumps({'key': row['file_key'], 'data': row['file_data']})
                     }
                 else:
                     return {
                         'statusCode': 404,
-                        'headers': {
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        },
+                        'headers': {**cors_headers, 'Content-Type': 'application/json'},
                         'isBase64Encoded': False,
                         'body': json.dumps({'error': 'File not found'})
                     }
@@ -83,10 +84,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 return {
                     'statusCode': 200,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'files': files, 'count': len(files)})
                 }
@@ -100,10 +98,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if not file_key or not file_data:
                 return {
                     'statusCode': 400,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Missing key or data'})
                 }
@@ -132,10 +127,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             return {
                 'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
+                'headers': {**cors_headers, 'Content-Type': 'application/json'},
                 'isBase64Encoded': False,
                 'body': json.dumps({
                     'success': True,
@@ -152,10 +144,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if not file_key:
                 return {
                     'statusCode': 400,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'Missing key parameter'})
                 }
@@ -170,30 +159,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if deleted_count > 0:
                 return {
                     'statusCode': 200,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'success': True, 'deleted': file_key})
                 }
             else:
                 return {
                     'statusCode': 404,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
+                    'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
                     'body': json.dumps({'error': 'File not found'})
                 }
         
         return {
             'statusCode': 405,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            'headers': {**cors_headers, 'Content-Type': 'application/json'},
             'isBase64Encoded': False,
             'body': json.dumps({'error': 'Method not allowed'})
         }
