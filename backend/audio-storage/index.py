@@ -112,10 +112,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cell_number = file_key.replace('cell_', '').replace('cell-', '')
             elif file_key.startswith('count'):
                 file_type = 'count'
-                cell_number = None
+                cell_number = ''
             else:
                 file_type = 'system'
-                cell_number = None
+                cell_number = ''
             
             # Upsert file (insert or update if exists)
             safe_user_id = user_id.replace("'", "''")
@@ -123,14 +123,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             safe_file_data = file_data.replace("'", "''")
             safe_file_type = file_type.replace("'", "''")
             safe_file_name = f"{file_key}.mp3".replace("'", "''")
-            safe_cell_number = f"'{cell_number}'" if cell_number else "NULL"
+            safe_cell_number = cell_number.replace("'", "''") if cell_number else ''
             
             cur.execute(f"""
                 INSERT INTO t_p72229687_scanning_audio_app.audio_files 
-                    (user_id, file_key, file_data, file_type, file_name, cell_number, created_at, is_active)
-                VALUES ('{safe_user_id}', '{safe_file_key}', '{safe_file_data}', '{safe_file_type}', '{safe_file_name}', {safe_cell_number}, NOW(), TRUE)
+                    (user_id, file_key, file_data, file_type, file_name, cell_number)
+                VALUES ('{safe_user_id}', '{safe_file_key}', '{safe_file_data}', '{safe_file_type}', '{safe_file_name}', '{safe_cell_number}')
                 ON CONFLICT (user_id, file_key) 
-                DO UPDATE SET file_data = EXCLUDED.file_data, created_at = NOW()
+                DO UPDATE SET file_data = EXCLUDED.file_data
             """)
             
             return {
