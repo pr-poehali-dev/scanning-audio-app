@@ -59,6 +59,7 @@ export const AudioSettings = ({
 
       const entries = Object.entries(localFiles);
       const batchSize = 10;
+      let lastError: any = null;
       
       for (let i = 0; i < entries.length; i += batchSize) {
         const batch = entries.slice(i, i + batchSize);
@@ -72,6 +73,7 @@ export const AudioSettings = ({
             }
           } catch (err) {
             console.error(`❌ ${key}:`, err);
+            lastError = err;
             errors++;
           }
         }));
@@ -82,10 +84,16 @@ export const AudioSettings = ({
       }
 
       setCloudFileCount(uploaded);
-      alert(`✅ Загружено: ${uploaded} из ${fileCount}${errors > 0 ? `\n⚠️ Ошибок: ${errors}` : ''}`);
+      
+      if (errors > 0 && lastError) {
+        const errorMsg = lastError?.message || String(lastError);
+        alert(`✅ Загружено: ${uploaded} из ${fileCount}\n⚠️ Ошибок: ${errors}\n\n❌ Последняя ошибка:\n${errorMsg}`);
+      } else {
+        alert(`✅ Загружено: ${uploaded} из ${fileCount}`);
+      }
     } catch (error) {
       console.error('Ошибка:', error);
-      alert('Ошибка при загрузке');
+      alert(`Ошибка при загрузке:\n${error}`);
     } finally {
       setIsSyncing(false);
     }
