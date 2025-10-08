@@ -96,7 +96,10 @@ export const AudioManager = ({
         console.log(`✅ ${fileName}`);
       } catch (error) {
         errorCount++;
-        console.error(`❌ ${fileName}:`, error);
+        console.error(`❌ Ошибка загрузки ${fileName}:`, error);
+        if (error instanceof Error) {
+          console.error(`❌ Детали: ${error.message}`, error.stack);
+        }
       }
     }
 
