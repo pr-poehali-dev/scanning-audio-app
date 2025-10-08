@@ -4,10 +4,8 @@ import { AudioUploadGuide } from './AudioUploadGuide';
 import { TTSGenerator } from './TTSGenerator';
 import { AudioSettings as AudioSettingsType } from '@/hooks/useAppState';
 import { audioStorage } from '@/utils/audioStorage';
-import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
 import { Button } from './ui/button';
-import { Trash2, Cloud, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 
 interface AudioSettingsProps {
   open: boolean;
@@ -28,93 +26,11 @@ export const AudioSettings = ({
   setUploadedFiles,
   onTestAudio
 }: AudioSettingsProps) => {
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [cloudFileCount, setCloudFileCount] = useState<number | null>(null);
-
   const handleClearAll = async () => {
     if (confirm('Удалить все загруженные аудиофайлы? Это действие нельзя отменить.')) {
       await audioStorage.clear();
-      await cloudAudioStorage.clear();
       setUploadedFiles({});
-      setCloudFileCount(0);
       alert('Все файлы удалены. Загрузите озвучки заново.');
-    }
-  };
-
-  const handleSyncToCloud = async () => {
-    setIsSyncing(true);
-    try {
-      const localFiles = await audioStorage.getAllFiles();
-      const fileCount = Object.keys(localFiles).length;
-      
-      if (fileCount === 0) {
-        alert('Нет локальных файлов для загрузки в облако');
-        setIsSyncing(false);
-        return;
-      }
-
-      console.log(`🚀 Начинаю загрузку ${fileCount} файлов в облако...`);
-      let uploaded = 0;
-      let errors = 0;
-
-      // Upload in small batches with delay to avoid 502 errors
-      const entries = Object.entries(localFiles);
-      const batchSize = 5; // Small batches
-      
-      for (let i = 0; i < entries.length; i += batchSize) {
-        const batch = entries.slice(i, i + batchSize);
-        
-        await Promise.all(batch.map(async ([key, data]) => {
-          try {
-            // Send base64 data directly to backend
-            const response = await fetch('https://functions.poehali.dev/8339fb2e-ee81-4b48-b489-990d6cb5f3fb', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-User-Id': localStorage.getItem('audio-user-id') || 'default'
-              },
-              body: JSON.stringify({ key, data })
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
-
-            uploaded++;
-            if (uploaded % 50 === 0 || uploaded === fileCount) {
-              console.log(`📤 Прогресс: ${uploaded}/${fileCount} (${Math.round(uploaded/fileCount*100)}%)`);
-            }
-          } catch (err) {
-            console.error(`❌ Ошибка загрузки ${key}:`, err);
-            errors++;
-          }
-        }));
-        
-        // Small delay between batches to prevent server overload
-        if (i + batchSize < entries.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-
-      setCloudFileCount(uploaded);
-      alert(`✅ Загружено в облако: ${uploaded} из ${fileCount} файлов${errors > 0 ? `\n⚠️ Ошибок: ${errors}` : ''}`);
-    } catch (error) {
-      console.error('Ошибка синхронизации:', error);
-      alert('Ошибка при загрузке файлов в облако');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleCheckCloud = async () => {
-    try {
-      const cloudFiles = await cloudAudioStorage.getAllFiles();
-      const count = Object.keys(cloudFiles).length;
-      setCloudFileCount(count);
-      alert(`☁️ В облаке: ${count} файлов`);
-    } catch (error) {
-      console.error('Ошибка проверки облака:', error);
-      alert('Ошибка при проверке облака');
     }
   };
 
@@ -124,36 +40,15 @@ export const AudioSettings = ({
         <DialogHeader>
           <div className="flex justify-between items-center gap-2">
             <DialogTitle>Настройки озвучки</DialogTitle>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleCheckCloud}
-                className="gap-2"
-              >
-                <Cloud className="w-4 h-4" />
-                {cloudFileCount !== null ? `${cloudFileCount} в облаке` : 'Проверить облако'}
-              </Button>
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={handleSyncToCloud}
-                disabled={isSyncing}
-                className="gap-2"
-              >
-                <Upload className="w-4 h-4" />
-                {isSyncing ? 'Загружаю...' : 'Загрузить в облако'}
-              </Button>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={handleClearAll}
-                className="gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                Очистить
-              </Button>
-            </div>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={handleClearAll}
+              className="gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Очистить
+            </Button>
           </div>
         </DialogHeader>
         
