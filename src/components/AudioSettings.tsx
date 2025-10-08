@@ -71,8 +71,14 @@ export const AudioSettings = ({
             if (uploaded % 50 === 0 || uploaded === fileCount) {
               console.log(`📤 ${uploaded}/${fileCount}`);
             }
-          } catch (err) {
-            console.error(`❌ ${key}:`, err);
+          } catch (err: any) {
+            const errorDetails = {
+              message: err?.message || String(err),
+              name: err?.name,
+              stack: err?.stack,
+              cause: err?.cause
+            };
+            console.error(`❌ ${key}:`, errorDetails);
             lastError = err;
             errors++;
           }
@@ -91,9 +97,14 @@ export const AudioSettings = ({
       } else {
         alert(`✅ Загружено: ${uploaded} из ${fileCount}`);
       }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      alert(`Ошибка при загрузке:\n${error}`);
+    } catch (error: any) {
+      const errorDetails = {
+        message: error?.message || String(error),
+        name: error?.name,
+        stack: error?.stack
+      };
+      console.error('Ошибка:', errorDetails);
+      alert(`Ошибка при загрузке:\n${errorDetails.message || error}`);
     } finally {
       setIsSyncing(false);
     }
