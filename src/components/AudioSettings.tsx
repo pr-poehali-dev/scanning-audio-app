@@ -57,9 +57,9 @@ export const AudioSettings = ({
       let uploaded = 0;
       let errors = 0;
 
-      // Upload in batches of 50 to avoid overwhelming the server
+      // Upload in small batches with delay to avoid 502 errors
       const entries = Object.entries(localFiles);
-      const batchSize = 50;
+      const batchSize = 5; // Small batches
       
       for (let i = 0; i < entries.length; i += batchSize) {
         const batch = entries.slice(i, i + batchSize);
@@ -81,14 +81,19 @@ export const AudioSettings = ({
             }
 
             uploaded++;
-            if (uploaded % 100 === 0) {
-              console.log(`📤 Загружено: ${uploaded}/${fileCount}`);
+            if (uploaded % 50 === 0 || uploaded === fileCount) {
+              console.log(`📤 Прогресс: ${uploaded}/${fileCount} (${Math.round(uploaded/fileCount*100)}%)`);
             }
           } catch (err) {
             console.error(`❌ Ошибка загрузки ${key}:`, err);
             errors++;
           }
         }));
+        
+        // Small delay between batches to prevent server overload
+        if (i + batchSize < entries.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
 
       setCloudFileCount(uploaded);
