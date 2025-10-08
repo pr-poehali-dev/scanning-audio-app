@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { AudioSettings } from './useAppState';
 import { audioStorage } from '@/utils/audioStorage';
+import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
 
 interface UseAudioProps {
   audioSettings: AudioSettings;
@@ -35,11 +36,28 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
   useEffect(() => {
     const loadAudioFiles = async () => {
-      const files = await audioStorage.getAllFiles();
-      console.log('📦 Загружено файлов:', Object.keys(files).length);
-      console.log('📋 Список файлов:', Object.keys(files));
-      setUploadedFiles(files);
-      uploadedFilesRef.current = files;
+      // Сначала пробуем загрузить из облака
+      const cloudFiles = await cloudAudioStorage.getAllFiles();
+      console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
+      
+      if (Object.keys(cloudFiles).length > 0) {
+        console.log('📋 Загружено из облака:', Object.keys(cloudFiles).length);
+        setUploadedFiles(cloudFiles);
+        uploadedFilesRef.current = cloudFiles;
+        
+        // Синхронизируем в локальное хранилище для быстрого доступа
+        for (const [key, data] of Object.entries(cloudFiles)) {
+          await audioStorage.saveFileFromBase64(key, data);
+        }
+      } else {
+        // Если в облаке пусто, загружаем из локального хранилища
+        const files = await audioStorage.getAllFiles();
+        console.log('📦 Загружено локально:', Object.keys(files).length);
+        console.log('📋 Список файлов:', Object.keys(files));
+        setUploadedFiles(files);
+        uploadedFilesRef.current = files;
+      }
+      
       setIsLoading(false);
     };
 

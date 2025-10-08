@@ -4,8 +4,10 @@ import { AudioUploadGuide } from './AudioUploadGuide';
 import { TTSGenerator } from './TTSGenerator';
 import { AudioSettings as AudioSettingsType } from '@/hooks/useAppState';
 import { audioStorage } from '@/utils/audioStorage';
+import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
 import { Button } from './ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Cloud, Upload } from 'lucide-react';
+import { useState } from 'react';
 
 interface AudioSettingsProps {
   open: boolean;
@@ -26,11 +28,78 @@ export const AudioSettings = ({
   setUploadedFiles,
   onTestAudio
 }: AudioSettingsProps) => {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [cloudFileCount, setCloudFileCount] = useState<number | null>(null);
+
   const handleClearAll = async () => {
     if (confirm('Удалить все загруженные аудиофайлы? Это действие нельзя отменить.')) {
       await audioStorage.clear();
+      await cloudAudioStorage.clear();
       setUploadedFiles({});
-      alert('Все файлы удалены. Загрузите озвучки заново.');
+      setCloudFileCount(0);
+      alert('Все файлы удалены.');
+    }
+  };
+
+  const handleSyncToCloud = async () => {
+    setIsSyncing(true);
+    try {
+      const localFiles = await audioStorage.getAllFiles();
+      const fileCount = Object.keys(localFiles).length;
+      
+      if (fileCount === 0) {
+        alert('Нет локальных файлов для загрузки в облако');
+        setIsSyncing(false);
+        return;
+      }
+
+      console.log(`🚀 Загружаю ${fileCount} файлов в облако...`);
+      let uploaded = 0;
+      let errors = 0;
+
+      const entries = Object.entries(localFiles);
+      const batchSize = 10;
+      
+      for (let i = 0; i < entries.length; i += batchSize) {
+        const batch = entries.slice(i, i + batchSize);
+        
+        await Promise.all(batch.map(async ([key, data]) => {
+          try {
+            await cloudAudioStorage.uploadFile(key, data);
+            uploaded++;
+            if (uploaded % 50 === 0 || uploaded === fileCount) {
+              console.log(`📤 ${uploaded}/${fileCount}`);
+            }
+          } catch (err) {
+            console.error(`❌ ${key}:`, err);
+            errors++;
+          }
+        }));
+        
+        if (i + batchSize < entries.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      setCloudFileCount(uploaded);
+      alert(`✅ Загружено: ${uploaded} из ${fileCount}${errors > 0 ? `\n⚠️ Ошибок: ${errors}` : ''}`);
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при загрузке');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleCheckCloud = async () => {
+    try {
+      const cloudFiles = await cloudAudioStorage.getAllFiles();
+      const count = Object.keys(cloudFiles).length;
+      setCloudFileCount(count);
+      alert(`☁️ В облаке: ${count} файлов`);
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при проверке облака');
     }
   };
 
@@ -40,15 +109,36 @@ export const AudioSettings = ({
         <DialogHeader>
           <div className="flex justify-between items-center gap-2">
             <DialogTitle>Настройки озвучки</DialogTitle>
-            <Button 
-              variant="destructive" 
-              size="sm"
-              onClick={handleClearAll}
-              className="gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Очистить
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleCheckCloud}
+                className="gap-2"
+              >
+                <Cloud className="w-4 h-4" />
+                {cloudFileCount !== null ? `${cloudFileCount} в облаке` : 'Проверить'}
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={handleSyncToCloud}
+                disabled={isSyncing}
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                {isSyncing ? 'Загружаю...' : 'Загрузить в облако'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleClearAll}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Очистить
+              </Button>
+            </div>
           </div>
         </DialogHeader>
         

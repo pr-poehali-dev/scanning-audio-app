@@ -106,6 +106,24 @@ class CloudAudioStorage {
     const files = await this.getAllFiles();
     return Object.keys(files);
   }
+
+  async uploadFile(key: string, base64Data: string): Promise<void> {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': this.userId
+      },
+      body: JSON.stringify({
+        key,
+        data: base64Data
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload ${key}`);
+    }
+  }
 }
 
 export const cloudAudioStorage = new CloudAudioStorage();
