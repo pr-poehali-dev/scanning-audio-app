@@ -164,8 +164,37 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
         const newProducts = generateProducts(newItemsCount);
         setMockProducts(newProducts);
         
+        // Генерируем новую ячейку
+        const newCellNumber = Math.floor(Math.random() * 400) + 50;
+        setCellNumber(newCellNumber);
+        
+        // Создаем заказ из сгенерированных товаров
+        const generatedOrder = {
+          id: `order-${Date.now()}`,
+          customerName: 'Клиент',
+          phone: customerPhone,
+          status: 'ready_for_pickup' as const,
+          cellNumber: newCellNumber.toString(),
+          items: newProducts.map(product => ({
+            id: product.id,
+            name: product.name,
+            barcode: product.barcode,
+            color: product.color,
+            size: product.size,
+            image: 'https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png',
+            price: product.currentPrice,
+            brand: product.name.split('/')[0].trim()
+          })),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          totalAmount: newProducts.reduce((sum, p) => sum + p.currentPrice, 0),
+          isActive: true
+        };
+        
+        setCurrentOrder(generatedOrder);
+        
         // Озвучка: номер ячейки, количество товаров, оплата при получении
-        playAudio('delivery-cell-info', cellNumber, newItemsCount);
+        playAudio('delivery-cell-info', newCellNumber, newItemsCount);
         
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
@@ -244,10 +273,35 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
         setCurrentOrder(foundOrder);
         console.log(`📦 Найден заказ для телефона ${phoneNumber}, ячейка: ${cellNumberFromOrder}`);
       } else {
-        // Если заказ не найден, генерируем реалистичную ячейку
-        const randomCellNumber = Math.floor(Math.random() * 400) + 50;  // От 50 до 450
+        // Если заказ не найден, создаем новый заказ из сгенерированных товаров
+        const randomCellNumber = Math.floor(Math.random() * 400) + 50;
         setCellNumber(randomCellNumber);
-        console.log(`📦 Заказ не найден для телефона ${phoneNumber}, используем ячейку: ${randomCellNumber}`);
+        
+        // Преобразуем mockProducts в формат Order
+        const generatedOrder = {
+          id: `order-${Date.now()}`,
+          customerName: 'Новый клиент',
+          phone: `+7 (***) ***-${phoneNumber}`,
+          status: 'ready_for_pickup' as const,
+          cellNumber: randomCellNumber.toString(),
+          items: mockProducts.map(product => ({
+            id: product.id,
+            name: product.name,
+            barcode: product.barcode,
+            color: product.color,
+            size: product.size,
+            image: 'https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png',
+            price: product.currentPrice,
+            brand: product.name.split('/')[0].trim()
+          })),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          totalAmount: mockProducts.reduce((sum, p) => sum + p.currentPrice, 0),
+          isActive: true
+        };
+        
+        setCurrentOrder(generatedOrder);
+        console.log(`📦 Создан новый заказ с ${mockProducts.length} товарами, ячейка: ${randomCellNumber}`);
       }
       
       handleQRScan();

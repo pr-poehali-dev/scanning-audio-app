@@ -26,49 +26,78 @@ export const createQRHandlers = (props: QRHandlersProps) => {
       // Фиктивное сканирование для вкладки выдачи
       setIsScanning(true);
       
-      // Мгновенный поиск заказа без задержки - используем актуальные телефоны
-      const testPhones = ['7589', '4321', '8899', '1144', '3366']; // 7589 = Елена Иванова
-      const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
-      const order = findOrderByPhone(randomPhone);
-      
       // Небольшая задержка только для визуального эффекта сканирования
       setTimeout(async () => {
+        // Генерируем новый заказ с уникальными товарами
+        const itemCount = Math.floor(Math.random() * 8) + 1;
+        const randomCellNumber = Math.floor(Math.random() * 482) + 1;
         
-        if (order) {
-          setCurrentOrder(order);
-          setDeliveryStep('client-scanned');
-          setScannedData(`qr-${order.id}-${order.phone}`);
+        // Генерация товаров
+        const productNames = [
+          'Nike / Кроссовки мужские Air Max', 'Adidas / Футболка женская Originals',
+          'Zara / Джинсы женские slim fit', 'H&M / Платье вечернее чёрное',
+          'Uniqlo / Рубашка мужская белая', 'Levi\'s / Куртка джинсовая классическая',
+          'Calvin Klein / Трусы мужские набор 3шт', 'Tommy Hilfiger / Поло мужское синее',
+          'Apple / Чехол для iPhone 14 Pro', 'Samsung / Наушники Galaxy Buds Pro',
+          'Xiaomi / Powerbank 20000mAh', 'Logitech / Мышь беспроводная MX Master',
+          'ТЕЛОДВИЖЕНИЯ / Худи унисекс черное', 'ТЕЛОДВИЖЕНИЯ / Свитшот женский розовый',
+          'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый', 'Puma / Спортивные штаны мужские',
+          'Reebok / Кроссовки женские Classic', 'New Balance / Кроссовки унисекс 574',
+          'Converse / Кеды высокие Chuck Taylor', 'Vans / Кеды Old Skool черные',
+          'The North Face / Куртка зимняя пуховик', 'Columbia / Ветровка мужская водонепроницаемая',
+          'Patagonia / Флиска женская синяя', 'Mango / Блузка женская шёлковая',
+          'Massimo Dutti / Брюки мужские классические', 'COS / Пальто женское шерстяное',
+          'ASOS / Свитер оверсайз унисекс', 'Bershka / Юбка женская мини джинсовая',
+          'Pull&Bear / Худи унисекс с принтом', 'Stradivarius / Топ женский кроп',
+          'Reserved / Куртка бомбер мужская', 'Sinsay / Платье женское летнее',
+          'Cropp / Джоггеры мужские карго', 'House / Рубашка женская оверсайз',
+          'Mohito / Жакет женский твидовый'
+        ];
+        
+        const items = Array.from({ length: itemCount }, (_, index) => {
+          const originalPrice = Math.floor(Math.random() * 8000) + 500;
+          const discountPercent = Math.floor(Math.random() * 70) + 10;
+          const currentPrice = Math.floor(originalPrice * (100 - discountPercent) / 100);
+          const productName = productNames[Math.floor(Math.random() * productNames.length)];
           
-          console.log('✅ Заказ найден:', order.customerName, 'Ячейка:', order.cellNumber);
-          
-          // Генерируем случайный номер ячейки от 1 до 482
-          const randomCellNumber = Math.floor(Math.random() * 482) + 1;
-          order.cellNumber = randomCellNumber.toString();
-          
-          console.log(`🏠 Ячейка назначена: ${order.cellNumber}`);
-          
-          // Озвучка: номер ячейки, товары, оплата
-          const itemCount = order.items?.length || 0;
-          if (playAudio) {
-            playAudio('delivery-cell-info', randomCellNumber, itemCount);
-          }
-          
-          // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
-          setIsScanning(false);
-          
-        } else {
-          console.log('❌ Заказ не найден. Пробуем тестовые номера...');
-          
-          // Если не найден, пробуем тестовые заказы
-          const testOrder = findOrderByPhone('7589'); // Елена Иванова
-          if (testOrder) {
-            setCurrentOrder(testOrder);
-            setDeliveryStep('client-scanned');
-          }
-          
-          // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
-          setIsScanning(false);
+          return {
+            id: `16466782${Math.floor(Math.random() * 9000) + 1000}${index}`,
+            name: productName,
+            barcode: `${Math.floor(Math.random() * 900000000000) + 100000000000}`,
+            color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый', 'Розовый', 'Коричневый'][Math.floor(Math.random() * 10)],
+            size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', '46', '48', 'Универсальный'][Math.floor(Math.random() * 11)],
+            image: 'https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png',
+            price: currentPrice,
+            brand: productName.split('/')[0].trim()
+          };
+        });
+        
+        const generatedOrder = {
+          id: `order-${Date.now()}`,
+          customerName: 'Клиент',
+          phone: `+7 (***) ***-${Math.floor(Math.random() * 9000) + 1000}`,
+          status: 'ready_for_pickup' as const,
+          cellNumber: randomCellNumber.toString(),
+          items,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          totalAmount: items.reduce((sum, item) => sum + item.price, 0),
+          isActive: true
+        };
+        
+        setCurrentOrder(generatedOrder);
+        setDeliveryStep('client-scanned');
+        setScannedData(`qr-${generatedOrder.id}-${generatedOrder.phone}`);
+        
+        console.log('✅ Новый заказ создан:', generatedOrder.customerName, 'Ячейка:', generatedOrder.cellNumber, 'Товаров:', itemCount);
+        
+        // Озвучка: номер ячейки, товары, оплата
+        if (playAudio) {
+          playAudio('delivery-cell-info', randomCellNumber, itemCount);
         }
+        
+        // НЕМЕДЛЕННО ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        setIsScanning(false);
         
       }, 300); // Минимальная задержка для визуального эффекта
     } else if (activeTab === 'acceptance') {
