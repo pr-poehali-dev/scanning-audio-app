@@ -206,77 +206,112 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
           {/* Шаг 2: Сканирование товаров */}
           {step === 2 && currentBox && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="text-sm text-gray-500">Коробка</div>
-                    <div className="text-2xl font-bold text-gray-900">{currentBox.boxBarcode}</div>
+              {/* Большая карточка коробки */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="relative bg-gradient-to-br from-purple-50 to-purple-100 p-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md">
+                        <Icon name="Package" size={40} className="text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="text-sm text-purple-600 font-medium mb-1">Коробка</div>
+                        <div className="text-3xl font-bold text-gray-900">{currentBox.boxBarcode}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-purple-600 font-medium mb-1">Товаров</div>
+                      <div className="text-5xl font-bold text-purple-600">
+                        {totalProducts}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-500">Прогресс</div>
-                    <div className="text-2xl font-bold text-purple-600">
-                      {scannedCount} / {totalProducts}
+                  
+                  {/* Прогресс */}
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-purple-700">Прогресс приёмки</span>
+                      <span className="text-sm font-bold text-purple-900">{scannedCount} / {totalProducts}</span>
+                    </div>
+                    <div className="w-full bg-purple-200 rounded-full h-3">
+                      <div 
+                        className="bg-purple-600 h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${(scannedCount / totalProducts) * 100}%` }}
+                      />
                     </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={handleScanClick}
-                  disabled={isScanning}
-                  className={`w-full py-4 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
-                    isScanning
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95'
-                  }`}
-                >
-                  <Icon name={isScanning ? 'Loader2' : 'Scan'} size={24} className={isScanning ? 'animate-spin' : ''} />
-                  <span>{isScanning ? 'Сканирование...' : 'Сканировать товар'}</span>
-                </button>
+                <div className="p-6">
+                  <button
+                    onClick={handleScanClick}
+                    disabled={isScanning}
+                    className={`w-full py-5 rounded-xl font-bold text-xl transition-all flex items-center justify-center gap-3 ${
+                      isScanning
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95 shadow-lg hover:shadow-xl'
+                    }`}
+                  >
+                    <Icon name={isScanning ? 'Loader2' : 'Scan'} size={28} className={isScanning ? 'animate-spin' : ''} />
+                    <span>{isScanning ? 'Сканирование...' : 'Сканировать товар'}</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Список товаров */}
-              <div className="bg-white rounded-xl p-6 shadow-sm max-h-96 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Товары ({totalProducts})</h3>
-                <div className="space-y-2">
-                  {currentBox.products.map((product, index) => {
-                    const isScanned = scannedProducts.includes(product.barcode);
-                    
-                    return (
-                      <div
-                        key={product.barcode}
-                        className={`p-3 rounded-lg border-2 transition-all ${
-                          isScanned
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-200 bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isScanned ? 'bg-green-500' : 'bg-gray-300'
-                          }`}>
-                            {isScanned ? (
-                              <Icon name="Check" size={18} className="text-white" />
-                            ) : (
-                              <span className="text-white text-sm font-semibold">
-                                {index + 1}
-                              </span>
-                            )}
+              {/* Карточки товаров */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-700 px-2">Информация по товарам клиента</h3>
+                {currentBox.products.map((product, index) => {
+                  const isScanned = scannedProducts.includes(product.barcode);
+                  
+                  return (
+                    <div
+                      key={product.barcode}
+                      className={`bg-white rounded-2xl overflow-hidden shadow-md transition-all ${
+                        isScanned ? 'ring-2 ring-green-500' : ''
+                      }`}
+                    >
+                      <div className="flex">
+                        {/* Изображение товара */}
+                        <div className="w-32 h-32 flex-shrink-0 bg-gray-100 relative">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                          {isScanned && (
+                            <div className="absolute inset-0 bg-green-500 bg-opacity-20 flex items-center justify-center">
+                              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <Icon name="Check" size={24} className="text-white" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Информация о товаре */}
+                        <div className="flex-1 p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="text-xl font-bold text-gray-900 mb-1">
+                                {product.barcode}
+                              </div>
+                              <div className="text-sm text-gray-600 line-clamp-2">
+                                {product.name}
+                              </div>
+                            </div>
                           </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-gray-900 truncate">{product.barcode}</div>
-                            <div className="text-xs text-gray-600 truncate">{product.name}</div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Icon name="MapPin" size={16} className="text-purple-600" />
-                            <span className="text-base font-bold text-purple-600">{product.cell}</span>
+
+                          {/* Ячейка */}
+                          <div className="mt-3 inline-flex items-center gap-2 bg-purple-50 px-4 py-2 rounded-xl border-2 border-purple-200">
+                            <Icon name="MapPin" size={20} className="text-purple-600" />
+                            <span className="text-sm text-purple-600 font-medium">Ячейка:</span>
+                            <span className="text-2xl font-bold text-purple-700">{product.cell}</span>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
