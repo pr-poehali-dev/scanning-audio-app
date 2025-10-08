@@ -1,0 +1,50 @@
+{
+  "tests": [
+    {
+      "name": "Upload audio file",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "test-user"
+      },
+      "body": {
+        "key": "test_audio",
+        "data": "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0U"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "key": "test_audio"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "List all files",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-User-Id": "test-user"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "files": "object",
+        "count": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get specific file",
+      "method": "GET",
+      "path": "/?key=test_audio",
+      "headers": {
+        "X-User-Id": "test-user"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "key": "test_audio",
+        "data": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

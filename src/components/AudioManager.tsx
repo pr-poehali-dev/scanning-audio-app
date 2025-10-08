@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { AudioSettings } from '@/hooks/useAppState';
 import { audioStorage } from '@/utils/audioStorage';
+import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
 
 interface AudioManagerProps {
   audioSettings: AudioSettings;
@@ -47,10 +48,24 @@ export const AudioManager = ({
   
   useEffect(() => {
     const loadFiles = async () => {
-      const files = await audioStorage.getAllFiles();
-      console.log('📂 Загружено:', Object.keys(files));
-      if (Object.keys(files).length > 0) {
-        setUploadedFiles(files);
+      // Try to load from cloud first
+      const cloudFiles = await cloudAudioStorage.getAllFiles();
+      console.log('☁️ Загружено из облака:', Object.keys(cloudFiles).length);
+      
+      if (Object.keys(cloudFiles).length > 0) {
+        setUploadedFiles(cloudFiles);
+        // Sync to local storage
+        for (const [key, data] of Object.entries(cloudFiles)) {
+          // Store base64 directly in local DB
+          localStorage.setItem(`audio-${key}`, data);
+        }
+      } else {
+        // Fallback to local storage
+        const files = await audioStorage.getAllFiles();
+        console.log('📂 Загружено локально:', Object.keys(files).length);
+        if (Object.keys(files).length > 0) {
+          setUploadedFiles(files);
+        }
       }
     };
     
@@ -61,9 +76,11 @@ export const AudioManager = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Save to both local and cloud
     const url = await audioStorage.saveFile(fileKey, file);
+    await cloudAudioStorage.saveFile(fileKey, file);
     setUploadedFiles({ ...uploadedFiles, [fileKey]: url });
-    console.log('✅ Загружен:', fileKey);
+    console.log('✅ Загружен в облако:', fileKey);
   };
 
   const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +108,7 @@ export const AudioManager = ({
       
       try {
         const url = await audioStorage.saveFile(fileName, file);
+        await cloudAudioStorage.saveFile(fileName, file);
         newFiles[fileName] = url;
         successCount++;
         console.log(`✅ ${fileName}`);
