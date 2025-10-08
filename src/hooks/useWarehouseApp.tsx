@@ -57,44 +57,73 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
   const [receivingBarcode, setReceivingBarcode] = useState('');
   
   // Данные для товаров
-  const productNames = [
-    'Nike / Кроссовки мужские Air Max',
-    'Adidas / Футболка женская Originals',
-    'Zara / Джинсы женские slim fit',
-    'H&M / Платье вечернее чёрное',
-    'Uniqlo / Рубашка мужская белая',
-    'Levi\'s / Куртка джинсовая классическая',
-    'Calvin Klein / Трусы мужские набор 3шт',
-    'Tommy Hilfiger / Поло мужское синее',
-    'Apple / Чехол для iPhone 14 Pro',
-    'Samsung / Наушники Galaxy Buds Pro',
-    'Xiaomi / Powerbank 20000mAh',
-    'Logitech / Мышь беспроводная MX Master',
-    'ТЕЛОДВИЖЕНИЯ / Худи унисекс черное',
-    'ТЕЛОДВИЖЕНИЯ / Свитшот женский розовый',
-    'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый'
-  ];
-
-  const generatePrices = () => {
-    const originalPrice = Math.floor(Math.random() * 8000) + 500;
-    const discountPercent = Math.floor(Math.random() * 70) + 10;
-    const currentPrice = Math.floor(originalPrice * (100 - discountPercent) / 100);
-    return { currentPrice, originalPrice };
-  };
-
-  const mockProducts: Product[] = Array.from({ length: itemsCount }, (_, index) => {
-    const { currentPrice, originalPrice } = generatePrices();
-    return {
-      id: `16466782${Math.floor(Math.random() * 9000) + 1000}${index}`,
-      article: `${Math.floor(Math.random() * 9000) + 1000}`,
-      name: productNames[Math.floor(Math.random() * productNames.length)],
-      size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', '46', '48', 'Универсальный'][Math.floor(Math.random() * 11)],
-      color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый', 'Розовый', 'Коричневый'][Math.floor(Math.random() * 10)],
-      barcode: `${Math.floor(Math.random() * 900000000000) + 100000000000}`,
-      currentPrice,
-      originalPrice
-    };
+  // Генерация товаров для заказа
+  const [mockProducts, setMockProducts] = useState<Product[]>(() => {
+    // При загрузке проверяем сохраненные товары
+    const saved = loadSavedState();
+    if (saved?.products) {
+      return saved.products;
+    }
+    return generateProducts(itemsCount);
   });
+
+  // Функция генерации товаров
+  function generateProducts(count: number): Product[] {
+    const productNames = [
+      'Nike / Кроссовки мужские Air Max',
+      'Adidas / Футболка женская Originals',
+      'Zara / Джинсы женские slim fit',
+      'H&M / Платье вечернее чёрное',
+      'Uniqlo / Рубашка мужская белая',
+      'Levi\'s / Куртка джинсовая классическая',
+      'Calvin Klein / Трусы мужские набор 3шт',
+      'Tommy Hilfiger / Поло мужское синее',
+      'Apple / Чехол для iPhone 14 Pro',
+      'Samsung / Наушники Galaxy Buds Pro',
+      'Xiaomi / Powerbank 20000mAh',
+      'Logitech / Мышь беспроводная MX Master',
+      'ТЕЛОДВИЖЕНИЯ / Худи унисекс черное',
+      'ТЕЛОДВИЖЕНИЯ / Свитшот женский розовый',
+      'ТЕЛОДВИЖЕНИЯ / Лонгслив мужской серый',
+      'Puma / Спортивные штаны мужские',
+      'Reebok / Кроссовки женские Classic',
+      'New Balance / Кроссовки унисекс 574',
+      'Converse / Кеды высокие Chuck Taylor',
+      'Vans / Кеды Old Skool черные',
+      'The North Face / Куртка зимняя пуховик',
+      'Columbia / Ветровка мужская водонепроницаемая',
+      'Patagonia / Флиска женская синяя',
+      'Mango / Блузка женская шёлковая',
+      'Massimo Dutti / Брюки мужские классические',
+      'COS / Пальто женское шерстяное',
+      'ASOS / Свитер оверсайз унисекс',
+      'Bershka / Юбка женская мини джинсовая',
+      'Pull&Bear / Худи унисекс с принтом',
+      'Stradivarius / Топ женский кроп',
+      'Reserved / Куртка бомбер мужская',
+      'Sinsay / Платье женское летнее',
+      'Cropp / Джоггеры мужские карго',
+      'House / Рубашка женская оверсайз',
+      'Mohito / Жакет женский твидовый'
+    ];
+
+    return Array.from({ length: count }, (_, index) => {
+      const originalPrice = Math.floor(Math.random() * 8000) + 500;
+      const discountPercent = Math.floor(Math.random() * 70) + 10;
+      const currentPrice = Math.floor(originalPrice * (100 - discountPercent) / 100);
+      
+      return {
+        id: `16466782${Math.floor(Math.random() * 9000) + 1000}${index}`,
+        article: `${Math.floor(Math.random() * 9000) + 1000}`,
+        name: productNames[Math.floor(Math.random() * productNames.length)],
+        size: ['XS', 'S', 'M', 'L', 'XL', '42', '43', '44', '46', '48', 'Универсальный'][Math.floor(Math.random() * 11)],
+        color: ['Черный', 'Белый', 'Серый', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Фиолетовый', 'Розовый', 'Коричневый'][Math.floor(Math.random() * 10)],
+        barcode: `${Math.floor(Math.random() * 900000000000) + 100000000000}`,
+        currentPrice,
+        originalPrice
+      };
+    });
+  }
 
   // Сохранение состояния в localStorage
   useEffect(() => {
@@ -103,10 +132,11 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       currentStep,
       itemsCount,
       customerPhone,
-      isProcessing
+      isProcessing,
+      products: mockProducts
     };
     localStorage.setItem('deliveryState', JSON.stringify(stateToSave));
-  }, [cellNumber, currentStep, itemsCount, customerPhone, isProcessing]);
+  }, [cellNumber, currentStep, itemsCount, customerPhone, isProcessing, mockProducts]);
 
   // Эффекты
   useEffect(() => {
@@ -129,8 +159,13 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ QR!');
         
+        // Генерируем новый набор товаров для нового покупателя
+        const newItemsCount = Math.floor(Math.random() * 8) + 1;
+        const newProducts = generateProducts(newItemsCount);
+        setMockProducts(newProducts);
+        
         // Озвучка: номер ячейки, количество товаров, оплата при получении
-        playAudio('delivery-cell-info', cellNumber, itemsCount);
+        playAudio('delivery-cell-info', cellNumber, newItemsCount);
         
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setIsScanning(false);
