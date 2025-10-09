@@ -60,6 +60,7 @@ export const AudioSettings = ({
       const entries = Object.entries(localFiles);
       const batchSize = 10;
       let lastError: any = null;
+      const uploadedKeys: string[] = [];
       
       for (let i = 0; i < entries.length; i += batchSize) {
         const batch = entries.slice(i, i + batchSize);
@@ -68,6 +69,7 @@ export const AudioSettings = ({
           try {
             await cloudAudioStorage.uploadFile(key, data);
             uploaded++;
+            uploadedKeys.push(key);
             if (uploaded % 50 === 0 || uploaded === fileCount) {
               console.log(`📤 ${uploaded}/${fileCount}`);
             }
@@ -93,9 +95,12 @@ export const AudioSettings = ({
       
       if (errors > 0 && lastError) {
         const errorMsg = lastError?.message || String(lastError);
-        alert(`✅ Загружено: ${uploaded} из ${fileCount}\n⚠️ Ошибок: ${errors}\n\n❌ Последняя ошибка:\n${errorMsg}`);
+        const successList = uploadedKeys.length > 0 
+          ? `\n\n✅ Загружены:\n${uploadedKeys.slice(0, 10).join('\n')}${uploadedKeys.length > 10 ? `\n... и ещё ${uploadedKeys.length - 10}` : ''}` 
+          : '';
+        alert(`✅ Загружено: ${uploaded} из ${fileCount}\n⚠️ Ошибок: ${errors}\n\n❌ Последняя ошибка:\n${errorMsg}${successList}`);
       } else {
-        alert(`✅ Загружено: ${uploaded} из ${fileCount}`);
+        alert(`✅ Загружено: ${uploaded} из ${fileCount}\n\nВсе файлы успешно загружены в облако!`);
       }
     } catch (error: any) {
       const errorDetails = {
