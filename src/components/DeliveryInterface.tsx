@@ -185,7 +185,7 @@ const DeliveryInterface = ({
               playAudio?.('success_sound');
               setTimeout(() => {
                 playAudio?.('delivery-thanks');
-              }, 500);
+              }, 2000);
               onDeliverProduct();
             }}
             disabled={!allProductsSelected}
