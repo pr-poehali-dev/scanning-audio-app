@@ -22,6 +22,7 @@ const BASIC_FILES = [
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
   { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
+  { key: 'success_sound', label: 'Файл "success_sound.mp3" - звук успеха', testKey: 'success_sound' },
 ];
 
 const COUNT_FILES = Array.from({ length: 20 }, (_, i) => ({
