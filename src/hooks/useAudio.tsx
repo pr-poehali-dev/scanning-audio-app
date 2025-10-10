@@ -278,18 +278,23 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const playSequentialAudio = useCallback((audioUrls: string[], delayMs: number = 500) => {
     if (audioUrls.length === 0) return;
 
+    console.log('🎬 НАЧАЛО ПОСЛЕДОВАТЕЛЬНОСТИ:', audioUrls);
     let currentIndex = 0;
     setIsPlaying(true);
 
     const playNext = () => {
       if (currentIndex >= audioUrls.length) {
+        console.log('🏁 ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАВЕРШЕНА');
         setIsPlaying(false);
         audioRef.current = null;
         return;
       }
 
+      // Останавливаем предыдущий звук если он есть
       if (audioRef.current) {
+        console.log('⏹️ Останавливаю предыдущий звук');
         audioRef.current.pause();
+        audioRef.current.currentTime = 0;
         audioRef.current = null;
       }
 
@@ -299,14 +304,15 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       audio.playbackRate = audioSettings.speed;
       audioRef.current = audio;
 
-      console.log(`🔊 Воспроизведение части ${currentIndex + 1}/${audioUrls.length}`);
+      console.log(`🔊 Часть ${currentIndex + 1}/${audioUrls.length}:`, audioUrls[currentIndex]);
+      console.log(`⏱️ Скорость: ${audioSettings.speed}x`);
 
       const playWithRetry = async () => {
         try {
           await audio.play();
-          console.log(`✅ Часть ${currentIndex + 1} воспроизводится`);
+          console.log(`▶️ Часть ${currentIndex + 1} ИГРАЕТ`);
         } catch (err) {
-          console.error('Ошибка воспроизведения:', err);
+          console.error('❌ Ошибка воспроизведения:', err);
           currentIndex++;
           setTimeout(() => playNext(), delayMs);
         }
@@ -315,13 +321,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       playWithRetry();
 
       audio.onended = () => {
+        console.log(`✅ Часть ${currentIndex + 1} ЗАВЕРШЕНА, пауза ${delayMs}мс`);
         currentIndex++;
-        // Добавляем задержку перед следующим звуком
         setTimeout(() => playNext(), delayMs);
       };
 
       audio.onerror = () => {
-        console.error('Ошибка загрузки аудио');
+        console.error('❌ Ошибка загрузки аудио части', currentIndex + 1);
         currentIndex++;
         setTimeout(() => playNext(), delayMs);
       };
