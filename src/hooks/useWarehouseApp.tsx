@@ -242,8 +242,7 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
     console.log('⚡ МГНОВЕННАЯ ВЫДАЧА ТОВАРА!');
     setCurrentStep('payment');
     
-    // Озвучка: спасибо за заказ, оцените пункт выдачи
-    playAudio('delivery-thanks');
+    // Озвучка происходит в DeliveryInterface.tsx через delivery-complete-sequence
     
     try {
       // МГНОВЕННЫЙ СБРОС БЕЗ ЗАДЕРЖЕК
