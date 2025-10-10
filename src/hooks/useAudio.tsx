@@ -106,11 +106,19 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const thanksAudio = currentFiles['thanks_for_order_rate_pickpoint'];
       const sequence: string[] = [];
       
+      console.log('🔍 Поиск файлов для последовательности:');
+      console.log('  success_sound:', successAudio ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
+      console.log('  thanks_for_order_rate_pickpoint:', thanksAudio ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
+      console.log('  Все файлы:', Object.keys(currentFiles));
+      
       if (successAudio) sequence.push(successAudio);
       if (thanksAudio) sequence.push(thanksAudio);
       
       if (sequence.length > 0) {
-        playSequentialAudio(sequence);
+        console.log('✅ Запускаю последовательность из', sequence.length, 'звуков');
+        playSequentialAudio(sequence, 500); // 500мс пауза между звуками
+      } else {
+        console.log('❌ Нет файлов для воспроизведения');
       }
       return;
     }
@@ -267,7 +275,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     };
   }, [audioSettings]);
 
-  const playSequentialAudio = useCallback((audioUrls: string[]) => {
+  const playSequentialAudio = useCallback((audioUrls: string[], delayMs: number = 500) => {
     if (audioUrls.length === 0) return;
 
     let currentIndex = 0;
@@ -300,7 +308,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         } catch (err) {
           console.error('Ошибка воспроизведения:', err);
           currentIndex++;
-          playNext();
+          setTimeout(() => playNext(), delayMs);
         }
       };
       
@@ -308,13 +316,14 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
       audio.onended = () => {
         currentIndex++;
-        playNext();
+        // Добавляем задержку перед следующим звуком
+        setTimeout(() => playNext(), delayMs);
       };
 
       audio.onerror = () => {
         console.error('Ошибка загрузки аудио');
         currentIndex++;
-        playNext();
+        setTimeout(() => playNext(), delayMs);
       };
     };
 
