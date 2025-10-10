@@ -205,7 +205,10 @@ const DeliveryInterface = ({
           <button
             onClick={() => {
               setSelectedProducts(order.items.map((_, index) => index));
-              playAudio?.('check-product-under-camera');
+              playAudio?.('success_sound');
+              setTimeout(() => {
+                playAudio?.('delivery-thanks');
+              }, 500);
             }}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors font-medium"
           >
@@ -225,7 +228,10 @@ const DeliveryInterface = ({
           <button
             onClick={() => {
               setSelectedProducts(order.items.map((_, index) => index));
-              playAudio?.('check-product-under-camera');
+              playAudio?.('success_sound');
+              setTimeout(() => {
+                playAudio?.('delivery-thanks');
+              }, 500);
             }}
             className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:bg-purple-300 transition-colors"
           >
