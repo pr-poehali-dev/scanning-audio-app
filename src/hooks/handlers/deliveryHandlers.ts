@@ -79,10 +79,8 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
     // Устанавливаем состояние завершения
     setDeliveryStep('completed');
     
-    // Озвучка: спасибо за заказ, оцените ПВЗ
-    if (playAudio) {
-      playAudio('delivery-thanks');
-    }
+    // Озвучка происходит в DeliveryInterface.tsx через delivery-complete-sequence
+    // (success_sound + thanks_for_order_rate_pickpoint последовательно)
     
     console.log('✅ Товар выдан');
     
