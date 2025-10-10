@@ -64,6 +64,7 @@ export const useAppState = () => {
       'return-success': true,
       'box_accepted': true,
       'cell-number': true,
+      'success_sound': true,
     };
     
     return {

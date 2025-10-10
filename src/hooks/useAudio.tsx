@@ -113,7 +113,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       'check-product-under-camera': 'please_check_good_under_camera',
       'delivery-thanks': 'thanks_for_order_rate_pickpoint',
       'payment_on_delivery': 'payment_on_delivery',
-      'box_accepted': 'box_accepted'
+      'box_accepted': 'box_accepted',
+      'success_sound': 'success_sound'
     };
 
     // Специальная обработка для озвучки только номера ячейки
