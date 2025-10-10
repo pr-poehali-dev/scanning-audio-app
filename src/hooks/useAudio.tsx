@@ -100,6 +100,21 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('📋 Доступные файлы:', Object.keys(currentFiles));
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     
+    // Специальная обработка для последовательного воспроизведения
+    if (phraseKey === 'delivery-complete-sequence') {
+      const successAudio = currentFiles['success_sound'];
+      const thanksAudio = currentFiles['thanks_for_order_rate_pickpoint'];
+      const sequence: string[] = [];
+      
+      if (successAudio) sequence.push(successAudio);
+      if (thanksAudio) sequence.push(thanksAudio);
+      
+      if (sequence.length > 0) {
+        playSequentialAudio(sequence);
+      }
+      return;
+    }
+    
     const isEnabled = audioSettings.enabled[phraseKey];
     if (!isEnabled) {
       console.log('❌ ОЗВУЧКА ОТКЛЮЧЕНА В НАСТРОЙКАХ');

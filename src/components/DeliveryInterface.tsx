@@ -182,10 +182,7 @@ const DeliveryInterface = ({
         <div className="flex lg:flex-col gap-2 sm:gap-3">
           <button
             onClick={() => {
-              playAudio?.('success_sound');
-              setTimeout(() => {
-                playAudio?.('delivery-thanks');
-              }, 2000);
+              playAudio?.('delivery-complete-sequence');
               onDeliverProduct();
             }}
             disabled={!allProductsSelected}
