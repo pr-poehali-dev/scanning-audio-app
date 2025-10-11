@@ -28,6 +28,11 @@ const InstallPWA = () => {
       return;
     }
 
+    if (deviceInfo.isYandexBrowser && !deviceInfo.isPWA) {
+      setTimeout(() => setShowInstallBanner(true), 3000);
+      return;
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -39,7 +44,7 @@ const InstallPWA = () => {
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
-  }, [deviceInfo.isPWA, deviceInfo.isIOS]);
+  }, [deviceInfo.isPWA, deviceInfo.isIOS, deviceInfo.isYandexBrowser]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -89,6 +94,46 @@ const InstallPWA = () => {
             </ol>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (showInstallBanner && deviceInfo.isYandexBrowser) {
+    return (
+      <div className="fixed top-4 right-4 bg-white rounded-xl shadow-2xl border border-purple-200 p-4 max-w-sm z-50 animate-slide-down">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <img src="https://cdn.poehali.dev/files/f052050a-c79c-4485-8cd9-3fd250940378.png" alt="WB" className="w-8 h-8 rounded-lg" />
+            <h3 className="font-semibold text-gray-900">Добавить на рабочий стол</h3>
+          </div>
+          <button
+            onClick={handleDismiss}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="text-sm space-y-3">
+          <p className="text-gray-600">
+            Для удобного доступа к приложению:
+          </p>
+          <ol className="space-y-2 text-gray-700 list-decimal list-inside bg-gray-50 rounded-lg p-3">
+            <li>Нажмите на <span className="font-semibold">три точки ⋮</span> в браузере</li>
+            <li>Выберите <span className="font-semibold">"Добавить ярлык"</span></li>
+            <li>Нажмите <span className="font-semibold">"Добавить"</span></li>
+          </ol>
+          <p className="text-xs text-gray-500">
+            Ярлык с иконкой WB появится на рабочем столе
+          </p>
+        </div>
+        
+        <button
+          onClick={handleDismiss}
+          className="w-full mt-4 px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg transition-colors"
+        >
+          Понятно
+        </button>
       </div>
     );
   }

@@ -5,6 +5,7 @@ export interface DeviceInfo {
   isDesktop: boolean;
   isPWA: boolean;
   canInstallPWA: boolean;
+  isYandexBrowser: boolean;
 }
 
 export const detectDevice = (): DeviceInfo => {
@@ -13,6 +14,7 @@ export const detectDevice = (): DeviceInfo => {
   const isAndroid = /android/.test(userAgent);
   const isMobile = isIOS || isAndroid || /mobile/.test(userAgent);
   const isDesktop = !isMobile;
+  const isYandexBrowser = /yabrowser|yandex/.test(userAgent);
 
   const isPWA = 
     window.matchMedia('(display-mode: standalone)').matches ||
@@ -27,7 +29,8 @@ export const detectDevice = (): DeviceInfo => {
     isAndroid,
     isDesktop,
     isPWA,
-    canInstallPWA
+    canInstallPWA,
+    isYandexBrowser
   };
 };
 
