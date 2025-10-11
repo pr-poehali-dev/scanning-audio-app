@@ -7,6 +7,7 @@ import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';
 import Footer from '@/components/Footer';
 import InstallPrompt from '@/components/InstallPrompt';
+import InstallPWA from '@/components/InstallPWA';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import MobileAudioTest from '@/components/MobileAudioTest';
 import DebugConsole from '@/components/DebugConsole';
@@ -14,22 +15,22 @@ import DebugConsole from '@/components/DebugConsole';
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
 import { useAudio } from '@/hooks/useAudio';
+import { detectDevice } from '@/utils/deviceDetection';
 
 const WBPVZApp = () => {
   const [showAudioSettings, setShowAudioSettings] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [deviceInfo] = useState(() => detectDevice());
+  const isMobile = deviceInfo.isMobile;
   
   useEffect(() => {
-    const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-      setIsMobile(mobile);
-      console.log('📱 Устройство:', mobile ? 'Мобильное' : 'ПК', 'User Agent:', navigator.userAgent);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    console.log('📱 Устройство:', {
+      mobile: deviceInfo.isMobile,
+      ios: deviceInfo.isIOS,
+      android: deviceInfo.isAndroid,
+      desktop: deviceInfo.isDesktop,
+      pwa: deviceInfo.isPWA
+    });
+  }, [deviceInfo]);
   
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
@@ -148,10 +149,10 @@ const WBPVZApp = () => {
       />
 
       <InstallPrompt />
+      <InstallPWA />
       
       <MobileAudioTest 
         onTest={() => {
-          // Тестируем любую озвучку для инициализации
           playAudio('delivery-cell-info', 44, 3);
         }}
       />

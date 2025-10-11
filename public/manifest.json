@@ -4,9 +4,9 @@
   "description": "Приложение для управления выдачей, приёмкой и возвратом товаров в пункте выдачи Wildberries",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
   "theme_color": "#7c3aed",
-  "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
     {
@@ -37,5 +37,23 @@
     }
   ],
   "categories": ["business", "productivity"],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "",
+  "shortcuts": [
+    {
+      "name": "Выдача товаров",
+      "short_name": "Выдача",
+      "description": "Открыть режим выдачи товаров",
+      "url": "/?mode=delivery",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    },
+    {
+      "name": "Приёмка товаров",
+      "short_name": "Приёмка",
+      "description": "Открыть режим приёмки товаров",
+      "url": "/?mode=acceptance",
+      "icons": [{ "src": "/icon.svg", "sizes": "512x512" }]
+    }
+  ]
 }
