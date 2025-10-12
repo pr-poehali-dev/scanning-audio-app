@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import WBPVZApp from "./pages/WBPVZApp";
 import NotFound from "./pages/NotFound";
+import OfflineIndicator from "./components/OfflineIndicator";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <OfflineIndicator />
         <Toaster />
         <Sonner />
         <BrowserRouter>

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Order } from '@/data/mockOrders';
+import { useState, useEffect } from 'react';
+import { Order, mockOrders } from '@/data/mockOrders';
+import { saveOfflineData, getOfflineData } from '@/utils/offlineStorage';
 
 export interface PvzInfo {
   id: string;
@@ -75,7 +76,19 @@ export const useAppState = () => {
     };
   });
 
+  useEffect(() => {
+    saveOfflineData(mockOrders);
+  }, []);
 
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('🌐 Приложение онлайн - данные синхронизируются');
+      saveOfflineData(mockOrders);
+    };
+
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
 
   return {
     // Основные состояния
