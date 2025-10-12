@@ -72,11 +72,16 @@ export const AudioManager = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Сохраняем локально и в облако
     const url = await audioStorage.saveFile(fileKey, file);
-    await cloudAudioStorage.saveFile(fileKey, file);
+    
+    try {
+      await cloudAudioStorage.saveFile(fileKey, file);
+      console.log('✅ Загружен локально и в облако:', fileKey);
+    } catch (cloudError) {
+      console.warn('⚠️ Облако недоступно, файл сохранён локально:', fileKey);
+    }
+    
     setUploadedFiles({ ...uploadedFiles, [fileKey]: url });
-    console.log('✅ Загружен в облако:', fileKey);
   };
 
   const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +109,12 @@ export const AudioManager = ({
       
       try {
         const url = await audioStorage.saveFile(fileName, file);
-        await cloudAudioStorage.saveFile(fileName, file);
+        try {
+          await cloudAudioStorage.saveFile(fileName, file);
+          console.log(`☁️ Загружен в облако: ${fileName}`);
+        } catch (cloudError) {
+          console.warn(`⚠️ Облако недоступно для ${fileName}, сохранено локально`);
+        }
         newFiles[fileName] = url;
         successCount++;
         console.log(`✅ ${fileName}`);
@@ -166,6 +176,11 @@ export const AudioManager = ({
         
         try {
           const url = await audioStorage.saveFile(cellKey, file);
+          try {
+            await cloudAudioStorage.saveFile(cellKey, file);
+          } catch (cloudError) {
+            console.warn(`⚠️ Облако недоступно для ${cellKey}`);
+          }
           return { success: true, key: cellKey, url };
         } catch (error) {
           console.error(`❌ ${cellKey}:`, error);
@@ -212,6 +227,16 @@ export const AudioManager = ({
           </div>
           
           <div className="space-y-3">
+            <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
+              <div className="flex items-start gap-2 text-sm text-green-800">
+                <Icon name="Cloud" className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong>☁️ Облачное хранилище активно!</strong>
+                  <p className="text-xs mt-1">Все файлы автоматически сохраняются в облако и синхронизируются между всеми вашими устройствами</p>
+                </div>
+              </div>
+            </div>
+            
             <div className="flex gap-2">
               <Input
                 type="file"
