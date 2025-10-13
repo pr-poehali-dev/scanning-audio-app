@@ -30,10 +30,12 @@ const WBPVZApp = () => {
       desktop: deviceInfo.isDesktop,
       pwa: deviceInfo.isPWA
     });
+    console.log('✅ WBPVZApp component mounted');
   }, [deviceInfo]);
   
   // Используем разделенные хуки для управления состоянием
   const appState = useAppState();
+  console.log('🔍 appState loaded:', !!appState);
   
   // Хук для работы с аудио
   const { playAudio, uploadedFiles, setUploadedFiles } = useAudio({ audioSettings: appState.audioSettings });
