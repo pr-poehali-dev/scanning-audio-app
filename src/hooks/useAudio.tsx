@@ -35,7 +35,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, [uploadedFiles]);
 
   useEffect(() => {
-    const isMounted = true;
+    let isMounted = true;
     
     const loadAudioFiles = async () => {
       try {
