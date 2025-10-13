@@ -35,6 +35,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   }, [uploadedFiles]);
 
   useEffect(() => {
+    const isMounted = true;
+    
     const loadAudioFiles = async () => {
       try {
         console.log('🔄 Начинаю загрузку аудиофайлов...');
@@ -44,30 +46,43 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
         console.log('☁️ Ключи облачных файлов:', Object.keys(cloudFiles));
         
+        if (!isMounted) return;
+        
         if (Object.keys(cloudFiles).length > 0) {
           console.log('✅ Загружено из облака:', Object.keys(cloudFiles).length);
-          setUploadedFiles(cloudFiles);
-          uploadedFilesRef.current = cloudFiles;
+          const files = { ...cloudFiles };
+          setUploadedFiles(files);
+          uploadedFilesRef.current = files;
         } else {
           // Если в облаке пусто, загружаем из локального хранилища
           console.log('📂 Облако пустое, проверяю локальное хранилище...');
           const files = await audioStorage.getAllFiles();
           console.log('📦 Загружено локально:', Object.keys(files).length);
           console.log('📋 Список файлов:', Object.keys(files));
-          setUploadedFiles(files);
-          uploadedFilesRef.current = files;
+          
+          if (!isMounted) return;
+          
+          const localFiles = { ...files };
+          setUploadedFiles(localFiles);
+          uploadedFilesRef.current = localFiles;
         }
       } catch (error) {
         console.error('❌ Ошибка загрузки из облака:', error);
+        if (!isMounted) return;
+        
         // Fallback на локальное хранилище
         const files = await audioStorage.getAllFiles();
         console.log('📦 Загружено локально (fallback):', Object.keys(files).length);
         console.log('📋 Список файлов:', Object.keys(files));
-        setUploadedFiles(files);
-        uploadedFilesRef.current = files;
+        
+        const localFiles = { ...files };
+        setUploadedFiles(localFiles);
+        uploadedFilesRef.current = localFiles;
       }
       
-      setIsLoading(false);
+      if (isMounted) {
+        setIsLoading(false);
+      }
     };
 
     loadAudioFiles();
@@ -77,12 +92,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       if (!audioContextInitialized.current) {
         console.log('🎵 Инициализация аудио-контекста для мобильного');
         const tempAudio = new Audio();
+        tempAudio.volume = 0.01;
         tempAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4SRUbpxAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+xDEDwPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
         tempAudio.play().then(() => {
           console.log('✅ Аудио-контекст инициализирован');
           audioContextInitialized.current = true;
-        }).catch(() => {
-          console.log('⚠️ Не удалось инициализировать аудио-контекст (требуется взаимодействие пользователя)');
+        }).catch((err) => {
+          console.log('⚠️ Не удалось инициализировать аудио-контекст (требуется взаимодействие пользователя):', err);
         });
       }
     };
@@ -94,6 +110,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     return () => {
       document.removeEventListener('touchstart', initAudioContext);
       document.removeEventListener('click', initAudioContext);
+      isMounted = false;
     };
   }, []);
 
@@ -104,6 +121,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('📦 Всего файлов:', Object.keys(currentFiles).length);
     console.log('📋 Доступные файлы:', Object.keys(currentFiles));
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
+    console.log('🔊 Аудио-контекст инициализирован?', audioContextInitialized.current);
     
     // Специальная обработка для последовательного воспроизведения
     if (phraseKey === 'delivery-complete-sequence') {
@@ -236,6 +254,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     
     const audio = new Audio();
     audio.preload = 'auto';
+    audio.volume = 1.0;
     audio.src = audioUrl;
     audio.playbackRate = audioSettings.speed;
     audioRef.current = audio;
@@ -244,21 +263,30 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('▶️ НАЧИНАЮ ВОСПРОИЗВЕДЕНИЕ...');
     
     // Для мобильных устройств - дополнительная обработка
-    const playWithRetry = async (retries = 3) => {
+    const playWithRetry = async (retries = 5) => {
       for (let i = 0; i < retries; i++) {
         try {
+          console.log(`🔄 Попытка воспроизведения ${i + 1}/${retries}`);
+          
+          // Загружаем аудио перед воспроизведением
+          await audio.load();
+          console.log('✅ Аудио загружено, начинаю play()');
+          
           await audio.play();
           console.log('✅ ВОСПРОИЗВЕДЕНИЕ НАЧАЛОСЬ (попытка', i + 1, ')');
           return;
         } catch (err: any) {
           console.warn(`⚠️ Попытка ${i + 1} не удалась:`, err.message);
+          console.warn('Тип ошибки:', err.name);
+          console.warn('Код ошибки:', err.code);
+          
           if (i === retries - 1) {
-            console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ:', err);
+            console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ после всех попыток:', err);
             console.error('Детали:', err.message, err.name);
             setIsPlaying(false);
           } else {
-            // Небольшая задержка перед следующей попыткой
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Увеличенная задержка между попытками
+            await new Promise(resolve => setTimeout(resolve, 200 * (i + 1)));
           }
         }
       }
@@ -305,6 +333,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
       const audio = new Audio();
       audio.preload = 'auto';
+      audio.volume = 1.0;
       audio.src = audioUrls[currentIndex];
       audio.playbackRate = audioSettings.speed;
       audioRef.current = audio;
@@ -312,14 +341,23 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       console.log(`🔊 Часть ${currentIndex + 1}/${audioUrls.length}:`, audioUrls[currentIndex]);
       console.log(`⏱️ Скорость: ${audioSettings.speed}x`);
 
-      const playWithRetry = async () => {
-        try {
-          await audio.play();
-          console.log(`▶️ Часть ${currentIndex + 1} ИГРАЕТ`);
-        } catch (err) {
-          console.error('❌ Ошибка воспроизведения:', err);
-          currentIndex++;
-          setTimeout(() => playNext(), delayMs);
+      const playWithRetry = async (retries = 3) => {
+        for (let i = 0; i < retries; i++) {
+          try {
+            await audio.load();
+            await audio.play();
+            console.log(`▶️ Часть ${currentIndex + 1} ИГРАЕТ`);
+            return;
+          } catch (err) {
+            console.error(`❌ Попытка ${i + 1} не удалась:`, err);
+            if (i === retries - 1) {
+              console.error('❌ Ошибка воспроизведения части', currentIndex + 1);
+              currentIndex++;
+              setTimeout(() => playNext(), delayMs);
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
         }
       };
       

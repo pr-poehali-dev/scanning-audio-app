@@ -52,10 +52,37 @@ const Index = () => {
     { id: 'return', label: 'Возврат', count: 13, icon: 'RotateCcw' }
   ];
 
+  const handleTestAudio = async () => {
+    console.log('🧪 Тест озвучки');
+    console.log('📦 Загружено файлов:', Object.keys(uploadedFiles).length);
+    console.log('📋 Список:', Object.keys(uploadedFiles));
+    
+    const filesCount = Object.keys(uploadedFiles).length;
+    const hasSomeFiles = filesCount > 0;
+    const hasGoodsFile = uploadedFiles['goods'] !== undefined;
+    
+    if (!hasSomeFiles) {
+      alert('⚠️ Озвучка не работает!\n\nНе загружено ни одного файла.\n\n1. Открой "Озвучка"\n2. Загрузи аудиофайлы\n3. Попробуй снова');
+      return;
+    }
+    
+    if (!hasGoodsFile) {
+      alert(`⚠️ Файл "goods.mp3" не найден!\n\nЗагружено файлов: ${filesCount}\n\nПроверь названия файлов в настройках озвучки.`);
+      return;
+    }
+    
+    alert(`✅ Всё готово!\n\nФайлов: ${filesCount}\nФайл goods.mp3: найден\n\nСейчас запущу тестовую озвучку...`);
+    
+    playAudio('goods');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <AppHeader onOpenAudioSettings={() => setShowAudioSettings(true)} />
+      <AppHeader 
+        onOpenAudioSettings={() => setShowAudioSettings(true)} 
+        onTestAudio={handleTestAudio}
+      />
       
       {/* Audio Settings Dialog */}
       <AudioSettings

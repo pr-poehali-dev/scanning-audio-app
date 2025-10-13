@@ -167,6 +167,31 @@ export const AudioSettings = ({
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Диагностическая информация */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="text-sm font-semibold text-blue-900 mb-2">📊 Диагностика</div>
+            <div className="space-y-1 text-xs text-blue-800">
+              <div>📦 Локально загружено: {Object.keys(uploadedFiles).length} файлов</div>
+              {cloudFileCount !== null && (
+                <div>☁️ В облаке: {cloudFileCount} файлов</div>
+              )}
+              <div className="mt-2 pt-2 border-t border-blue-200">
+                <details className="cursor-pointer">
+                  <summary className="font-medium">Список файлов</summary>
+                  <div className="mt-2 max-h-32 overflow-y-auto space-y-0.5">
+                    {Object.keys(uploadedFiles).length > 0 ? (
+                      Object.keys(uploadedFiles).map(key => (
+                        <div key={key} className="text-blue-700">• {key}</div>
+                      ))
+                    ) : (
+                      <div className="text-blue-600">Нет загруженных файлов</div>
+                    )}
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+
           <AudioUploadGuide />
           
           <TTSGenerator
