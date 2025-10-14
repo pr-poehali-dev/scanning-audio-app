@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import { AudioSettings } from './useAppState';
 import { audioStorage } from '@/utils/audioStorage';
 import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
+import { defaultAudioGenerator } from '@/utils/defaultAudioGenerator';
 
 interface UseAudioProps {
   audioSettings: AudioSettings;
@@ -139,9 +140,16 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       
       if (sequence.length > 0) {
         console.log('✅ Запускаю последовательность из', sequence.length, 'звуков');
-        playSequentialAudio(sequence, 500); // 500мс пауза между звуками
+        playSequentialAudio(sequence, 500);
       } else {
-        console.log('❌ Нет файлов для воспроизведения');
+        console.log('⚠️ Нет файлов для воспроизведения, используем TTS');
+        if (defaultAudioGenerator.isSupported()) {
+          defaultAudioGenerator.speakSequence(
+            ['success_sound', 'thanks_for_order_rate_pickpoint'],
+            audioSettings.speed,
+            500
+          );
+        }
       }
       return;
     }
@@ -172,7 +180,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         playSequentialAudio([cellAudio]);
         return;
       }
-      console.log(`❌ Нет файла для ячейки ${cellNumber}`);
+      
+      console.log(`⚠️ Нет файла для ячейки ${cellNumber}, используем TTS`);
+      if (defaultAudioGenerator.isSupported()) {
+        defaultAudioGenerator.speak(`cell_${cellNumber}`, audioSettings.speed);
+      }
       return;
     }
 
@@ -222,7 +234,17 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         playSequentialAudio(audioSequence);
         return;
       }
-      console.log('❌ Нет файлов для составной озвучки');
+      
+      // Fallback на TTS
+      console.log('⚠️ Нет файлов для составной озвучки, используем TTS');
+      if (defaultAudioGenerator.isSupported()) {
+        const ttsKeys = [`cell_${cellNumber}`, 'goods'];
+        if (itemCount) {
+          ttsKeys.push(`count_${itemCount}`, 'word_items');
+        }
+        ttsKeys.push('payment_on_delivery');
+        defaultAudioGenerator.speakSequence(ttsKeys, audioSettings.speed);
+      }
       return;
     }
 
@@ -240,7 +262,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('🎵 Ищем:', phraseKey, '→', mappedKey, '→', audioUrl ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
     
     if (!audioUrl) {
-      console.log('❌ Файл не найден. Проверьте названия:', mappedKey);
+      console.log('⚠️ Файл не найден, используем TTS fallback');
+      if (defaultAudioGenerator.isSupported()) {
+        defaultAudioGenerator.speak(mappedKey, audioSettings.speed);
+      } else {
+        console.log('❌ TTS не поддерживается браузером');
+      }
       return;
     }
 
