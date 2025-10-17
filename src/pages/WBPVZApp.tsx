@@ -10,7 +10,6 @@ import InstallPrompt from '@/components/InstallPrompt';
 import InstallPWA from '@/components/InstallPWA';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import MobileAudioTest from '@/components/MobileAudioTest';
-import DebugConsole from '@/components/DebugConsole';
 
 import { useAppState } from '@/hooks/useAppState';
 import { useAppHandlers } from '@/hooks/useAppHandlers';
@@ -158,8 +157,6 @@ const WBPVZApp = () => {
           playAudio('delivery-cell-info', 44, 3);
         }}
       />
-      
-      <DebugConsole />
     </div>
   );
 };
