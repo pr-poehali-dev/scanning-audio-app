@@ -182,7 +182,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));
-      console.log('🔢 Файлы count:', Object.keys(currentFiles).filter(k => k.startsWith('count')));
       console.log('🎵 Вариант озвучки:', variant);
       
       const audioSequence: string[] = [];
@@ -195,25 +194,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const goodsKey = variant === 'v1' ? 'goods' : 'checkWBWallet';
       const goodsAudio = currentFiles[goodsKey];
       
-      // 3. Озвучка количества товаров (если передано)
-      const countAudio = itemCount ? (
-        currentFiles[`count_${itemCount}`] || 
-        currentFiles[`${itemCount}`] || 
-        currentFiles[`count-${itemCount}`]
-      ) : null;
-      
-      // 4. Озвучка слова "товаров"
-      const wordItemsAudio = currentFiles['word_items'];
-      
-      // 5. Озвучка "оплата при получении" или "scanAfterQrClient"
+      // 3. Озвучка "оплата при получении" или "scanAfterQrClient"
       const paymentKey = variant === 'v1' ? 'payment_on_delivery' : 'scanAfterQrClient';
       const paymentAudio = currentFiles[paymentKey];
 
       // Собираем последовательность
       if (cellAudio) audioSequence.push(cellAudio);
       if (goodsAudio) audioSequence.push(goodsAudio);
-      if (countAudio) audioSequence.push(countAudio);
-      if (wordItemsAudio) audioSequence.push(wordItemsAudio);
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
@@ -222,8 +209,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         cell: !!cellAudio,
         goodsKey,
         goods: !!goodsAudio,
-        count: !!countAudio,
-        wordItems: !!wordItemsAudio,
         paymentKey,
         payment: !!paymentAudio,
         total: audioSequence.length

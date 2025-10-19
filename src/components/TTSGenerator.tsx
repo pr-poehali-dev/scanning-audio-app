@@ -60,19 +60,14 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
     setProgress(0);
     
     const newFiles = { ...uploadedFiles };
-    const totalFiles = 482 + 20 + 4; // ячейки + количество + общие (для обоих вариантов)
+    const phrasesCount = variant === 'v1' ? 4 : 3; // v1: 4 фразы, v2: 3 фразы
+    const totalFiles = 482 + phrasesCount; // ячейки + фразы (без count)
 
     let processed = 0;
 
     try {
-      // 1. Генерация общих фраз
-      setStatus('Генерация общих фраз...');
-      
-      const wordItemsBlob = await textToAudioBlob('товаров');
-      newFiles['word_items'] = await blobToBase64(wordItemsBlob);
-      await audioStorage.saveFile('word_items', new File([wordItemsBlob], 'word_items.webm'));
-      processed++;
-      setProgress(Math.round((processed / totalFiles) * 100));
+      // 1. Генерация фраз для выбранного варианта
+      setStatus('Генерация фраз...');
 
       if (variant === 'v1') {
         const goodsBlob = await textToAudioBlob('товары');
@@ -118,20 +113,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         setProgress(Math.round((processed / totalFiles) * 100));
       }
 
-      // 2. Генерация количества (1-20)
-      setStatus('Генерация чисел для количества...');
-      for (let i = 1; i <= 20; i++) {
-        const text = String(i);
-        const blob = await textToAudioBlob(text);
-        newFiles[`count_${i}`] = await blobToBase64(blob);
-        await audioStorage.saveFile(`count_${i}`, new File([blob], `count_${i}.webm`));
-        processed++;
-        if (processed % 5 === 0) {
-          setProgress(Math.round((processed / totalFiles) * 100));
-        }
-      }
-
-      // 3. Генерация номеров ячеек (1-482) - для каждого варианта своя озвучка
+      // 2. Генерация номеров ячеек (1-482) - для каждого варианта своя озвучка
       setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
       const cellPrefix = variant === 'v1' ? 'cell_v1_' : 'cell_v2_';
       for (let i = 1; i <= 482; i++) {
@@ -159,8 +141,6 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
 
   const cellV1Count = Object.keys(uploadedFiles).filter(k => k.startsWith('cell_v1_')).length;
   const cellV2Count = Object.keys(uploadedFiles).filter(k => k.startsWith('cell_v2_')).length;
-  const countCount = Object.keys(uploadedFiles).filter(k => k.startsWith('count_')).length;
-  const hasWordItems = !!uploadedFiles['word_items'];
   
   // Вариант 1
   const hasGoods = !!uploadedFiles['goods'];
@@ -173,9 +153,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
   const hasScanAfterQr = !!uploadedFiles['scanAfterQrClient'];
   const hasAskRate = !!uploadedFiles['askRatePickPoint'];
 
-  const isV1Complete = cellV1Count === 482 && countCount >= 20 && hasWordItems && hasPayment && hasGoods && hasCheckProduct && hasThanks;
-  const isV2Complete = cellV2Count === 482 && countCount >= 20 && hasWordItems && hasCheckWBWallet && hasScanAfterQr && hasAskRate;
-  const isComplete = isV1Complete && isV2Complete;
+  const isV1Complete = cellV1Count === 482 && hasPayment && hasGoods && hasCheckProduct && hasThanks;
+  const isV2Complete = cellV2Count === 482 && hasCheckWBWallet && hasScanAfterQr && hasAskRate;
 
   return (
     <Card>
@@ -190,8 +169,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
           <AlertDescription>
             <p className="text-sm font-medium mb-2">🤖 Автоматическая генерация</p>
             <p className="text-xs">
-              Браузер автоматически создаст озвучку всех 482 ячеек + количество товаров + общие фразы.
-              Это займет 3-5 минут. Озвучка будет сохранена в памяти телефона.
+              Браузер автоматически создаст озвучку 482 ячеек + специальные фразы для выбранного варианта.
+              Это займет 3-5 минут. Озвучка сохраняется локально.
             </p>
           </AlertDescription>
         </Alert>
@@ -199,8 +178,6 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
           <div className="text-sm font-medium">📊 Текущий прогресс:</div>
           <div className="text-xs space-y-1">
-            <div>• Слово "товаров": {hasWordItems ? '✅' : '❌'}</div>
-            <div>• Количество (1-20): {countCount}/20</div>
             <div className="font-semibold mt-2">Вариант 1:</div>
             <div className="ml-2">• Ячейки v1: {cellV1Count}/482</div>
             <div className="ml-2">• goods: {hasGoods ? '✅' : '❌'}</div>
