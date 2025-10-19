@@ -264,13 +264,13 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
           </AlertDescription>
         </Alert>
 
-        {isComplete && (
+        {(isV1Complete || isV2Complete) && (
           <Alert className="bg-green-50 border-green-200">
             <AlertDescription>
               <div className="flex items-center gap-2 text-green-800">
                 <Icon name="CheckCircle" className="w-4 h-4" />
                 <span className="text-sm font-medium">
-                  Озвучка готова! Теперь можно использовать приложение
+                  {isV1Complete && isV2Complete ? 'Оба варианта озвучки готовы!' : isV1Complete ? 'Вариант 1 готов!' : 'Вариант 2 готов!'}
                 </span>
               </div>
             </AlertDescription>
