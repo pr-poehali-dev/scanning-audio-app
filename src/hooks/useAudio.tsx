@@ -166,7 +166,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     };
 
     // Специальная обработка для озвучки только номера ячейки
-    const variant = audioSettings.variant || 'v1';
     if (phraseKey === 'cell-number' && cellNumber !== undefined) {
       const cellKey = `cell_${variant}_${cellNumber}`;
       const cellAudio = currentFiles[cellKey];
