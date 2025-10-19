@@ -43,42 +43,41 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         console.log('🔄 Начинаю загрузку аудиофайлов...');
         
         // Сначала пробуем загрузить из облака
-        const cloudFiles = await cloudAudioStorage.getAllFiles();
-        console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
-        console.log('☁️ Ключи облачных файлов:', Object.keys(cloudFiles));
-        
-        if (!isMounted) return;
-        
-        if (Object.keys(cloudFiles).length > 0) {
-          console.log('✅ Загружено из облака:', Object.keys(cloudFiles).length);
-          const files = { ...cloudFiles };
-          setUploadedFiles(files);
-          uploadedFilesRef.current = files;
-        } else {
-          // Если в облаке пусто, загружаем из локального хранилища
-          console.log('📂 Облако пустое, проверяю локальное хранилище...');
-          const files = await audioStorage.getAllFiles();
-          console.log('📦 Загружено локально:', Object.keys(files).length);
-          console.log('📋 Список файлов:', Object.keys(files));
+        try {
+          const cloudFiles = await cloudAudioStorage.getAllFiles();
+          console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
+          console.log('☁️ Ключи облачных файлов:', Object.keys(cloudFiles));
           
           if (!isMounted) return;
           
-          const localFiles = { ...files };
-          setUploadedFiles(localFiles);
-          uploadedFilesRef.current = localFiles;
+          if (Object.keys(cloudFiles).length > 0) {
+            console.log('✅ Загружено из облака:', Object.keys(cloudFiles).length);
+            const files = { ...cloudFiles };
+            setUploadedFiles(files);
+            uploadedFilesRef.current = files;
+            if (isMounted) setIsLoading(false);
+            return;
+          }
+        } catch (cloudError) {
+          console.warn('⚠️ Не удалось загрузить из облака, загружаю локально:', cloudError);
         }
-      } catch (error) {
-        console.error('❌ Ошибка загрузки из облака:', error);
-        if (!isMounted) return;
         
-        // Fallback на локальное хранилище
+        // Загружаем из локального хранилища
+        console.log('📂 Проверяю локальное хранилище...');
         const files = await audioStorage.getAllFiles();
-        console.log('📦 Загружено локально (fallback):', Object.keys(files).length);
+        console.log('📦 Загружено локально:', Object.keys(files).length);
         console.log('📋 Список файлов:', Object.keys(files));
+        
+        if (!isMounted) return;
         
         const localFiles = { ...files };
         setUploadedFiles(localFiles);
         uploadedFilesRef.current = localFiles;
+      } catch (error) {
+        console.error('❌ Критическая ошибка загрузки:', error);
+        if (!isMounted) return;
+        setUploadedFiles({});
+        uploadedFilesRef.current = {};
       }
       
       if (isMounted) {
