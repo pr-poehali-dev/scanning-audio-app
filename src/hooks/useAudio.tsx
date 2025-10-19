@@ -152,6 +152,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
     const currentFiles = uploadedFilesRef.current;
     const variant = audioSettings.variant || 'v1';
+    
     console.log('🎵 ========== ЗАПРОС ОЗВУЧКИ ==========');
     console.log('▶️ Ключ:', phraseKey);
     console.log('🎛️ ВАРИАНТ ОЗВУЧКИ:', variant, '(из audioSettings.variant:', audioSettings.variant, ')');
@@ -161,26 +162,9 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     console.log('🔊 Аудио-контекст инициализирован?', audioContextInitialized.current);
     
-    // Специальная обработка для последовательного воспроизведения
-    if (phraseKey === 'delivery-complete-sequence') {
-      const successAudio = currentFiles['success_sound'];
-      const thanksAudio = currentFiles['thanks_for_order_rate_pickpoint'];
-      const sequence: string[] = [];
-      
-      console.log('🔍 Поиск файлов для последовательности:');
-      console.log('  success_sound:', successAudio ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
-      console.log('  thanks_for_order_rate_pickpoint:', thanksAudio ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
-      console.log('  Все файлы:', Object.keys(currentFiles));
-      
-      if (successAudio) sequence.push(successAudio);
-      if (thanksAudio) sequence.push(thanksAudio);
-      
-      if (sequence.length > 0) {
-        console.log('✅ Запускаю последовательность из', sequence.length, 'звуков');
-        playSequentialAudio(sequence, 500);
-      } else {
-        console.log('⚠️ Нет файлов для воспроизведения');
-      }
+    // Проверка: если уже играет озвучка, показываем предупреждение
+    if (isPlaying) {
+      console.log('⚠️ ОЗВУЧКА УЖЕ ИГРАЕТ, пропускаю запрос:', phraseKey);
       return;
     }
     
@@ -372,12 +356,16 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       setIsPlaying(false);
       audioRef.current = null;
     };
-  }, [audioSettings]);
+  }, [audioSettings, isPlaying]);
 
   const playSequentialAudio = useCallback((audioUrls: string[], delayMs: number = 500) => {
     if (audioUrls.length === 0) return;
 
-    console.log('🎬 НАЧАЛО ПОСЛЕДОВАТЕЛЬНОСТИ:', audioUrls);
+    console.log('🎬 ========== НАЧАЛО ПОСЛЕДОВАТЕЛЬНОСТИ ==========');
+    console.log('📊 Количество файлов:', audioUrls.length);
+    console.log('📋 Список URL:', audioUrls);
+    console.log('⏱️ Задержка между файлами:', delayMs, 'мс');
+    
     let currentIndex = 0;
     setIsPlaying(true);
 
