@@ -142,14 +142,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         console.log('✅ Запускаю последовательность из', sequence.length, 'звуков');
         playSequentialAudio(sequence, 500);
       } else {
-        console.log('⚠️ Нет файлов для воспроизведения, используем TTS');
-        if (defaultAudioGenerator.isSupported()) {
-          defaultAudioGenerator.speakSequence(
-            ['success_sound', 'thanks_for_order_rate_pickpoint'],
-            audioSettings.speed,
-            500
-          );
-        }
+        console.log('⚠️ Нет файлов для воспроизведения');
       }
       return;
     }
@@ -181,10 +174,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         return;
       }
       
-      console.log(`⚠️ Нет файла для ячейки ${cellNumber}, используем TTS`);
-      if (defaultAudioGenerator.isSupported()) {
-        defaultAudioGenerator.speak(`cell_${cellNumber}`, audioSettings.speed);
-      }
+      console.log(`⚠️ Нет файла для ячейки ${cellNumber}`);
       return;
     }
 
@@ -235,16 +225,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         return;
       }
       
-      // Fallback на TTS
-      console.log('⚠️ Нет файлов для составной озвучки, используем TTS');
-      if (defaultAudioGenerator.isSupported()) {
-        const ttsKeys = [`cell_${cellNumber}`, 'goods'];
-        if (itemCount) {
-          ttsKeys.push(`count_${itemCount}`, 'word_items');
-        }
-        ttsKeys.push('payment_on_delivery');
-        defaultAudioGenerator.speakSequence(ttsKeys, audioSettings.speed);
-      }
+      console.log('⚠️ Нет файлов для составной озвучки');
       return;
     }
 
@@ -262,12 +243,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('🎵 Ищем:', phraseKey, '→', mappedKey, '→', audioUrl ? 'НАЙДЕН' : 'НЕ НАЙДЕН');
     
     if (!audioUrl) {
-      console.log('⚠️ Файл не найден, используем TTS fallback');
-      if (defaultAudioGenerator.isSupported()) {
-        defaultAudioGenerator.speak(mappedKey, audioSettings.speed);
-      } else {
-        console.log('❌ TTS не поддерживается браузером');
-      }
+      console.log('⚠️ Файл не найден');
       return;
     }
 
