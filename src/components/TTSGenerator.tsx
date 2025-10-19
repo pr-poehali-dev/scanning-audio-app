@@ -60,7 +60,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
     setProgress(0);
     
     const newFiles = { ...uploadedFiles };
-    const totalFiles = 482 + 20 + 4; // ячейки + количество + общие
+    const totalFiles = variant === 'v2' ? (482 + 20 + 4) : (20 + 4); // v2: ячейки + количество + общие, v1: только количество + общие
 
     let processed = 0;
 
@@ -86,31 +86,43 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         await audioStorage.saveFile('payment_on_delivery', new File([paymentBlob], 'payment_on_delivery.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
-      } else {
-        const goodsDiscountBlob = await textToAudioBlob('товары со скидкой проверьте вайлдберриз кошелёк');
-        newFiles['goods'] = await blobToBase64(goodsDiscountBlob);
-        await audioStorage.saveFile('goods', new File([goodsDiscountBlob], 'goods.webm'));
+
+        const checkProductBlob = await textToAudioBlob('пожалуйста проверьте товар под камерой');
+        newFiles['please_check_good_under_camera'] = await blobToBase64(checkProductBlob);
+        await audioStorage.saveFile('please_check_good_under_camera', new File([checkProductBlob], 'please_check_good_under_camera.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
 
-        const paymentBlob = await textToAudioBlob('пожалуйста оплатите товар');
-        newFiles['payment_on_delivery'] = await blobToBase64(paymentBlob);
-        await audioStorage.saveFile('payment_on_delivery', new File([paymentBlob], 'payment_on_delivery.webm'));
+        const thanksBlob = await textToAudioBlob('пожалуйста оцените наш пункт выдачи в приложении');
+        newFiles['thanks_for_order_rate_pickpoint'] = await blobToBase64(thanksBlob);
+        await audioStorage.saveFile('thanks_for_order_rate_pickpoint', new File([thanksBlob], 'thanks_for_order_rate_pickpoint.webm'));
+        processed++;
+        setProgress(Math.round((processed / totalFiles) * 100));
+      } else {
+        const checkWBWalletBlob = await textToAudioBlob('проверьте вайлдберриз кошелёк');
+        newFiles['goods'] = await blobToBase64(checkWBWalletBlob);
+        await audioStorage.saveFile('goods', new File([checkWBWalletBlob], 'goods.webm'));
+        processed++;
+        setProgress(Math.round((processed / totalFiles) * 100));
+
+        const scanAfterQrBlob = await textToAudioBlob('отсканируйте после кюар клиента');
+        newFiles['payment_on_delivery'] = await blobToBase64(scanAfterQrBlob);
+        await audioStorage.saveFile('payment_on_delivery', new File([scanAfterQrBlob], 'payment_on_delivery.webm'));
+        processed++;
+        setProgress(Math.round((processed / totalFiles) * 100));
+
+        const checkProductBlob = await textToAudioBlob('пожалуйста проверьте товар под камерой');
+        newFiles['please_check_good_under_camera'] = await blobToBase64(checkProductBlob);
+        await audioStorage.saveFile('please_check_good_under_camera', new File([checkProductBlob], 'please_check_good_under_camera.webm'));
+        processed++;
+        setProgress(Math.round((processed / totalFiles) * 100));
+
+        const askRateBlob = await textToAudioBlob('оцените пункт выдачи');
+        newFiles['thanks_for_order_rate_pickpoint'] = await blobToBase64(askRateBlob);
+        await audioStorage.saveFile('thanks_for_order_rate_pickpoint', new File([askRateBlob], 'thanks_for_order_rate_pickpoint.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
       }
-
-      const checkProductBlob = await textToAudioBlob('пожалуйста проверьте товар под камерой');
-      newFiles['please_check_good_under_camera'] = await blobToBase64(checkProductBlob);
-      await audioStorage.saveFile('please_check_good_under_camera', new File([checkProductBlob], 'please_check_good_under_camera.webm'));
-      processed++;
-      setProgress(Math.round((processed / totalFiles) * 100));
-
-      const thanksBlob = await textToAudioBlob('пожалуйста оцените наш пункт выдачи в приложении');
-      newFiles['thanks_for_order_rate_pickpoint'] = await blobToBase64(thanksBlob);
-      await audioStorage.saveFile('thanks_for_order_rate_pickpoint', new File([thanksBlob], 'thanks_for_order_rate_pickpoint.webm'));
-      processed++;
-      setProgress(Math.round((processed / totalFiles) * 100));
 
       // 2. Генерация количества (1-20)
       setStatus('Генерация чисел для количества...');
@@ -125,17 +137,19 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         }
       }
 
-      // 3. Генерация номеров ячеек (1-482)
-      setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
-      for (let i = 1; i <= 482; i++) {
-        const text = String(i);
-        const blob = await textToAudioBlob(text);
-        newFiles[`cell_${i}`] = await blobToBase64(blob);
-        await audioStorage.saveFile(`cell_${i}`, new File([blob], `cell_${i}.webm`));
-        processed++;
-        if (processed % 10 === 0) {
-          setProgress(Math.round((processed / totalFiles) * 100));
-          setStatus(`Генерация ячеек: ${i}/482...`);
+      // 3. Генерация номеров ячеек (1-482) - только для варианта 2
+      if (variant === 'v2') {
+        setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
+        for (let i = 1; i <= 482; i++) {
+          const text = String(i);
+          const blob = await textToAudioBlob(text);
+          newFiles[`cell_${i}`] = await blobToBase64(blob);
+          await audioStorage.saveFile(`cell_${i}`, new File([blob], `cell_${i}.webm`));
+          processed++;
+          if (processed % 10 === 0) {
+            setProgress(Math.round((processed / totalFiles) * 100));
+            setStatus(`Генерация ячеек: ${i}/482...`);
+          }
         }
       }
 
@@ -258,8 +272,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <Alert className="bg-gray-50">
           <AlertDescription>
             <div className="text-xs space-y-1">
-              <div><strong>Вариант 1:</strong> "товары" + "оплата при получении"</div>
-              <div><strong>Вариант 2:</strong> "товары со скидкой проверьте ВБ кошелёк" + "пожалуйста оплатите товар"</div>
+              <div><strong>Вариант 1:</strong> Без озвучки ячеек, базовая озвучка</div>
+              <div><strong>Вариант 2:</strong> С озвучкой ячеек 1-482 + checkWBWallet + scanAfterQrClient + askRatePickPoint</div>
             </div>
           </AlertDescription>
         </Alert>
