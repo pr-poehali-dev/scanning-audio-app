@@ -31,6 +31,7 @@ export const AudioSettings = ({
 }: AudioSettingsProps) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [cloudFileCount, setCloudFileCount] = useState<number | null>(null);
+  const [isLoadingVariant, setIsLoadingVariant] = useState(false);
   
   // Функция фильтрации файлов по варианту (копия из useAudio)
   const filterFilesByVariant = (allFiles: { [key: string]: string }, variant: 'v1' | 'v2') => {
@@ -144,6 +145,54 @@ export const AudioSettings = ({
     }
   };
 
+  // Функция загрузки файлов из облака/локального хранилища для конкретного варианта
+  const loadFilesForVariant = async (variant: 'v1' | 'v2') => {
+    setIsLoadingVariant(true);
+    try {
+      console.log(`📥 Загружаю файлы для варианта ${variant}...`);
+      
+      let allFiles: { [key: string]: string } = {};
+      
+      // Сначала пробуем загрузить из облака
+      try {
+        const cloudFiles = await cloudAudioStorage.getAllFiles();
+        console.log(`☁️ Найдено ${Object.keys(cloudFiles).length} файлов в облаке`);
+        
+        if (Object.keys(cloudFiles).length > 0) {
+          allFiles = cloudFiles;
+          console.log('✅ Используем файлы из облака');
+        }
+      } catch (cloudError) {
+        console.log('⚠️ Облако недоступно, загружаю из локального хранилища');
+      }
+      
+      // Если в облаке пусто, загружаем из локального хранилища
+      if (Object.keys(allFiles).length === 0) {
+        allFiles = await audioStorage.getAllFiles();
+        console.log(`📦 Найдено ${Object.keys(allFiles).length} файлов локально`);
+      }
+      
+      // Фильтруем только нужные для этого варианта
+      const filtered = filterFilesByVariant(allFiles, variant);
+      console.log(`✅ Отфильтровано ${Object.keys(filtered).length} файлов для ${variant}`);
+      
+      // Обновляем состояние
+      setUploadedFiles(filtered);
+      
+      // Сохраняем отфильтрованные в локальное хранилище
+      await audioStorage.clear();
+      for (const [key, data] of Object.entries(filtered)) {
+        await audioStorage.saveFile(key, data);
+      }
+      
+      console.log(`💾 ${Object.keys(filtered).length} файлов загружено в память`);
+    } catch (error) {
+      console.error('❌ Ошибка загрузки файлов:', error);
+    } finally {
+      setIsLoadingVariant(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
@@ -196,15 +245,14 @@ export const AudioSettings = ({
                 onClick={async () => {
                   if (audioSettings.variant !== 'v1') {
                     console.log('🔄 Переключение на Вариант 1');
-                    // Применяем фильтрацию файлов при переключении
-                    const filtered = filterFilesByVariant(uploadedFiles, 'v1');
-                    setUploadedFiles(filtered);
-                    console.log('✅ Файлы отфильтрованы для V1:', Object.keys(filtered).length);
+                    // Загружаем файлы из облака для варианта 1
+                    await loadFilesForVariant('v1');
                   }
                   const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v1');
                 }}
+                disabled={isLoadingVariant}
                 className={`w-full h-14 text-base font-semibold ${
                   audioSettings.variant === 'v1' 
                     ? 'bg-purple-600 hover:bg-purple-700' 
@@ -212,8 +260,14 @@ export const AudioSettings = ({
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
-                  <span>📦 Вариант 1</span>
-                  {audioSettings.variant === 'v1' && <span className="text-xs">✓ Активен</span>}
+                  {isLoadingVariant && audioSettings.variant !== 'v1' ? (
+                    <span>⏳ Загрузка...</span>
+                  ) : (
+                    <>
+                      <span>📦 Вариант 1</span>
+                      {audioSettings.variant === 'v1' && <span className="text-xs">✓ Активен</span>}
+                    </>
+                  )}
                 </div>
               </Button>
               <Button
@@ -221,15 +275,14 @@ export const AudioSettings = ({
                 onClick={async () => {
                   if (audioSettings.variant !== 'v2') {
                     console.log('🔄 Переключение на Вариант 2');
-                    // Применяем фильтрацию файлов при переключении
-                    const filtered = filterFilesByVariant(uploadedFiles, 'v2');
-                    setUploadedFiles(filtered);
-                    console.log('✅ Файлы отфильтрованы для V2:', Object.keys(filtered).length);
+                    // Загружаем файлы из облака для варианта 2
+                    await loadFilesForVariant('v2');
                   }
                   const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v2');
                 }}
+                disabled={isLoadingVariant}
                 className={`w-full h-14 text-base font-semibold ${
                   audioSettings.variant === 'v2' 
                     ? 'bg-blue-600 hover:bg-blue-700' 
@@ -237,8 +290,14 @@ export const AudioSettings = ({
                 }`}
               >
                 <div className="flex flex-col items-center gap-1">
-                  <span>📦 Вариант 2</span>
-                  {audioSettings.variant === 'v2' && <span className="text-xs">✓ Активен</span>}
+                  {isLoadingVariant && audioSettings.variant !== 'v2' ? (
+                    <span>⏳ Загрузка...</span>
+                  ) : (
+                    <>
+                      <span>🔔 Вариант 2</span>
+                      {audioSettings.variant === 'v2' && <span className="text-xs">✓ Активен</span>}
+                    </>
+                  )}
                 </div>
               </Button>
             </div>
