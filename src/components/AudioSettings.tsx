@@ -174,6 +174,9 @@ export const AudioSettings = ({
               <Button
                 variant={audioSettings.variant === 'v1' ? 'default' : 'outline'}
                 onClick={() => {
+                  if (audioSettings.variant !== 'v1') {
+                    console.log('🔄 Переключение на Вариант 1');
+                  }
                   const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v1');
@@ -185,6 +188,9 @@ export const AudioSettings = ({
               <Button
                 variant={audioSettings.variant === 'v2' ? 'default' : 'outline'}
                 onClick={() => {
+                  if (audioSettings.variant !== 'v2') {
+                    console.log('🔄 Переключение на Вариант 2');
+                  }
                   const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v2');
@@ -194,11 +200,25 @@ export const AudioSettings = ({
                 Вариант 2
               </Button>
             </div>
-            <div className="mt-3 text-xs text-purple-700">
+            <div className="mt-3 text-xs space-y-1">
               {audioSettings.variant === 'v1' ? (
-                <div>✅ Используются файлы: cell_v1_*, goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint</div>
+                <div className="text-purple-700">
+                  <div className="font-semibold mb-1">✅ Вариант 1 активен</div>
+                  <div className="ml-2">
+                    • QR код → ячейка + <strong>goods</strong> + <strong>payment_on_delivery</strong><br/>
+                    • Снять все → <strong>please_check_good_under_camera</strong><br/>
+                    • Выдать → <strong>success_sound</strong> + <strong>thanks_for_order_rate_pickpoint</strong>
+                  </div>
+                </div>
               ) : (
-                <div>✅ Используются файлы: cell_v2_*, checkWBWallet, scanAfterQrClient, askRatePickPoint</div>
+                <div className="text-blue-700">
+                  <div className="font-semibold mb-1">✅ Вариант 2 активен</div>
+                  <div className="ml-2">
+                    • QR код → ячейка + <strong>checkWBWallet</strong><br/>
+                    • Снять все → <strong>scanAfterQrClient</strong><br/>
+                    • Выдать → <strong>askRatePickPoint</strong>
+                  </div>
+                </div>
               )}
             </div>
           </div>

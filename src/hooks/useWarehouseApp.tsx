@@ -216,13 +216,10 @@ export const useWarehouseApp = (audioSettings: AudioSettings) => {
       try {
         console.log('⚡ МГНОВЕННОЕ СКАНИРОВАНИЕ МЕНЕДЖЕРА!');
         
-        // Озвучка: сканируем товары (Снять все)
-        playAudio('delivery-scan-items');
-        
         // МГНОВЕННЫЙ ПЕРЕХОД БЕЗ ЗАДЕРЖЕК
         setCurrentStep('check');
         
-        // Озвучка: проверьте товар под камерой
+        // Озвучка при нажатии "Снять все": V1=please_check_good_under_camera, V2=scanAfterQrClient
         playAudio('delivery-check-product');
         
         // МГНОВЕННАЯ ВЫДАЧА ТОВАРА

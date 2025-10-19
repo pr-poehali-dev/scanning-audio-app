@@ -155,15 +155,12 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
-    // Маппинг системных ключей на реальные названия файлов
+    // Маппинг системных ключей на реальные названия файлов в зависимости от варианта
     const keyMapping: { [key: string]: string } = {
       'delivery-cell-info': variant === 'v1' ? 'goods' : 'checkWBWallet',
-      'delivery-check-product': 'please_check_good_under_camera',
-      'check-product-under-camera': 'please_check_good_under_camera',
+      'delivery-check-product': variant === 'v1' ? 'please_check_good_under_camera' : 'scanAfterQrClient',
+      'check-product-under-camera': variant === 'v1' ? 'please_check_good_under_camera' : 'scanAfterQrClient',
       'delivery-thanks': variant === 'v1' ? 'thanks_for_order_rate_pickpoint' : 'askRatePickPoint',
-      'payment_on_delivery': variant === 'v1' ? 'payment_on_delivery' : 'scanAfterQrClient',
-      'box_accepted': 'box_accepted',
-      'success_sound': 'success_sound'
     };
 
     // Специальная обработка для delivery-thanks (благодарность после выдачи)
@@ -223,14 +220,21 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const goodsKey = variant === 'v1' ? 'goods' : 'checkWBWallet';
       const goodsAudio = currentFiles[goodsKey];
       
-      // 3. Озвучка "оплата при получении" или "scanAfterQrClient"
-      const paymentKey = variant === 'v1' ? 'payment_on_delivery' : 'scanAfterQrClient';
-      const paymentAudio = currentFiles[paymentKey];
+      // 3. Озвучка "оплата при получении" (только V1)
+      const paymentKey = variant === 'v1' ? 'payment_on_delivery' : null;
+      const paymentAudio = paymentKey ? currentFiles[paymentKey] : null;
 
-      // Собираем последовательность
-      if (cellAudio) audioSequence.push(cellAudio);
-      if (goodsAudio) audioSequence.push(goodsAudio);
-      if (paymentAudio) audioSequence.push(paymentAudio);
+      // Собираем последовательность в зависимости от варианта
+      if (variant === 'v1') {
+        // V1: ячейка + goods + payment_on_delivery
+        if (cellAudio) audioSequence.push(cellAudio);
+        if (goodsAudio) audioSequence.push(goodsAudio);
+        if (paymentAudio) audioSequence.push(paymentAudio);
+      } else {
+        // V2: ячейка + checkWBWallet
+        if (cellAudio) audioSequence.push(cellAudio);
+        if (goodsAudio) audioSequence.push(goodsAudio);
+      }
 
       console.log('🎵 Составная озвучка:', {
         variant,

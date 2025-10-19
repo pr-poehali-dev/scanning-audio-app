@@ -265,9 +265,21 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         
         <Alert className="bg-gray-50">
           <AlertDescription>
-            <div className="text-xs space-y-1">
-              <div><strong>Вариант 1:</strong> Ячейки cell_v1_1...482 + goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint, success_sound</div>
-              <div><strong>Вариант 2:</strong> Ячейки cell_v2_1...482 + checkWBWallet, scanAfterQrClient, askRatePickPoint</div>
+            <div className="text-xs space-y-2">
+              <div>
+                <strong className="text-purple-700">Вариант 1:</strong>
+                <div className="ml-2 mt-1">
+                  • Ячейки: cell_v1_1.mp3 ... cell_v1_482.mp3<br/>
+                  • Фразы: goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint, success_sound
+                </div>
+              </div>
+              <div>
+                <strong className="text-blue-700">Вариант 2:</strong>
+                <div className="ml-2 mt-1">
+                  • Ячейки: cell_v2_1.mp3 ... cell_v2_482.mp3<br/>
+                  • Фразы: checkWBWallet, scanAfterQrClient, askRatePickPoint
+                </div>
+              </div>
             </div>
           </AlertDescription>
         </Alert>
