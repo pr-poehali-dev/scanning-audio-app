@@ -167,6 +167,42 @@ export const AudioSettings = ({
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Выбор варианта озвучки */}
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="text-sm font-semibold text-purple-900 mb-3">🎵 Вариант озвучки</div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant={audioSettings.variant === 'v1' ? 'default' : 'outline'}
+                onClick={() => {
+                  const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
+                  setAudioSettings(newSettings);
+                  localStorage.setItem('wb-pvz-audio-variant', 'v1');
+                }}
+                className="w-full"
+              >
+                Вариант 1
+              </Button>
+              <Button
+                variant={audioSettings.variant === 'v2' ? 'default' : 'outline'}
+                onClick={() => {
+                  const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
+                  setAudioSettings(newSettings);
+                  localStorage.setItem('wb-pvz-audio-variant', 'v2');
+                }}
+                className="w-full"
+              >
+                Вариант 2
+              </Button>
+            </div>
+            <div className="mt-3 text-xs text-purple-700">
+              {audioSettings.variant === 'v1' ? (
+                <div>✅ Используются файлы: cell_v1_*, goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint</div>
+              ) : (
+                <div>✅ Используются файлы: cell_v2_*, checkWBWallet, scanAfterQrClient, askRatePickPoint</div>
+              )}
+            </div>
+          </div>
+
           {/* Диагностическая информация */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="text-sm font-semibold text-blue-900 mb-2">📊 Диагностика</div>

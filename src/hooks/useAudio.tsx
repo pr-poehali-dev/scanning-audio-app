@@ -154,27 +154,30 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     }
 
     // Маппинг системных ключей на реальные названия файлов
+    const variant = audioSettings.variant || 'v1';
     const keyMapping: { [key: string]: string } = {
-      'delivery-cell-info': 'goods',
+      'delivery-cell-info': variant === 'v1' ? 'goods' : 'checkWBWallet',
       'delivery-check-product': 'please_check_good_under_camera',
       'check-product-under-camera': 'please_check_good_under_camera',
-      'delivery-thanks': 'thanks_for_order_rate_pickpoint',
-      'payment_on_delivery': 'payment_on_delivery',
+      'delivery-thanks': variant === 'v1' ? 'thanks_for_order_rate_pickpoint' : 'askRatePickPoint',
+      'payment_on_delivery': variant === 'v1' ? 'payment_on_delivery' : 'scanAfterQrClient',
       'box_accepted': 'box_accepted',
       'success_sound': 'success_sound'
     };
 
     // Специальная обработка для озвучки только номера ячейки
+    const variant = audioSettings.variant || 'v1';
     if (phraseKey === 'cell-number' && cellNumber !== undefined) {
-      const cellAudio = currentFiles[`cell_${cellNumber}`];
+      const cellKey = `cell_${variant}_${cellNumber}`;
+      const cellAudio = currentFiles[cellKey];
       
       if (cellAudio) {
-        console.log(`🎵 Озвучка ячейки ${cellNumber}`);
+        console.log(`🎵 Озвучка ячейки ${cellNumber} (вариант ${variant})`);
         playSequentialAudio([cellAudio]);
         return;
       }
       
-      console.log(`⚠️ Нет файла для ячейки ${cellNumber}`);
+      console.log(`⚠️ Нет файла для ячейки ${cellNumber} (${cellKey})`);
       return;
     }
 
@@ -182,14 +185,17 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));
       console.log('🔢 Файлы count:', Object.keys(currentFiles).filter(k => k.startsWith('count')));
+      console.log('🎵 Вариант озвучки:', variant);
       
       const audioSequence: string[] = [];
       
-      // 1. Озвучка номера ячейки
-      const cellAudio = currentFiles[`cell_${cellNumber}`];
+      // 1. Озвучка номера ячейки (с префиксом варианта)
+      const cellKey = `cell_${variant}_${cellNumber}`;
+      const cellAudio = currentFiles[cellKey];
       
-      // 2. Озвучка "goods"
-      const goodsAudio = currentFiles['goods'];
+      // 2. Озвучка "товары" или "checkWBWallet"
+      const goodsKey = variant === 'v1' ? 'goods' : 'checkWBWallet';
+      const goodsAudio = currentFiles[goodsKey];
       
       // 3. Озвучка количества товаров (если передано)
       const countAudio = itemCount ? (
@@ -201,10 +207,11 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // 4. Озвучка слова "товаров"
       const wordItemsAudio = currentFiles['word_items'];
       
-      // 5. Озвучка "оплата при получении"
-      const paymentAudio = currentFiles['payment_on_delivery'];
+      // 5. Озвучка "оплата при получении" или "scanAfterQrClient"
+      const paymentKey = variant === 'v1' ? 'payment_on_delivery' : 'scanAfterQrClient';
+      const paymentAudio = currentFiles[paymentKey];
 
-      // Собираем последовательность: ЯЧЕЙКА → GOODS → количество → "товаров" → "оплата при получении"
+      // Собираем последовательность
       if (cellAudio) audioSequence.push(cellAudio);
       if (goodsAudio) audioSequence.push(goodsAudio);
       if (countAudio) audioSequence.push(countAudio);
@@ -212,10 +219,15 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       if (paymentAudio) audioSequence.push(paymentAudio);
 
       console.log('🎵 Составная озвучка:', {
+        variant,
+        cellKey,
         cell: !!cellAudio,
+        goodsKey,
         goods: !!goodsAudio,
         count: !!countAudio,
         wordItems: !!wordItemsAudio,
+        paymentKey,
+        payment: !!paymentAudio,
         total: audioSequence.length
       });
 

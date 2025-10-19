@@ -13,6 +13,7 @@ export interface AudioSettings {
   activeTab: string;
   phrases: Record<string, any>;
   enabled: Record<string, boolean>;
+  variant: 'v1' | 'v2';
 }
 
 export const useAppState = () => {
@@ -72,7 +73,8 @@ export const useAppState = () => {
       speed: parseFloat(localStorage.getItem('wb-pvz-audio-speed') || '1'),
       activeTab: localStorage.getItem('wb-pvz-audio-tab') || 'delivery',
       phrases: JSON.parse(localStorage.getItem('wb-pvz-audio-phrases') || '{}'),
-      enabled: savedEnabled ? JSON.parse(savedEnabled) : defaultEnabled
+      enabled: savedEnabled ? JSON.parse(savedEnabled) : defaultEnabled,
+      variant: (localStorage.getItem('wb-pvz-audio-variant') || 'v1') as 'v1' | 'v2'
     };
   });
 
