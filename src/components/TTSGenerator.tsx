@@ -60,7 +60,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
     setProgress(0);
     
     const newFiles = { ...uploadedFiles };
-    const totalFiles = variant === 'v2' ? (482 + 20 + 4) : (20 + 4); // v2: ячейки + количество + общие, v1: только количество + общие
+    const totalFiles = 482 + 20 + 4; // ячейки + количество + общие (для обоих вариантов)
 
     let processed = 0;
 
@@ -100,26 +100,20 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         setProgress(Math.round((processed / totalFiles) * 100));
       } else {
         const checkWBWalletBlob = await textToAudioBlob('проверьте вайлдберриз кошелёк');
-        newFiles['goods'] = await blobToBase64(checkWBWalletBlob);
-        await audioStorage.saveFile('goods', new File([checkWBWalletBlob], 'goods.webm'));
+        newFiles['checkWBWallet'] = await blobToBase64(checkWBWalletBlob);
+        await audioStorage.saveFile('checkWBWallet', new File([checkWBWalletBlob], 'checkWBWallet.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
 
         const scanAfterQrBlob = await textToAudioBlob('отсканируйте после кюар клиента');
-        newFiles['payment_on_delivery'] = await blobToBase64(scanAfterQrBlob);
-        await audioStorage.saveFile('payment_on_delivery', new File([scanAfterQrBlob], 'payment_on_delivery.webm'));
-        processed++;
-        setProgress(Math.round((processed / totalFiles) * 100));
-
-        const checkProductBlob = await textToAudioBlob('пожалуйста проверьте товар под камерой');
-        newFiles['please_check_good_under_camera'] = await blobToBase64(checkProductBlob);
-        await audioStorage.saveFile('please_check_good_under_camera', new File([checkProductBlob], 'please_check_good_under_camera.webm'));
+        newFiles['scanAfterQrClient'] = await blobToBase64(scanAfterQrBlob);
+        await audioStorage.saveFile('scanAfterQrClient', new File([scanAfterQrBlob], 'scanAfterQrClient.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
 
         const askRateBlob = await textToAudioBlob('оцените пункт выдачи');
-        newFiles['thanks_for_order_rate_pickpoint'] = await blobToBase64(askRateBlob);
-        await audioStorage.saveFile('thanks_for_order_rate_pickpoint', new File([askRateBlob], 'thanks_for_order_rate_pickpoint.webm'));
+        newFiles['askRatePickPoint'] = await blobToBase64(askRateBlob);
+        await audioStorage.saveFile('askRatePickPoint', new File([askRateBlob], 'askRatePickPoint.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
       }
@@ -137,19 +131,18 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         }
       }
 
-      // 3. Генерация номеров ячеек (1-482) - только для варианта 2
-      if (variant === 'v2') {
-        setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
-        for (let i = 1; i <= 482; i++) {
-          const text = String(i);
-          const blob = await textToAudioBlob(text);
-          newFiles[`cell_${i}`] = await blobToBase64(blob);
-          await audioStorage.saveFile(`cell_${i}`, new File([blob], `cell_${i}.webm`));
-          processed++;
-          if (processed % 10 === 0) {
-            setProgress(Math.round((processed / totalFiles) * 100));
-            setStatus(`Генерация ячеек: ${i}/482...`);
-          }
+      // 3. Генерация номеров ячеек (1-482) - для каждого варианта своя озвучка
+      setStatus('Генерация номеров ячеек (это займет 3-5 минут)...');
+      const cellPrefix = variant === 'v1' ? 'cell_v1_' : 'cell_v2_';
+      for (let i = 1; i <= 482; i++) {
+        const text = String(i);
+        const blob = await textToAudioBlob(text);
+        newFiles[`${cellPrefix}${i}`] = await blobToBase64(blob);
+        await audioStorage.saveFile(`${cellPrefix}${i}`, new File([blob], `${cellPrefix}${i}.webm`));
+        processed++;
+        if (processed % 10 === 0) {
+          setProgress(Math.round((processed / totalFiles) * 100));
+          setStatus(`Генерация ячеек (${variant}): ${i}/482...`);
         }
       }
 
@@ -164,15 +157,25 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
     }
   };
 
-  const cellCount = Object.keys(uploadedFiles).filter(k => k.startsWith('cell_')).length;
+  const cellV1Count = Object.keys(uploadedFiles).filter(k => k.startsWith('cell_v1_')).length;
+  const cellV2Count = Object.keys(uploadedFiles).filter(k => k.startsWith('cell_v2_')).length;
   const countCount = Object.keys(uploadedFiles).filter(k => k.startsWith('count_')).length;
   const hasWordItems = !!uploadedFiles['word_items'];
-  const hasPayment = !!uploadedFiles['payment_on_delivery'];
+  
+  // Вариант 1
   const hasGoods = !!uploadedFiles['goods'];
+  const hasPayment = !!uploadedFiles['payment_on_delivery'];
   const hasCheckProduct = !!uploadedFiles['please_check_good_under_camera'];
   const hasThanks = !!uploadedFiles['thanks_for_order_rate_pickpoint'];
+  
+  // Вариант 2
+  const hasCheckWBWallet = !!uploadedFiles['checkWBWallet'];
+  const hasScanAfterQr = !!uploadedFiles['scanAfterQrClient'];
+  const hasAskRate = !!uploadedFiles['askRatePickPoint'];
 
-  const isComplete = cellCount === 482 && countCount >= 20 && hasWordItems && hasPayment && hasGoods && hasCheckProduct && hasThanks;
+  const isV1Complete = cellV1Count === 482 && countCount >= 20 && hasWordItems && hasPayment && hasGoods && hasCheckProduct && hasThanks;
+  const isV2Complete = cellV2Count === 482 && countCount >= 20 && hasWordItems && hasCheckWBWallet && hasScanAfterQr && hasAskRate;
+  const isComplete = isV1Complete && isV2Complete;
 
   return (
     <Card>
@@ -196,13 +199,19 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
           <div className="text-sm font-medium">📊 Текущий прогресс:</div>
           <div className="text-xs space-y-1">
-            <div>• Ячейки: {cellCount}/482</div>
-            <div>• Количество: {countCount}/20</div>
             <div>• Слово "товаров": {hasWordItems ? '✅' : '❌'}</div>
-            <div>• Товары/скидки: {hasGoods ? '✅' : '❌'}</div>
-            <div>• Оплата: {hasPayment ? '✅' : '❌'}</div>
-            <div>• Проверка товара: {hasCheckProduct ? '✅' : '❌'}</div>
-            <div>• Оцените ПВЗ: {hasThanks ? '✅' : '❌'}</div>
+            <div>• Количество (1-20): {countCount}/20</div>
+            <div className="font-semibold mt-2">Вариант 1:</div>
+            <div className="ml-2">• Ячейки v1: {cellV1Count}/482</div>
+            <div className="ml-2">• goods: {hasGoods ? '✅' : '❌'}</div>
+            <div className="ml-2">• payment_on_delivery: {hasPayment ? '✅' : '❌'}</div>
+            <div className="ml-2">• please_check_good_under_camera: {hasCheckProduct ? '✅' : '❌'}</div>
+            <div className="ml-2">• thanks_for_order_rate_pickpoint: {hasThanks ? '✅' : '❌'}</div>
+            <div className="font-semibold mt-2">Вариант 2:</div>
+            <div className="ml-2">• Ячейки v2: {cellV2Count}/482</div>
+            <div className="ml-2">• checkWBWallet: {hasCheckWBWallet ? '✅' : '❌'}</div>
+            <div className="ml-2">• scanAfterQrClient: {hasScanAfterQr ? '✅' : '❌'}</div>
+            <div className="ml-2">• askRatePickPoint: {hasAskRate ? '✅' : '❌'}</div>
           </div>
         </div>
 
@@ -222,7 +231,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => generateAllAudio('v1')}
-            disabled={isGenerating || isComplete}
+            disabled={isGenerating || isV1Complete}
             className="w-full"
             size="lg"
             variant="outline"
@@ -232,10 +241,10 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
                 <Icon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                 {progress}%
               </>
-            ) : isComplete ? (
+            ) : isV1Complete ? (
               <>
                 <Icon name="Check" className="w-4 h-4 mr-2" />
-                Готово
+                V1 готово
               </>
             ) : (
               <>
@@ -246,7 +255,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
           </Button>
           <Button
             onClick={() => generateAllAudio('v2')}
-            disabled={isGenerating || isComplete}
+            disabled={isGenerating || isV2Complete}
             className="w-full"
             size="lg"
           >
@@ -255,10 +264,10 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
                 <Icon name="Loader2" className="w-4 h-4 mr-2 animate-spin" />
                 {progress}%
               </>
-            ) : isComplete ? (
+            ) : isV2Complete ? (
               <>
                 <Icon name="Check" className="w-4 h-4 mr-2" />
-                Готово
+                V2 готово
               </>
             ) : (
               <>
@@ -272,8 +281,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <Alert className="bg-gray-50">
           <AlertDescription>
             <div className="text-xs space-y-1">
-              <div><strong>Вариант 1:</strong> Без озвучки ячеек, базовая озвучка</div>
-              <div><strong>Вариант 2:</strong> С озвучкой ячеек 1-482 + checkWBWallet + scanAfterQrClient + askRatePickPoint</div>
+              <div><strong>Вариант 1:</strong> Ячейки cell_v1_1...482 + goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint</div>
+              <div><strong>Вариант 2:</strong> Ячейки cell_v2_1...482 + checkWBWallet, scanAfterQrClient, askRatePickPoint</div>
             </div>
           </AlertDescription>
         </Alert>
