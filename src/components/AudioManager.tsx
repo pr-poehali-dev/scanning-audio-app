@@ -78,6 +78,22 @@ export const AudioManager = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Проверка: файл должен соответствовать текущему варианту
+    const variant = audioSettings.variant;
+    const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
+    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint'];
+    const allowedFiles = variant === 'v1' ? v1Files : v2Files;
+    
+    // Проверяем файлы ячеек и базовые файлы
+    const isCellFile = fileKey.startsWith(`cell_${variant}_`);
+    const isBasicFile = allowedFiles.includes(fileKey);
+    const isCountFile = fileKey.startsWith('count_');
+    
+    if (!isCellFile && !isBasicFile && !isCountFile) {
+      alert(`❌ Ошибка: файл "${fileKey}" не соответствует варианту ${variant}!\n\nВы выбрали вариант ${variant}, но пытаетесь загрузить файл для другого варианта.`);
+      return;
+    }
+
     const url = await audioStorage.saveFile(fileKey, file);
     
     try {

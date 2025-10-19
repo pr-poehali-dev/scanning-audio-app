@@ -31,6 +31,22 @@ export const AudioSettings = ({
 }: AudioSettingsProps) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [cloudFileCount, setCloudFileCount] = useState<number | null>(null);
+  
+  // Функция фильтрации файлов по варианту (копия из useAudio)
+  const filterFilesByVariant = (allFiles: { [key: string]: string }, variant: 'v1' | 'v2') => {
+    const filtered: { [key: string]: string } = {};
+    const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
+    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint'];
+    const allowedFiles = variant === 'v1' ? v1Files : v2Files;
+    
+    Object.keys(allFiles).forEach(key => {
+      if (key.startsWith(`cell_${variant}_`) || allowedFiles.includes(key) || key.startsWith('count_')) {
+        filtered[key] = allFiles[key];
+      }
+    });
+    
+    return filtered;
+  };
 
   const handleClearAll = async () => {
     if (confirm('Удалить все загруженные аудиофайлы? Это действие нельзя отменить.')) {
@@ -177,9 +193,13 @@ export const AudioSettings = ({
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant={audioSettings.variant === 'v1' ? 'default' : 'outline'}
-                onClick={() => {
+                onClick={async () => {
                   if (audioSettings.variant !== 'v1') {
                     console.log('🔄 Переключение на Вариант 1');
+                    // Применяем фильтрацию файлов при переключении
+                    const filtered = filterFilesByVariant(uploadedFiles, 'v1');
+                    setUploadedFiles(filtered);
+                    console.log('✅ Файлы отфильтрованы для V1:', Object.keys(filtered).length);
                   }
                   const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);
@@ -198,9 +218,13 @@ export const AudioSettings = ({
               </Button>
               <Button
                 variant={audioSettings.variant === 'v2' ? 'default' : 'outline'}
-                onClick={() => {
+                onClick={async () => {
                   if (audioSettings.variant !== 'v2') {
                     console.log('🔄 Переключение на Вариант 2');
+                    // Применяем фильтрацию файлов при переключении
+                    const filtered = filterFilesByVariant(uploadedFiles, 'v2');
+                    setUploadedFiles(filtered);
+                    console.log('✅ Файлы отфильтрованы для V2:', Object.keys(filtered).length);
                   }
                   const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
                   setAudioSettings(newSettings);

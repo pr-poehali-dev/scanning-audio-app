@@ -67,6 +67,9 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       базовые: Object.keys(filtered).filter(k => allowedFiles.includes(k)).length
     });
     
+    console.log(`📋 Базовые файлы ${variant}:`, Object.keys(filtered).filter(k => allowedFiles.includes(k)));
+    console.log(`🚫 Заблокированные файлы:`, Object.keys(allFiles).filter(k => !filtered[k]).slice(0, 10));
+    
     return filtered;
   }, []);
 
