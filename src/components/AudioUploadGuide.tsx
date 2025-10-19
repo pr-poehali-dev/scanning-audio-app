@@ -32,7 +32,7 @@ export const AudioUploadGuide = () => {
                 <strong className="text-purple-700">Вариант озвучки 1:</strong>
                 <ul className="ml-4 mt-1 space-y-0.5 text-xs">
                   <li>• Ячейки: <code className="bg-gray-100 px-1 rounded">cell_v1_1.mp3 ... cell_v1_482.mp3</code></li>
-                  <li>• Фразы: <code className="bg-gray-100 px-1 rounded">goods.mp3, payment_on_delivery.mp3, please_check_good_under_camera.mp3, thanks_for_order_rate_pickpoint.mp3</code></li>
+                  <li>• Фразы: <code className="bg-gray-100 px-1 rounded">goods.mp3, payment_on_delivery.mp3, please_check_good_under_camera.mp3, thanks_for_order_rate_pickpoint.mp3, success_sound.mp3</code></li>
                 </ul>
               </div>
               <div>

@@ -164,6 +164,33 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       'success_sound': 'success_sound'
     };
 
+    // Специальная обработка для delivery-thanks (благодарность после выдачи)
+    if (phraseKey === 'delivery-thanks') {
+      const audioSequence: string[] = [];
+      
+      if (variant === 'v1') {
+        // V1: success_sound + thanks_for_order_rate_pickpoint
+        const successSound = currentFiles['success_sound'];
+        const thanksAudio = currentFiles['thanks_for_order_rate_pickpoint'];
+        
+        if (successSound) audioSequence.push(successSound);
+        if (thanksAudio) audioSequence.push(thanksAudio);
+      } else {
+        // V2: только askRatePickPoint
+        const askRate = currentFiles['askRatePickPoint'];
+        if (askRate) audioSequence.push(askRate);
+      }
+      
+      if (audioSequence.length > 0) {
+        console.log(`🎵 Озвучка благодарности (${variant}):`, audioSequence.length, 'файлов');
+        playSequentialAudio(audioSequence);
+        return;
+      }
+      
+      console.log('⚠️ Нет файлов для благодарности');
+      return;
+    }
+    
     // Специальная обработка для озвучки только номера ячейки
     if (phraseKey === 'cell-number' && cellNumber !== undefined) {
       const cellKey = `cell_${variant}_${cellNumber}`;

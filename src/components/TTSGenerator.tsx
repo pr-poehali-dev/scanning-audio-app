@@ -60,8 +60,8 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
     setProgress(0);
     
     const newFiles = { ...uploadedFiles };
-    const phrasesCount = variant === 'v1' ? 4 : 3; // v1: 4 фразы, v2: 3 фразы
-    const totalFiles = 482 + phrasesCount; // ячейки + фразы (без count)
+    const phrasesCount = variant === 'v1' ? 5 : 3; // v1: 5 фраз (включая success_sound), v2: 3 фразы
+    const totalFiles = 482 + phrasesCount; // ячейки + фразы
 
     let processed = 0;
 
@@ -91,6 +91,12 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         const thanksBlob = await textToAudioBlob('пожалуйста оцените наш пункт выдачи в приложении');
         newFiles['thanks_for_order_rate_pickpoint'] = await blobToBase64(thanksBlob);
         await audioStorage.saveFile('thanks_for_order_rate_pickpoint', new File([thanksBlob], 'thanks_for_order_rate_pickpoint.webm'));
+        processed++;
+        setProgress(Math.round((processed / totalFiles) * 100));
+
+        const successSoundBlob = await textToAudioBlob('звук успеха');
+        newFiles['success_sound'] = await blobToBase64(successSoundBlob);
+        await audioStorage.saveFile('success_sound', new File([successSoundBlob], 'success_sound.webm'));
         processed++;
         setProgress(Math.round((processed / totalFiles) * 100));
       } else {
@@ -147,13 +153,14 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
   const hasPayment = !!uploadedFiles['payment_on_delivery'];
   const hasCheckProduct = !!uploadedFiles['please_check_good_under_camera'];
   const hasThanks = !!uploadedFiles['thanks_for_order_rate_pickpoint'];
+  const hasSuccessSound = !!uploadedFiles['success_sound'];
   
   // Вариант 2
   const hasCheckWBWallet = !!uploadedFiles['checkWBWallet'];
   const hasScanAfterQr = !!uploadedFiles['scanAfterQrClient'];
   const hasAskRate = !!uploadedFiles['askRatePickPoint'];
 
-  const isV1Complete = cellV1Count === 482 && hasPayment && hasGoods && hasCheckProduct && hasThanks;
+  const isV1Complete = cellV1Count === 482 && hasPayment && hasGoods && hasCheckProduct && hasThanks && hasSuccessSound;
   const isV2Complete = cellV2Count === 482 && hasCheckWBWallet && hasScanAfterQr && hasAskRate;
 
   return (
@@ -184,6 +191,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
             <div className="ml-2">• payment_on_delivery: {hasPayment ? '✅' : '❌'}</div>
             <div className="ml-2">• please_check_good_under_camera: {hasCheckProduct ? '✅' : '❌'}</div>
             <div className="ml-2">• thanks_for_order_rate_pickpoint: {hasThanks ? '✅' : '❌'}</div>
+            <div className="ml-2">• success_sound: {hasSuccessSound ? '✅' : '❌'}</div>
             <div className="font-semibold mt-2">Вариант 2:</div>
             <div className="ml-2">• Ячейки v2: {cellV2Count}/482</div>
             <div className="ml-2">• checkWBWallet: {hasCheckWBWallet ? '✅' : '❌'}</div>
@@ -258,7 +266,7 @@ export const TTSGenerator = ({ uploadedFiles, setUploadedFiles }: TTSGeneratorPr
         <Alert className="bg-gray-50">
           <AlertDescription>
             <div className="text-xs space-y-1">
-              <div><strong>Вариант 1:</strong> Ячейки cell_v1_1...482 + goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint</div>
+              <div><strong>Вариант 1:</strong> Ячейки cell_v1_1...482 + goods, payment_on_delivery, please_check_good_under_camera, thanks_for_order_rate_pickpoint, success_sound</div>
               <div><strong>Вариант 2:</strong> Ячейки cell_v2_1...482 + checkWBWallet, scanAfterQrClient, askRatePickPoint</div>
             </div>
           </AlertDescription>
