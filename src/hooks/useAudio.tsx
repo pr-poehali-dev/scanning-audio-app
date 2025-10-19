@@ -116,10 +116,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
     const currentFiles = uploadedFilesRef.current;
+    const variant = audioSettings.variant || 'v1';
     console.log('🎵 ========== ЗАПРОС ОЗВУЧКИ ==========');
     console.log('▶️ Ключ:', phraseKey);
+    console.log('🎛️ ВАРИАНТ ОЗВУЧКИ:', variant, '(из audioSettings.variant:', audioSettings.variant, ')');
     console.log('📦 Всего файлов:', Object.keys(currentFiles).length);
-    console.log('📋 Доступные файлы:', Object.keys(currentFiles));
+    console.log('📋 Доступные файлы V1:', Object.keys(currentFiles).filter(k => k.includes('_v1_') || k === 'goods' || k === 'payment_on_delivery').length);
+    console.log('📋 Доступные файлы V2:', Object.keys(currentFiles).filter(k => k.includes('_v2_') || k === 'checkWBWallet' || k === 'scanAfterQrClient').length);
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     console.log('🔊 Аудио-контекст инициализирован?', audioContextInitialized.current);
     
@@ -153,7 +156,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     }
 
     // Маппинг системных ключей на реальные названия файлов
-    const variant = audioSettings.variant || 'v1';
     const keyMapping: { [key: string]: string } = {
       'delivery-cell-info': variant === 'v1' ? 'goods' : 'checkWBWallet',
       'delivery-check-product': 'please_check_good_under_camera',
