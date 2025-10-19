@@ -78,6 +78,7 @@ const WBPVZApp = () => {
         onAudioSettingsOpen={() => setShowAudioSettings(true)}
         activeTab={appState.activeTab}
         setActiveTab={handleTabChange}
+        audioVariant={appState.audioSettings.variant}
       />
 
       {/* Основной контент */}

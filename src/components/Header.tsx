@@ -7,9 +7,10 @@ interface HeaderProps {
   onAudioSettingsOpen: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  audioVariant?: 'v1' | 'v2';
 }
 
-const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, setActiveTab }: HeaderProps) => {
+const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, setActiveTab, audioVariant = 'v1' }: HeaderProps) => {
   return (
     <div className="bg-gray-100">
       <div className="bg-white pt-8 md:pt-0 safe-area-inset-top">
@@ -76,8 +77,22 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
 
             {/* Right side - icons */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Индикатор варианта озвучки */}
+              <div 
+                className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+                  audioVariant === 'v1' 
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' 
+                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                }`}
+                onClick={onAudioSettingsOpen}
+                title="Настройки озвучки"
+              >
+                <Icon name="Volume2" size={14} />
+                <span>Вариант {audioVariant === 'v1' ? '1' : '2'}</span>
+              </div>
+              
               <button 
-                className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors sm:hidden"
                 onClick={onAudioSettingsOpen}
                 title="Настройки озвучки"
               >

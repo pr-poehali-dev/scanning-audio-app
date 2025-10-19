@@ -35,26 +35,61 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     uploadedFilesRef.current = uploadedFiles;
   }, [uploadedFiles]);
 
+  // Функция фильтрации файлов по текущему варианту озвучки
+  const filterFilesByVariant = useCallback((allFiles: { [key: string]: string }, variant: 'v1' | 'v2') => {
+    const filtered: { [key: string]: string } = {};
+    
+    // Списки файлов для каждого варианта
+    const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
+    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint'];
+    
+    const allowedFiles = variant === 'v1' ? v1Files : v2Files;
+    
+    Object.keys(allFiles).forEach(key => {
+      // Разрешаем файлы текущего варианта
+      if (key.startsWith(`cell_${variant}_`)) {
+        filtered[key] = allFiles[key];
+      }
+      // Разрешаем базовые файлы текущего варианта
+      else if (allowedFiles.includes(key)) {
+        filtered[key] = allFiles[key];
+      }
+      // Разрешаем count файлы (общие для обоих вариантов)
+      else if (key.startsWith('count_')) {
+        filtered[key] = allFiles[key];
+      }
+    });
+    
+    console.log(`🔍 Фильтрация для ${variant}:`, {
+      всего: Object.keys(allFiles).length,
+      отфильтровано: Object.keys(filtered).length,
+      ячейки: Object.keys(filtered).filter(k => k.startsWith(`cell_${variant}_`)).length,
+      базовые: Object.keys(filtered).filter(k => allowedFiles.includes(k)).length
+    });
+    
+    return filtered;
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     
     const loadAudioFiles = async () => {
       try {
-        console.log('🔄 Начинаю загрузку аудиофайлов...');
+        const variant = audioSettings.variant || 'v1';
+        console.log('🔄 Начинаю загрузку аудиофайлов для варианта:', variant);
         
         // Сначала пробуем загрузить из облака
         try {
           const cloudFiles = await cloudAudioStorage.getAllFiles();
           console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
-          console.log('☁️ Ключи облачных файлов:', Object.keys(cloudFiles));
           
           if (!isMounted) return;
           
           if (Object.keys(cloudFiles).length > 0) {
-            console.log('✅ Загружено из облака:', Object.keys(cloudFiles).length);
-            const files = { ...cloudFiles };
-            setUploadedFiles(files);
-            uploadedFilesRef.current = files;
+            const filteredFiles = filterFilesByVariant(cloudFiles, variant);
+            console.log('✅ Загружено из облака (после фильтрации):', Object.keys(filteredFiles).length);
+            setUploadedFiles(filteredFiles);
+            uploadedFilesRef.current = filteredFiles;
             if (isMounted) setIsLoading(false);
             return;
           }
@@ -66,13 +101,13 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
         console.log('📂 Проверяю локальное хранилище...');
         const files = await audioStorage.getAllFiles();
         console.log('📦 Загружено локально:', Object.keys(files).length);
-        console.log('📋 Список файлов:', Object.keys(files));
         
         if (!isMounted) return;
         
-        const localFiles = { ...files };
-        setUploadedFiles(localFiles);
-        uploadedFilesRef.current = localFiles;
+        const filteredFiles = filterFilesByVariant(files, variant);
+        console.log('✅ После фильтрации:', Object.keys(filteredFiles).length);
+        setUploadedFiles(filteredFiles);
+        uploadedFilesRef.current = filteredFiles;
       } catch (error) {
         console.error('❌ Критическая ошибка загрузки:', error);
         if (!isMounted) return;
@@ -112,7 +147,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       document.removeEventListener('click', initAudioContext);
       isMounted = false;
     };
-  }, []);
+  }, [audioSettings.variant, filterFilesByVariant]);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
     const currentFiles = uploadedFilesRef.current;

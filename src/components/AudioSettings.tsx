@@ -6,6 +6,7 @@ import { AudioSettings as AudioSettingsType } from '@/hooks/useAppState';
 import { audioStorage } from '@/utils/audioStorage';
 import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
 import { Button } from './ui/button';
+import Icon from '@/components/ui/icon';
 import { Trash2, Cloud, Upload } from 'lucide-react';
 import { useState } from 'react';
 
@@ -168,9 +169,12 @@ export const AudioSettings = ({
         
         <div className="space-y-4">
           {/* Выбор варианта озвучки */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <div className="text-sm font-semibold text-purple-900 mb-3">🎵 Вариант озвучки</div>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-lg p-4 shadow-sm">
+            <div className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Icon name="Music" className="w-5 h-5 text-purple-600" />
+              Выбор варианта озвучки
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 variant={audioSettings.variant === 'v1' ? 'default' : 'outline'}
                 onClick={() => {
@@ -181,9 +185,16 @@ export const AudioSettings = ({
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v1');
                 }}
-                className="w-full"
+                className={`w-full h-14 text-base font-semibold ${
+                  audioSettings.variant === 'v1' 
+                    ? 'bg-purple-600 hover:bg-purple-700' 
+                    : 'border-2 border-purple-300 hover:bg-purple-50'
+                }`}
               >
-                Вариант 1
+                <div className="flex flex-col items-center gap-1">
+                  <span>📦 Вариант 1</span>
+                  {audioSettings.variant === 'v1' && <span className="text-xs">✓ Активен</span>}
+                </div>
               </Button>
               <Button
                 variant={audioSettings.variant === 'v2' ? 'default' : 'outline'}
@@ -195,9 +206,16 @@ export const AudioSettings = ({
                   setAudioSettings(newSettings);
                   localStorage.setItem('wb-pvz-audio-variant', 'v2');
                 }}
-                className="w-full"
+                className={`w-full h-14 text-base font-semibold ${
+                  audioSettings.variant === 'v2' 
+                    ? 'bg-blue-600 hover:bg-blue-700' 
+                    : 'border-2 border-blue-300 hover:bg-blue-50'
+                }`}
               >
-                Вариант 2
+                <div className="flex flex-col items-center gap-1">
+                  <span>📦 Вариант 2</span>
+                  {audioSettings.variant === 'v2' && <span className="text-xs">✓ Активен</span>}
+                </div>
               </Button>
             </div>
             <div className="mt-3 text-xs space-y-1">
