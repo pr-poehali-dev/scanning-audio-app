@@ -16,12 +16,21 @@ interface AudioManagerProps {
   onTestAudio: (phraseKey: string) => void;
 }
 
-const BASIC_FILES = [
+const BASIC_FILES_V1 = [
   { key: 'goods', label: 'Файл "goods.mp3" - озвучка товары', testKey: 'delivery-cell-info' },
   { key: 'word_items', label: 'Файл "word_items.mp3" - слово "товаров"', testKey: 'delivery-cell-info' },
   { key: 'payment_on_delivery', label: 'Файл "payment_on_delivery.mp3" - оплата при получении', testKey: 'delivery-cell-info' },
   { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
   { key: 'thanks_for_order_rate_pickpoint', label: 'Файл "thanks_for_order_rate_pickpoint.mp3" - спасибо за заказ', testKey: 'delivery-thanks' },
+  { key: 'success_sound', label: 'Файл "success_sound.mp3" - звук успеха', testKey: 'success_sound' },
+];
+
+const BASIC_FILES_V2 = [
+  { key: 'checkWBWallet', label: 'Файл "checkWBWallet.mp3" - проверьте WB кошелёк', testKey: 'delivery-cell-info' },
+  { key: 'word_items', label: 'Файл "word_items.mp3" - слово "товаров"', testKey: 'delivery-cell-info' },
+  { key: 'scanAfterQrClient', label: 'Файл "scanAfterQrClient.mp3" - отсканируйте после QR клиента', testKey: 'delivery-cell-info' },
+  { key: 'please_check_good_under_camera', label: 'Файл "please_check_good_under_camera.mp3" - проверьте товар', testKey: 'check-product-under-camera' },
+  { key: 'askRatePickPoint', label: 'Файл "askRatePickPoint.mp3" - оцените пункт выдачи', testKey: 'delivery-thanks' },
   { key: 'success_sound', label: 'Файл "success_sound.mp3" - звук успеха', testKey: 'success_sound' },
 ];
 
@@ -31,15 +40,16 @@ const COUNT_FILES = Array.from({ length: 20 }, (_, i) => ({
   testKey: 'delivery-cell-info'
 }));
 
-const CELL_FILES = Array.from({ length: 482 }, (_, i) => ({
-  key: `cell_${i + 1}`,
-  label: `Файл "cell_${i + 1}.mp3" - ячейка ${i + 1}`,
+const getBasicFiles = (variant: 'v1' | 'v2') => variant === 'v1' ? BASIC_FILES_V1 : BASIC_FILES_V2;
+
+const getCellFiles = (variant: 'v1' | 'v2') => Array.from({ length: 482 }, (_, i) => ({
+  key: `cell_${variant}_${i + 1}`,
+  label: `Файл "cell_${variant}_${i + 1}.mp3" - ячейка ${i + 1}`,
   testKey: 'delivery-cell-info'
 }));
 
-const REQUIRED_FILES = [...BASIC_FILES, ...COUNT_FILES, ...CELL_FILES];
-
 export const AudioManager = ({
+  audioSettings,
   uploadedFiles,
   setUploadedFiles,
   onTestAudio
@@ -161,14 +171,20 @@ export const AudioManager = ({
       const batch = fileArray.slice(batchStart, batchStart + BATCH_SIZE);
       
       const uploadPromises = batch.map(async (file) => {
-        const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '');
+        const fileName = file.name.replace('.mp3', '').replace('.wav', '').replace('.ogg', '').replace('.webm', '');
         
-        // Преобразуем "123" в "cell-123"
+        // Преобразуем "123" или "cell_v1_123" в "cell_v1_123" или "cell_v2_123"
         let cellKey = fileName;
-        if (!fileName.startsWith('cell-')) {
+        
+        // Если файл уже с префиксом (cell_v1_ или cell_v2_)
+        if (fileName.startsWith('cell_v1_') || fileName.startsWith('cell_v2_')) {
+          cellKey = fileName;
+        } 
+        // Если файл просто число - добавляем префикс варианта
+        else {
           const cellNumber = parseInt(fileName, 10);
           if (!isNaN(cellNumber) && cellNumber >= 1 && cellNumber <= 482) {
-            cellKey = `cell-${cellNumber}`;
+            cellKey = `cell_${audioSettings.variant}_${cellNumber}`;
           } else {
             return { success: false, key: fileName };
           }
@@ -279,8 +295,8 @@ export const AudioManager = ({
         </div>
 
         <div className="space-y-4">
-          <h3 className="font-semibold text-sm">Основные файлы</h3>
-          {BASIC_FILES.map((file) => (
+          <h3 className="font-semibold text-sm">Основные файлы ({audioSettings.variant === 'v1' ? 'Вариант 1' : 'Вариант 2'})</h3>
+          {getBasicFiles(audioSettings.variant).map((file) => (
             <div key={file.key} className="border rounded-lg p-3 space-y-2">
               <Label className="text-sm font-medium">{file.label}</Label>
               
@@ -315,7 +331,7 @@ export const AudioManager = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm">Озвучки ячеек (1-482)</h3>
+              <h3 className="font-semibold text-sm">Озвучки ячеек (1-482) - {audioSettings.variant === 'v1' ? 'Вариант 1' : 'Вариант 2'}</h3>
               <div className="flex items-center gap-3">
                 <Input
                   type="file"
@@ -337,18 +353,18 @@ export const AudioManager = ({
                   Загрузить массово
                 </Button>
                 <span className="text-xs text-gray-500">
-                  Загружено: {CELL_FILES.filter(f => uploadedFiles[f.key]).length} из {CELL_FILES.length}
+                  Загружено: {getCellFiles(audioSettings.variant).filter(f => uploadedFiles[f.key]).length} из {getCellFiles(audioSettings.variant).length}
                 </span>
               </div>
             </div>
             <div className="text-xs text-gray-500">
-              💡 Файлы можно называть просто: 1.mp3, 2.mp3, 3.mp3, ..., 482.mp3
+              💡 Файлы для {audioSettings.variant === 'v1' ? 'варианта 1' : 'варианта 2'}: cell_{audioSettings.variant}_1.mp3, cell_{audioSettings.variant}_2.mp3, ..., cell_{audioSettings.variant}_482.mp3
             </div>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-96 overflow-y-auto p-2 border rounded-lg">
-            {CELL_FILES.map((file) => {
-              const cellNum = file.key.replace('cell_', '');
+            {getCellFiles(audioSettings.variant).map((file) => {
+              const cellNum = file.key.replace(`cell_${audioSettings.variant}_`, '');
               const isUploaded = uploadedFiles[file.key];
               
               return (

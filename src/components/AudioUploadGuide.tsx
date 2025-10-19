@@ -26,19 +26,24 @@ export const AudioUploadGuide = () => {
 
         <Alert className="bg-white">
           <AlertDescription className="space-y-2">
-            <p className="font-medium">Вариант 2: Добавление файлов в проект</p>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
-              <li>Поместите MP3 файлы в папку <code className="bg-gray-100 px-1 rounded">/public/audio/</code></li>
-              <li>Используйте названия:
+            <p className="font-medium">Вариант 2: Названия файлов</p>
+            <div className="text-sm space-y-2">
+              <div>
+                <strong className="text-purple-700">Вариант озвучки 1:</strong>
                 <ul className="ml-4 mt-1 space-y-0.5 text-xs">
-                  <li><code className="bg-gray-100 px-1 rounded">cell-info.mp3</code> - Информация о ячейке</li>
-                  <li><code className="bg-gray-100 px-1 rounded">check-product.mp3</code> - Проверка товара</li>
-                  <li><code className="bg-gray-100 px-1 rounded">thanks.mp3</code> - Благодарность</li>
+                  <li>• Ячейки: <code className="bg-gray-100 px-1 rounded">cell_v1_1.mp3 ... cell_v1_482.mp3</code></li>
+                  <li>• Фразы: <code className="bg-gray-100 px-1 rounded">goods.mp3, payment_on_delivery.mp3</code></li>
                 </ul>
-              </li>
-              <li>Обновите страницу</li>
-              <li>Включите переключатели для нужных фраз</li>
-            </ol>
+              </div>
+              <div>
+                <strong className="text-purple-700">Вариант озвучки 2:</strong>
+                <ul className="ml-4 mt-1 space-y-0.5 text-xs">
+                  <li>• Ячейки: <code className="bg-gray-100 px-1 rounded">cell_v2_1.mp3 ... cell_v2_482.mp3</code></li>
+                  <li>• Фразы: <code className="bg-gray-100 px-1 rounded">checkWBWallet.mp3, scanAfterQrClient.mp3, askRatePickPoint.mp3</code></li>
+                </ul>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">💡 При массовой загрузке можно использовать просто числа: 1.mp3, 2.mp3... - система автоматически добавит префикс текущего варианта</p>
+            </div>
           </AlertDescription>
         </Alert>
 
