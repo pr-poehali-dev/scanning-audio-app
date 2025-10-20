@@ -176,16 +176,27 @@ export const AudioSettings = ({
       const filtered = filterFilesByVariant(allFiles, variant);
       console.log(`✅ Отфильтровано ${Object.keys(filtered).length} файлов для ${variant}`);
       
-      // Обновляем состояние
-      setUploadedFiles(filtered);
-      
-      // Сохраняем отфильтрованные в локальное хранилище
+      // КРИТИЧНО: Сохраняем отфильтрованные в локальное хранилище перед обновлением состояния
+      console.log('🔄 Очистка локального хранилища...');
       await audioStorage.clear();
+      
+      console.log('💾 Сохранение файлов в локальное хранилище...');
       for (const [key, data] of Object.entries(filtered)) {
         await audioStorage.saveFile(key, data);
       }
       
+      // Ждём чтобы убедиться что localStorage синхронизировался
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Проверяем что файлы действительно сохранились
+      const savedFiles = await audioStorage.getAllFiles();
+      console.log(`✅ Проверка: в локальном хранилище ${Object.keys(savedFiles).length} файлов`);
+      
+      // Обновляем состояние ПОСЛЕ полного сохранения в хранилище
+      setUploadedFiles({...filtered});
+      
       console.log(`💾 ${Object.keys(filtered).length} файлов загружено в память`);
+      console.log(`📋 Первые файлы:`, Object.keys(filtered).slice(0, 5));
     } catch (error) {
       console.error('❌ Ошибка загрузки файлов:', error);
     } finally {
@@ -247,10 +258,12 @@ export const AudioSettings = ({
                     console.log('🔄 Переключение на Вариант 1');
                     // Загружаем файлы из облака для варианта 1
                     await loadFilesForVariant('v1');
+                    // ТОЛЬКО после загрузки файлов обновляем настройки
+                    const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
+                    setAudioSettings(newSettings);
+                    localStorage.setItem('wb-pvz-audio-variant', 'v1');
+                    console.log('✅ Вариант 1 активирован, настройки обновлены');
                   }
-                  const newSettings = { ...audioSettings, variant: 'v1' as 'v1' | 'v2' };
-                  setAudioSettings(newSettings);
-                  localStorage.setItem('wb-pvz-audio-variant', 'v1');
                 }}
                 disabled={isLoadingVariant}
                 className={`w-full h-14 text-base font-semibold ${
@@ -277,10 +290,12 @@ export const AudioSettings = ({
                     console.log('🔄 Переключение на Вариант 2');
                     // Загружаем файлы из облака для варианта 2
                     await loadFilesForVariant('v2');
+                    // ТОЛЬКО после загрузки файлов обновляем настройки
+                    const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
+                    setAudioSettings(newSettings);
+                    localStorage.setItem('wb-pvz-audio-variant', 'v2');
+                    console.log('✅ Вариант 2 активирован, настройки обновлены');
                   }
-                  const newSettings = { ...audioSettings, variant: 'v2' as 'v1' | 'v2' };
-                  setAudioSettings(newSettings);
-                  localStorage.setItem('wb-pvz-audio-variant', 'v2');
                 }}
                 disabled={isLoadingVariant}
                 className={`w-full h-14 text-base font-semibold ${
