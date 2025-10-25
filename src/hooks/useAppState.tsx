@@ -82,6 +82,19 @@ export const useAppState = () => {
     saveOfflineData(mockOrders);
   }, []);
 
+  // Автоматическое сохранение audioSettings в localStorage
+  useEffect(() => {
+    localStorage.setItem('wb-pvz-audio-variant', audioSettings.variant);
+    localStorage.setItem('wb-pvz-audio-speed', String(audioSettings.speed));
+    localStorage.setItem('wb-pvz-audio-enabled', JSON.stringify(audioSettings.enabled));
+    if (audioSettings.activeTab) {
+      localStorage.setItem('wb-pvz-audio-tab', audioSettings.activeTab);
+    }
+    if (audioSettings.phrases) {
+      localStorage.setItem('wb-pvz-audio-phrases', JSON.stringify(audioSettings.phrases));
+    }
+  }, [audioSettings]);
+
   useEffect(() => {
     const handleOnline = () => {
       console.log('🌐 Приложение онлайн - данные синхронизируются');
