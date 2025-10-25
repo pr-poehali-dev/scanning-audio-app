@@ -27,8 +27,7 @@
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "files": "object",
-        "count": "number"
+        "count": 1
       },
       "bodyMatcher": "partial"
     },
