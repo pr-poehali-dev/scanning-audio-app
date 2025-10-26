@@ -227,6 +227,32 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
+    // Специальная обработка для озвучки количества товаров в приемке
+    if (phraseKey === 'quantity-announcement' && cellNumber !== undefined) {
+      const quantity = cellNumber; // cellNumber здесь используется для передачи количества
+      const audioSequence: string[] = [];
+      
+      // Озвучка "количество товаров" + число
+      const quantityTextKey = 'quantity_text';
+      const quantityTextAudio = currentFiles[quantityTextKey];
+      
+      // Озвучка самого числа
+      const numberKey = `number_${quantity}`;
+      const numberAudio = currentFiles[numberKey];
+      
+      if (quantityTextAudio) audioSequence.push(quantityTextAudio);
+      if (numberAudio) audioSequence.push(numberAudio);
+      
+      if (audioSequence.length > 0) {
+        console.log(`🎵 Озвучка количества товаров: ${quantity}`);
+        playSequentialAudio(audioSequence);
+        return;
+      }
+      
+      console.log(`⚠️ Нет файлов для озвучки количества ${quantity}`);
+      return;
+    }
+
     // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));

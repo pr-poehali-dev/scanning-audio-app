@@ -79,8 +79,13 @@ const ReceptionInterface = ({ playAudio }: ReceptionInterfaceProps) => {
         setStep(2);
         setIsScanning(false);
         
-        // Озвучка: коробка принята
+        // Озвучка: коробка принята + количество товаров
         playAudio('box_accepted');
+        
+        // Озвучка количества товаров
+        setTimeout(() => {
+          playAudio('quantity-announcement', newBox.products.length);
+        }, 1500);
       }, 1000);
     } else if (step === 2 && currentBox) {
       // Сканируем следующий товар
