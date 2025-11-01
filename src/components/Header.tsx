@@ -21,7 +21,7 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-4 h-16">
-          {/* Left side - Menu, Logo, Search */}
+          {/* Left side - Menu, Cart, Search */}
           <div className="flex items-center gap-4">
             <button 
               onClick={onMenuOpen}
@@ -29,12 +29,6 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
             >
               <Icon name="Menu" size={24} className="text-gray-700" />
             </button>
-            
-            <img 
-              src="https://cdn.poehali.dev/files/7bf1199a-f009-4c4f-8473-0e816b628133.png" 
-              alt="WB ПВЗ" 
-              className="w-12 h-12 object-contain"
-            />
             
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors hidden sm:block">
               <Icon name="ShoppingCart" size={24} className="text-gray-700" />
