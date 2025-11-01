@@ -28,7 +28,15 @@ const BASIC_FILES_V2 = [
   { key: 'checkWBWallet', label: 'Файл "checkWBWallet.mp3" - проверьте WB кошелёк', testKey: 'delivery-cell-info' },
   { key: 'scanAfterQrClient', label: 'Файл "scanAfterQrClient.mp3" - отсканируйте после QR клиента', testKey: 'delivery-cell-info' },
   { key: 'askRatePickPoint', label: 'Файл "askRatePickPoint.mp3" - оцените пункт выдачи', testKey: 'delivery-thanks' },
+  { key: 'box_accepted', label: 'Файл "box_accepted.mp3" - коробка принята', testKey: 'box_accepted' },
+  { key: 'quantity_text', label: 'Файл "quantity_text.mp3" - количество товаров', testKey: 'quantity-announcement' },
 ];
+
+const NUMBER_FILES = Array.from({ length: 10 }, (_, i) => ({
+  key: `number_${i + 1}`,
+  label: `Файл "number_${i + 1}.mp3" - число ${i + 1}`,
+  testKey: 'quantity-announcement'
+}));
 
 const COUNT_FILES = Array.from({ length: 20 }, (_, i) => ({
   key: `count_${i + 1}`,
@@ -81,15 +89,16 @@ export const AudioManager = ({
     // Проверка: файл должен соответствовать текущему варианту
     const variant = audioSettings.variant;
     const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
-    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint'];
+    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint', 'box_accepted', 'quantity_text'];
     const allowedFiles = variant === 'v1' ? v1Files : v2Files;
     
     // Проверяем файлы ячеек и базовые файлы
     const isCellFile = fileKey.startsWith(`cell_${variant}_`);
     const isBasicFile = allowedFiles.includes(fileKey);
     const isCountFile = fileKey.startsWith('count_');
+    const isNumberFile = fileKey.startsWith('number_');
     
-    if (!isCellFile && !isBasicFile && !isCountFile) {
+    if (!isCellFile && !isBasicFile && !isCountFile && !isNumberFile) {
       alert(`❌ Ошибка: файл "${fileKey}" не соответствует варианту ${variant}!\n\nВы выбрали вариант ${variant}, но пытаетесь загрузить файл для другого варианта.`);
       return;
     }
@@ -339,6 +348,35 @@ export const AudioManager = ({
             </div>
           ))}
         </div>
+
+        {audioSettings.variant === 'v2' && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm">Озвучка чисел (для приёмки)</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {NUMBER_FILES.map((file) => (
+                <div key={file.key} className="border rounded-lg p-3 space-y-2">
+                  <Label className="text-xs font-medium">{file.label}</Label>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      type="file"
+                      accept="audio/*"
+                      onChange={(e) => handleFileUpload(file.key, e)}
+                      className="text-xs"
+                    />
+                  </div>
+                  
+                  {uploadedFiles[file.key] && (
+                    <div className="flex items-center gap-1 text-xs text-green-600">
+                      <Icon name="CheckCircle" className="w-3 h-3" />
+                      <span>Загружен</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4">
           <div className="space-y-2">

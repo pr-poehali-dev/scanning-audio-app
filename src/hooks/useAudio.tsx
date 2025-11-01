@@ -236,6 +236,9 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const quantity = cellNumber; // cellNumber здесь используется для передачи количества
       const audioSequence: string[] = [];
       
+      console.log(`🔍 Попытка озвучить количество: ${quantity}`);
+      console.log(`📂 Доступные файлы:`, Object.keys(currentFiles));
+      
       // Озвучка "количество товаров" + число
       const quantityTextKey = 'quantity_text';
       const quantityTextAudio = currentFiles[quantityTextKey];
@@ -243,6 +246,8 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       // Озвучка самого числа
       const numberKey = `number_${quantity}`;
       const numberAudio = currentFiles[numberKey];
+      
+      console.log(`🔍 Ищу файлы: ${quantityTextKey} (${quantityTextAudio ? 'есть' : 'нет'}), ${numberKey} (${numberAudio ? 'есть' : 'нет'})`);
       
       if (quantityTextAudio) audioSequence.push(quantityTextAudio);
       if (numberAudio) audioSequence.push(numberAudio);
