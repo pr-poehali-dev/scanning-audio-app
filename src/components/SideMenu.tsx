@@ -41,14 +41,14 @@ const SideMenu = ({
       }`}>
         <div className="flex flex-col h-full">
           {/* Header with Logo and ID */}
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="p-4 border-b bg-white">
+            <div className="flex flex-col items-center text-center gap-2">
               <img 
                 src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" 
                 alt="WB ПВЗ" 
-                className="w-12 h-12 object-contain"
+                className="w-16 h-16 object-contain"
               />
-              <div className="flex-1">
+              <div>
                 <div className="text-xs text-gray-500">ID {pvzInfo.id || '50001234'}</div>
                 <div className="text-xs text-gray-400">V.1.0.51</div>
               </div>
@@ -56,13 +56,10 @@ const SideMenu = ({
           </div>
 
           {/* User Profile Button */}
-          <div className="px-4 py-3 border-b bg-purple-600">
-            <button className="w-full flex items-center gap-3 p-3 bg-purple-700 hover:bg-purple-800 rounded-lg transition-colors">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                <Icon name="User" size={20} className="text-purple-600" />
-              </div>
-              <div className="text-left flex-1 min-w-0">
-                <div className="text-sm font-medium text-white truncate">Сотрудник</div>
+          <div className="px-4 py-4 bg-purple-600">
+            <button className="w-full flex items-center justify-center gap-2 p-3 bg-purple-700 hover:bg-purple-800 rounded-lg transition-colors">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <Icon name="User" size={18} className="text-purple-600" />
               </div>
             </button>
           </div>
