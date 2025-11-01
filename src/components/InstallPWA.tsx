@@ -103,7 +103,7 @@ const InstallPWA = () => {
       <div className="fixed top-4 right-4 bg-white rounded-xl shadow-2xl border border-purple-200 p-4 max-w-sm z-50 animate-slide-down">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
-            <img src="https://cdn.poehali.dev/files/f052050a-c79c-4485-8cd9-3fd250940378.png" alt="WB" className="w-8 h-8 rounded-lg" />
+            <img src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" alt="WB" className="w-8 h-8 rounded-lg" />
             <h3 className="font-semibold text-gray-900">Добавить на рабочий стол</h3>
           </div>
           <button

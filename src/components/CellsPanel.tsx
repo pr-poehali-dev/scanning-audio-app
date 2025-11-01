@@ -19,7 +19,7 @@ const CellsPanel = ({ activeClients, currentClientId, onClientClick }: CellsPane
     <div className="hidden lg:flex w-20 sm:w-24 bg-white border-r flex-col">
       <div className="p-2 sm:p-3 border-b bg-white">
         <img 
-          src="https://cdn.poehali.dev/files/85c8d8ae-4b8f-45da-8f82-ca7b135fbe9f.png" 
+          src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" 
           alt="WB" 
           className="w-12 sm:w-14 h-12 sm:h-14 object-contain mx-auto"
         />

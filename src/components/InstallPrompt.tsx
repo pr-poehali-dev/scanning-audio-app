@@ -66,7 +66,7 @@ const InstallPrompt = () => {
       <div className="flex items-start gap-3">
         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
           <img 
-            src="https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png" 
+            src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" 
             alt="WB ПВЗ" 
             className="w-full h-full object-cover"
           />
