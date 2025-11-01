@@ -44,7 +44,7 @@ const SideMenu = ({
           <div className="p-4 border-b">
             <div className="flex items-center gap-3 mb-3">
               <img 
-                src="https://cdn.poehali.dev/files/7bf1199a-f009-4c4f-8473-0e816b628133.png" 
+                src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" 
                 alt="WB ПВЗ" 
                 className="w-12 h-12 object-contain"
               />
