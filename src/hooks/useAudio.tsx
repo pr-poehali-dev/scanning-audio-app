@@ -41,7 +41,7 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     
     // Списки файлов для каждого варианта
     const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
-    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint'];
+    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint', 'box_accepted', 'quantity_text'];
     
     const allowedFiles = variant === 'v1' ? v1Files : v2Files;
     
@@ -56,6 +56,10 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       }
       // Разрешаем count файлы (общие для обоих вариантов)
       else if (key.startsWith('count_')) {
+        filtered[key] = allFiles[key];
+      }
+      // Разрешаем number файлы (для озвучки количества в v2)
+      else if (key.startsWith('number_')) {
         filtered[key] = allFiles[key];
       }
     });
