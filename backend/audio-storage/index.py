@@ -75,19 +75,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'File not found'})
                     }
             else:
-                # List all files (return keys and data)
+                # List all files - return ONLY keys to avoid timeout with large datasets
                 safe_user_id = user_id.replace("'", "''")
                 cur.execute(
-                    f"SELECT file_key, file_data FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = '{safe_user_id}'"
+                    f"SELECT file_key FROM t_p72229687_scanning_audio_app.audio_files WHERE user_id = '{safe_user_id}'"
                 )
                 rows = cur.fetchall()
-                files = {row['file_key']: row['file_data'] for row in rows}
+                keys = [row['file_key'] for row in rows]
                 
                 return {
                     'statusCode': 200,
                     'headers': {**cors_headers, 'Content-Type': 'application/json'},
                     'isBase64Encoded': False,
-                    'body': json.dumps({'files': files, 'count': len(files)})
+                    'body': json.dumps({'keys': keys, 'count': len(keys)})
                 }
         
         # POST - Upload new file (upsert)

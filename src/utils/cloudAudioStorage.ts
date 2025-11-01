@@ -69,21 +69,51 @@ class CloudAudioStorage {
   }
 
   async getAllFiles(): Promise<{ [key: string]: string }> {
-    const response = await fetch(BACKEND_URL, {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'X-User-Id': this.userId
-      }
-    });
+    try {
+      // Step 1: Get list of all file keys
+      const response = await fetch(BACKEND_URL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'X-User-Id': this.userId
+        }
+      });
 
-    if (!response.ok) {
-      console.error('Failed to fetch files from cloud');
+      if (!response.ok) {
+        console.error('Failed to fetch file list from cloud');
+        return {};
+      }
+
+      const result = await response.json();
+      const keys: string[] = result.keys || [];
+      
+      if (keys.length === 0) {
+        return {};
+      }
+
+      console.log(`📥 Загружаю ${keys.length} файлов по отдельности...`);
+
+      // Step 2: Fetch each file's data individually (in batches to avoid overwhelming)
+      const files: { [key: string]: string } = {};
+      const batchSize = 20;
+      
+      for (let i = 0; i < keys.length; i += batchSize) {
+        const batch = keys.slice(i, i + batchSize);
+        const promises = batch.map(async (key) => {
+          const fileData = await this.getFile(key);
+          if (fileData) {
+            files[key] = fileData;
+          }
+        });
+        await Promise.all(promises);
+        console.log(`📥 Загружено ${Math.min(i + batchSize, keys.length)}/${keys.length}`);
+      }
+
+      return files;
+    } catch (error) {
+      console.error('Failed to fetch files from cloud:', error);
       return {};
     }
-
-    const result = await response.json();
-    return result.files || {};
   }
 
   async deleteFile(key: string): Promise<void> {
@@ -108,8 +138,25 @@ class CloudAudioStorage {
   }
 
   async getStoredKeys(): Promise<string[]> {
-    const files = await this.getAllFiles();
-    return Object.keys(files);
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'X-User-Id': this.userId
+        }
+      });
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const result = await response.json();
+      return result.keys || [];
+    } catch (error) {
+      console.error('Failed to fetch keys from cloud:', error);
+      return [];
+    }
   }
 
   async uploadFile(key: string, base64Data: string): Promise<void> {
