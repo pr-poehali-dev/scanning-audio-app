@@ -19,9 +19,9 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
             {/* Left side - Logo */}
             <div className="flex items-center gap-2">
               <img 
-                src="https://cdn.poehali.dev/files/dcc8b24a-695d-4d56-9c54-689a2b0cf777.png" 
+                src="https://cdn.poehali.dev/files/7bf1199a-f009-4c4f-8473-0e816b628133.png" 
                 alt="WB ПВЗ" 
-                className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg shadow-sm"
+                className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
               />
               <div className="hidden sm:block">
                 <div className="text-sm font-semibold text-gray-900">ПВЗ WB</div>
