@@ -1,6 +1,6 @@
-const CACHE_NAME = 'wb-pvz-v3';
-const DYNAMIC_CACHE = 'wb-pvz-dynamic-v3';
-const IMAGE_CACHE = 'wb-pvz-images-v3';
+const CACHE_NAME = 'wb-pvz-v4';
+const DYNAMIC_CACHE = 'wb-pvz-dynamic-v4';
+const IMAGE_CACHE = 'wb-pvz-images-v4';
 
 const STATIC_ASSETS = [
   '/',

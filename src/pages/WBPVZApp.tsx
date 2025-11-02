@@ -74,7 +74,7 @@ const WBPVZApp = () => {
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
       {/* Левая панель - только на ПК */}
-      {!isMobile && <LeftSidebar pvzInfo={appState.pvzInfo} />}
+      <LeftSidebar pvzInfo={appState.pvzInfo} />
 
       {/* Хедер - всегда показываем */}
       <Header
