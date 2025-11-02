@@ -16,7 +16,7 @@ interface CellsPanelProps {
 
 const CellsPanel = ({ activeClients, currentClientId, onClientClick }: CellsPanelProps) => {
   return (
-    <div className="hidden lg:flex w-20 sm:w-24 bg-white border-r flex-col fixed left-[140px] top-0 h-full z-20">
+    <div className="hidden lg:flex w-20 sm:w-24 bg-white border-r flex-col absolute left-80 top-0 h-full z-10">
 
       <div className="flex-1 overflow-y-auto p-1.5 sm:p-2 space-y-1.5 sm:space-y-2 pt-4">
         {activeClients.map((client) => (

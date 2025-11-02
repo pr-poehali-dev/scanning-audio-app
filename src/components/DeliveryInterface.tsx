@@ -81,7 +81,7 @@ const DeliveryInterface = ({
   console.log('🔍 DeliveryInterface - clientsData:', clientsData);
 
   return (
-    <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden">
+    <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden relative">
 
       {/* Мобильная шапка с информацией */}
       <div className="lg:hidden bg-white border-b shadow-sm">
@@ -197,7 +197,7 @@ const DeliveryInterface = ({
       </div>
 
       {/* Правая панель - товары */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto lg:ml-20 xl:ml-24">
         {/* Мобильная кнопка проверки товаров */}
         <div className="lg:hidden sticky top-0 bg-white border-b px-4 py-3 z-10">
           <button
