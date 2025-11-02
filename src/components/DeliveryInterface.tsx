@@ -84,36 +84,39 @@ const DeliveryInterface = ({
     <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden">
 
       {/* Мобильная шапка с информацией */}
-      <div className="lg:hidden bg-white border-b">
-        <div className="px-4 py-3">
+      <div className="lg:hidden bg-white border-b shadow-sm">
+        <div className="px-4 py-4">
           {/* Большой номер ячейки и количество товаров */}
-          <div className="flex items-end gap-3 mb-2">
-            <div className="text-6xl font-black text-gray-900 leading-none tracking-tight">{order.cellNumber}</div>
-            <div className="text-2xl text-gray-500 font-semibold pb-1">{order.items.length} шт</div>
+          <div className="flex items-center gap-4 mb-3">
+            <div className="text-7xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
+            <div className="flex flex-col">
+              <div className="text-sm text-gray-500 font-medium">Товаров</div>
+              <div className="text-3xl font-black text-gray-900">{order.items.length}</div>
+            </div>
           </div>
           
           {/* Телефон */}
-          <div className="text-base text-gray-600 font-medium">+7 (***) ***-{order.phone}</div>
+          <div className="text-lg text-gray-700 font-semibold">+7 (***) ***-{order.phone}</div>
         </div>
       </div>
 
       {/* Desktop панель - информация */}
       <div className="hidden lg:block w-80 bg-white p-6 space-y-6 overflow-y-auto border-r">
         {/* Информация о клиенте */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <div className="text-sm text-gray-500">Клиент</div>
-            <div className="text-base font-medium">+7 (***) **{order.phone}</div>
+            <div className="text-sm text-gray-500 mb-1">Клиент</div>
+            <div className="text-lg font-semibold text-gray-900">+7 (***) **{order.phone}</div>
           </div>
           
           <div>
             <div className="text-sm text-gray-500 mb-2">Ячейка</div>
-            <div className="text-6xl font-black text-gray-900 leading-none tracking-tight">{order.cellNumber}</div>
+            <div className="text-7xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
           </div>
           
           <div>
-            <div className="text-sm text-gray-500">Товаров</div>
-            <div className="text-2xl font-semibold">{order.items.length} из {order.items.length}</div>
+            <div className="text-sm text-gray-500 mb-1">Товаров</div>
+            <div className="text-3xl font-black text-gray-900">{order.items.length} <span className="text-2xl text-gray-500 font-semibold">из {order.items.length}</span></div>
           </div>
 
           {/* Пакетов */}
