@@ -1,27 +1,18 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { AudioSettings } from './useAppState';
-import { audioStorage } from '@/utils/audioStorage';
-import { cloudAudioStorage } from '@/utils/cloudAudioStorage';
-import { defaultAudioGenerator } from '@/utils/defaultAudioGenerator';
+import { AUDIO_FILE_MAP, getKeyMapping } from './audio/audioConstants';
+import { loadAudioFiles } from './audio/audioLoader';
+import { createSequentialAudioPlayer, initAudioContext } from './audio/audioPlayer';
+import {
+  buildDeliveryCellInfoSequence,
+  buildThanksSequence,
+  buildQuantitySequence,
+  buildReceptionSequence
+} from './audio/audioSequenceBuilder';
 
 interface UseAudioProps {
   audioSettings: AudioSettings;
 }
-
-const AUDIO_FILE_MAP: { [key: string]: string } = {
-  'delivery-cell-info': '/audio/cell-info.mp3',
-  'delivery-scan-items': '/audio/scan-items.mp3',
-  'delivery-check-product': '/audio/check-product.mp3',
-  'delivery-thanks': '/audio/thanks.mp3',
-  'receiving-start': '/audio/receiving-start.mp3',
-  'receiving-scan': '/audio/receiving-scan.mp3',
-  'receiving-next': '/audio/receiving-next.mp3',
-  'receiving-complete': '/audio/receiving-complete.mp3',
-  'return-start': '/audio/return-start.mp3',
-  'return-scan-product': '/audio/return-scan.mp3',
-  'return-confirm': '/audio/return-confirm.mp3',
-  'return-success': '/audio/return-success.mp3',
-};
 
 export const useAudio = ({ audioSettings }: UseAudioProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -35,126 +26,30 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     uploadedFilesRef.current = uploadedFiles;
   }, [uploadedFiles]);
 
-  // Функция фильтрации файлов по текущему варианту озвучки
-  const filterFilesByVariant = useCallback((allFiles: { [key: string]: string }, variant: 'v1' | 'v2') => {
-    const filtered: { [key: string]: string } = {};
-    
-    // Списки файлов для каждого варианта
-    const v1Files = ['goods', 'payment_on_delivery', 'please_check_good_under_camera', 'thanks_for_order_rate_pickpoint', 'success_sound'];
-    const v2Files = ['checkWBWallet', 'scanAfterQrClient', 'askRatePickPoint', 'box_accepted', 'quantity_text'];
-    
-    const allowedFiles = variant === 'v1' ? v1Files : v2Files;
-    
-    Object.keys(allFiles).forEach(key => {
-      // Разрешаем файлы текущего варианта
-      if (key.startsWith(`cell_${variant}_`)) {
-        filtered[key] = allFiles[key];
-      }
-      // Разрешаем базовые файлы текущего варианта
-      else if (allowedFiles.includes(key)) {
-        filtered[key] = allFiles[key];
-      }
-      // Разрешаем count файлы (общие для обоих вариантов)
-      else if (key.startsWith('count_')) {
-        filtered[key] = allFiles[key];
-      }
-      // Разрешаем number файлы (для озвучки количества в v2)
-      else if (key.startsWith('number_')) {
-        filtered[key] = allFiles[key];
-      }
-    });
-    
-    console.log(`🔍 Фильтрация для ${variant}:`, {
-      всего: Object.keys(allFiles).length,
-      отфильтровано: Object.keys(filtered).length,
-      ячейки: Object.keys(filtered).filter(k => k.startsWith(`cell_${variant}_`)).length,
-      базовые: Object.keys(filtered).filter(k => allowedFiles.includes(k)).length
-    });
-    
-    console.log(`📋 Базовые файлы ${variant}:`, Object.keys(filtered).filter(k => allowedFiles.includes(k)));
-    console.log(`🚫 Заблокированные файлы:`, Object.keys(allFiles).filter(k => !filtered[k]).slice(0, 10));
-    
-    return filtered;
-  }, []);
-
   useEffect(() => {
     let isMounted = true;
     
-    const loadAudioFiles = async () => {
-      try {
-        const variant = audioSettings.variant || 'v1';
-        console.log('🔄 Начинаю загрузку аудиофайлов для варианта:', variant);
-        
-        // Сначала пробуем загрузить из облака
-        try {
-          const cloudFiles = await cloudAudioStorage.getAllFiles();
-          console.log('☁️ Файлов в облаке:', Object.keys(cloudFiles).length);
-          
-          if (!isMounted) return;
-          
-          if (Object.keys(cloudFiles).length > 0) {
-            const filteredFiles = filterFilesByVariant(cloudFiles, variant);
-            console.log('✅ Загружено из облака (после фильтрации):', Object.keys(filteredFiles).length);
-            setUploadedFiles(filteredFiles);
-            uploadedFilesRef.current = filteredFiles;
-            if (isMounted) setIsLoading(false);
-            return;
-          }
-        } catch (cloudError) {
-          console.warn('⚠️ Не удалось загрузить из облака, загружаю локально:', cloudError);
-        }
-        
-        // Загружаем из локального хранилища
-        console.log('📂 Проверяю локальное хранилище...');
-        const files = await audioStorage.getAllFiles();
-        console.log('📦 Загружено локально:', Object.keys(files).length);
-        
-        if (!isMounted) return;
-        
-        const filteredFiles = filterFilesByVariant(files, variant);
-        console.log('✅ После фильтрации:', Object.keys(filteredFiles).length);
-        setUploadedFiles(filteredFiles);
-        uploadedFilesRef.current = filteredFiles;
-      } catch (error) {
-        console.error('❌ Критическая ошибка загрузки:', error);
-        if (!isMounted) return;
-        setUploadedFiles({});
-        uploadedFilesRef.current = {};
-      }
-      
-      if (isMounted) {
-        setIsLoading(false);
-      }
-    };
-
-    loadAudioFiles();
+    loadAudioFiles(
+      audioSettings.variant || 'v1',
+      setUploadedFiles,
+      uploadedFilesRef,
+      setIsLoading,
+      isMounted
+    );
     
-    // Инициализация аудио-контекста для мобильных браузеров
-    const initAudioContext = () => {
-      if (!audioContextInitialized.current) {
-        console.log('🎵 Инициализация аудио-контекста для мобильного');
-        const tempAudio = new Audio();
-        tempAudio.volume = 0.01;
-        tempAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4SRUbpxAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/+xDEDwPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
-        tempAudio.play().then(() => {
-          console.log('✅ Аудио-контекст инициализирован');
-          audioContextInitialized.current = true;
-        }).catch((err) => {
-          console.log('⚠️ Не удалось инициализировать аудио-контекст (требуется взаимодействие пользователя):', err);
-        });
-      }
-    };
+    const initContext = () => initAudioContext(audioContextInitialized);
     
-    // Инициализируем при первом взаимодействии
-    document.addEventListener('touchstart', initAudioContext, { once: true });
-    document.addEventListener('click', initAudioContext, { once: true });
+    document.addEventListener('touchstart', initContext, { once: true });
+    document.addEventListener('click', initContext, { once: true });
     
     return () => {
-      document.removeEventListener('touchstart', initAudioContext);
-      document.removeEventListener('click', initAudioContext);
+      document.removeEventListener('touchstart', initContext);
+      document.removeEventListener('click', initContext);
       isMounted = false;
     };
-  }, [audioSettings.variant, filterFilesByVariant]);
+  }, [audioSettings.variant]);
+
+  const playSequentialAudio = createSequentialAudioPlayer(audioRef, setIsPlaying, audioSettings.speed);
 
   const playAudio = useCallback((phraseKey: string, cellNumber?: number, itemCount?: number) => {
     const currentFiles = uploadedFilesRef.current;
@@ -169,7 +64,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     console.log('⚙️ Настройка включена?', audioSettings.enabled[phraseKey]);
     console.log('🔊 Аудио-контекст инициализирован?', audioContextInitialized.current);
     
-    // Проверка: если уже играет озвучка, показываем предупреждение
     if (isPlaying) {
       console.log('⚠️ ОЗВУЧКА УЖЕ ИГРАЕТ, пропускаю запрос:', phraseKey);
       return;
@@ -181,30 +75,10 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
-    // Маппинг системных ключей на реальные названия файлов в зависимости от варианта
-    const keyMapping: { [key: string]: string } = {
-      'delivery-cell-info': variant === 'v1' ? 'goods' : 'checkWBWallet',
-      'delivery-check-product': variant === 'v1' ? 'please_check_good_under_camera' : 'scanAfterQrClient',
-      'check-product-under-camera': variant === 'v1' ? 'please_check_good_under_camera' : 'scanAfterQrClient',
-      'delivery-thanks': variant === 'v1' ? 'thanks_for_order_rate_pickpoint' : 'askRatePickPoint',
-    };
+    const keyMapping = getKeyMapping(variant);
 
-    // Специальная обработка для delivery-thanks (благодарность после выдачи)
     if (phraseKey === 'delivery-thanks') {
-      const audioSequence: string[] = [];
-      
-      if (variant === 'v1') {
-        // V1: success_sound + thanks_for_order_rate_pickpoint
-        const successSound = currentFiles['success_sound'];
-        const thanksAudio = currentFiles['thanks_for_order_rate_pickpoint'];
-        
-        if (successSound) audioSequence.push(successSound);
-        if (thanksAudio) audioSequence.push(thanksAudio);
-      } else {
-        // V2: только askRatePickPoint
-        const askRate = currentFiles['askRatePickPoint'];
-        if (askRate) audioSequence.push(askRate);
-      }
+      const audioSequence = buildThanksSequence(currentFiles, variant);
       
       if (audioSequence.length > 0) {
         console.log(`🎵 Озвучка благодарности (${variant}):`, audioSequence.length, 'файлов');
@@ -216,7 +90,6 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
     
-    // Специальная обработка для озвучки только номера ячейки
     if (phraseKey === 'cell-number' && cellNumber !== undefined) {
       const cellKey = `cell_${variant}_${cellNumber}`;
       const cellAudio = currentFiles[cellKey];
@@ -231,26 +104,9 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
-    // Специальная обработка для озвучки количества товаров в приемке
     if (phraseKey === 'quantity-announcement' && cellNumber !== undefined) {
-      const quantity = cellNumber; // cellNumber здесь используется для передачи количества
-      const audioSequence: string[] = [];
-      
-      console.log(`🔍 Попытка озвучить количество: ${quantity}`);
-      console.log(`📂 Доступные файлы:`, Object.keys(currentFiles));
-      
-      // Озвучка "количество товаров" + число
-      const quantityTextKey = 'quantity_text';
-      const quantityTextAudio = currentFiles[quantityTextKey];
-      
-      // Озвучка самого числа
-      const numberKey = `number_${quantity}`;
-      const numberAudio = currentFiles[numberKey];
-      
-      console.log(`🔍 Ищу файлы: ${quantityTextKey} (${quantityTextAudio ? 'есть' : 'нет'}), ${numberKey} (${numberAudio ? 'есть' : 'нет'})`);
-      
-      if (quantityTextAudio) audioSequence.push(quantityTextAudio);
-      if (numberAudio) audioSequence.push(numberAudio);
+      const quantity = cellNumber;
+      const audioSequence = buildQuantitySequence(currentFiles, quantity);
       
       if (audioSequence.length > 0) {
         console.log(`🎵 Озвучка количества товаров: ${quantity}`);
@@ -262,58 +118,17 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
-    // Специальная обработка для delivery-cell-info с составной озвучкой
     if (phraseKey === 'delivery-cell-info' && cellNumber !== undefined) {
       console.log('📂 ВСЕ загруженные файлы:', Object.keys(currentFiles));
       console.log('🎵 Вариант озвучки:', variant);
       
-      const audioSequence: string[] = [];
-      
-      // 1. Озвучка номера ячейки (с префиксом варианта)
-      const cellKey = `cell_${variant}_${cellNumber}`;
-      const cellAudio = currentFiles[cellKey];
-      
-      // 2. Озвучка "товары" или "checkWBWallet"
-      const goodsKey = variant === 'v1' ? 'goods' : 'checkWBWallet';
-      const goodsAudio = currentFiles[goodsKey];
-      
-      // 3. Озвучка "оплата при получении" (только V1)
-      const paymentKey = variant === 'v1' ? 'payment_on_delivery' : null;
-      const paymentAudio = paymentKey ? currentFiles[paymentKey] : null;
-
-      // Озвучка количества товаров (если передано)
-      let itemCountAudio = null;
-      if (itemCount !== undefined && itemCount > 0) {
-        const countKey = `count_${itemCount}`;
-        itemCountAudio = currentFiles[countKey];
-      }
-
-      // Собираем последовательность в зависимости от варианта
-      if (variant === 'v1') {
-        // V1: ячейка + goods + количество + payment_on_delivery
-        if (cellAudio) audioSequence.push(cellAudio);
-        if (goodsAudio) audioSequence.push(goodsAudio);
-        if (itemCountAudio) audioSequence.push(itemCountAudio);
-        if (paymentAudio) audioSequence.push(paymentAudio);
-      } else {
-        // V2: ячейка + checkWBWallet + количество
-        if (cellAudio) audioSequence.push(cellAudio);
-        if (goodsAudio) audioSequence.push(goodsAudio);
-        if (itemCountAudio) audioSequence.push(itemCountAudio);
-      }
-
-      console.log('🎵 Составная озвучка:', {
+      const audioSequence = buildDeliveryCellInfoSequence(
+        currentFiles,
         variant,
-        cellKey,
-        cell: !!cellAudio,
-        goodsKey,
-        goods: !!goodsAudio,
-        paymentKey,
-        payment: !!paymentAudio,
-        total: audioSequence.length
-      });
+        cellNumber,
+        itemCount
+      );
 
-      // Если есть хотя бы один файл - играем последовательность
       if (audioSequence.length > 0) {
         playSequentialAudio(audioSequence);
         return;
@@ -323,13 +138,23 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       return;
     }
 
-    // Преобразуем системный ключ в реальное название файла
+    if (phraseKey === 'receiving-complete' && cellNumber !== undefined) {
+      const audioSequence = buildReceptionSequence(currentFiles, variant, cellNumber);
+      
+      if (audioSequence.length > 0) {
+        console.log(`🎵 Озвучка приемки ячейки ${cellNumber}`);
+        playSequentialAudio(audioSequence);
+        return;
+      }
+      
+      console.log('⚠️ Нет файлов для озвучки приемки');
+      return;
+    }
+
     const mappedKey = keyMapping[phraseKey] || phraseKey;
     
-    // Проверяем сначала загруженный пользователем файл
     let audioUrl = currentFiles[mappedKey];
     
-    // Если нет загруженного файла, пытаемся использовать файл из /public/audio
     if (!audioUrl) {
       audioUrl = AUDIO_FILE_MAP[phraseKey];
     }
@@ -355,153 +180,37 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
     audio.src = audioUrl;
     audio.playbackRate = audioSettings.speed;
     audioRef.current = audio;
+
     setIsPlaying(true);
 
-    console.log('▶️ НАЧИНАЮ ВОСПРОИЗВЕДЕНИЕ...');
-    
-    // Для мобильных устройств - дополнительная обработка
-    const playWithRetry = async (retries = 5) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          console.log(`🔄 Попытка воспроизведения ${i + 1}/${retries}`);
-          
-          // Загружаем аудио перед воспроизведением
-          await audio.load();
-          console.log('✅ Аудио загружено, начинаю play()');
-          
-          await audio.play();
-          console.log('✅ ВОСПРОИЗВЕДЕНИЕ НАЧАЛОСЬ (попытка', i + 1, ')');
-          return;
-        } catch (err: any) {
-          console.warn(`⚠️ Попытка ${i + 1} не удалась:`, err.message);
-          console.warn('Тип ошибки:', err.name);
-          console.warn('Код ошибки:', err.code);
-          
-          if (i === retries - 1) {
-            console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ после всех попыток:', err);
-            console.error('Детали:', err.message, err.name);
-            setIsPlaying(false);
-          } else {
-            // Увеличенная задержка между попытками
-            await new Promise(resolve => setTimeout(resolve, 200 * (i + 1)));
-          }
-        }
-      }
+    audio.onloadeddata = () => {
+      console.log('✅ Аудио данные загружены');
     };
-    
-    playWithRetry();
 
     audio.onended = () => {
-      console.log('✅ ВОСПРОИЗВЕДЕНИЕ ЗАВЕРШЕНО');
+      console.log('✅ ОЗВУЧКА ЗАВЕРШЕНА');
       setIsPlaying(false);
-      audioRef.current = null;
     };
 
     audio.onerror = (e) => {
-      console.error(`❌ ОШИБКА ЗАГРУЗКИ АУДИО "${phraseKey}":`, e);
-      console.error('Audio error event:', audio.error);
+      console.error('❌ ОШИБКА ВОСПРОИЗВЕДЕНИЯ:', e);
       setIsPlaying(false);
-      audioRef.current = null;
-    };
-  }, [audioSettings, isPlaying]);
-
-  const playSequentialAudio = useCallback((audioUrls: string[], delayMs: number = 500) => {
-    if (audioUrls.length === 0) return;
-
-    console.log('🎬 ========== НАЧАЛО ПОСЛЕДОВАТЕЛЬНОСТИ ==========');
-    console.log('📊 Количество файлов:', audioUrls.length);
-    console.log('📋 Список URL:', audioUrls);
-    console.log('⏱️ Задержка между файлами:', delayMs, 'мс');
-    
-    let currentIndex = 0;
-    setIsPlaying(true);
-
-    const playNext = () => {
-      if (currentIndex >= audioUrls.length) {
-        console.log('🏁 ПОСЛЕДОВАТЕЛЬНОСТЬ ЗАВЕРШЕНА');
-        setIsPlaying(false);
-        audioRef.current = null;
-        return;
-      }
-
-      // Останавливаем предыдущий звук если он есть
-      if (audioRef.current) {
-        console.log('⏹️ Останавливаю предыдущий звук');
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-        audioRef.current = null;
-      }
-
-      const audio = new Audio();
-      audio.preload = 'auto';
-      audio.volume = 1.0;
-      audio.src = audioUrls[currentIndex];
-      audio.playbackRate = audioSettings.speed;
-      audioRef.current = audio;
-
-      console.log(`🔊 Часть ${currentIndex + 1}/${audioUrls.length}:`, audioUrls[currentIndex]);
-      console.log(`⏱️ Скорость: ${audioSettings.speed}x`);
-
-      const playWithRetry = async (retries = 3) => {
-        for (let i = 0; i < retries; i++) {
-          try {
-            await audio.load();
-            await audio.play();
-            console.log(`▶️ Часть ${currentIndex + 1} ИГРАЕТ`);
-            return;
-          } catch (err) {
-            console.error(`❌ Попытка ${i + 1} не удалась:`, err);
-            if (i === retries - 1) {
-              console.error('❌ Ошибка воспроизведения части', currentIndex + 1);
-              currentIndex++;
-              setTimeout(() => playNext(), delayMs);
-            } else {
-              await new Promise(resolve => setTimeout(resolve, 100));
-            }
-          }
-        }
-      };
-      
-      playWithRetry();
-
-      audio.onended = () => {
-        console.log(`✅ Часть ${currentIndex + 1} ЗАВЕРШЕНА, пауза ${delayMs}мс`);
-        currentIndex++;
-        setTimeout(() => playNext(), delayMs);
-      };
-
-      audio.onerror = () => {
-        console.error('❌ Ошибка загрузки аудио части', currentIndex + 1);
-        currentIndex++;
-        setTimeout(() => playNext(), delayMs);
-      };
     };
 
-    playNext();
-  }, [audioSettings]);
-
-  const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+    audio.play().then(() => {
+      console.log('▶️ Воспроизведение началось');
+    }).catch((error) => {
+      console.error('❌ Не удалось начать воспроизведение:', error);
       setIsPlaying(false);
-    }
-  }, []);
+    });
 
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
+  }, [audioSettings, isPlaying, playSequentialAudio]);
 
   return {
     playAudio,
-    stopAudio,
     isPlaying,
     uploadedFiles,
-    setUploadedFiles
+    setUploadedFiles,
+    isLoading
   };
 };
