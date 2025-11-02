@@ -281,16 +281,25 @@ export const useAudio = ({ audioSettings }: UseAudioProps) => {
       const paymentKey = variant === 'v1' ? 'payment_on_delivery' : null;
       const paymentAudio = paymentKey ? currentFiles[paymentKey] : null;
 
+      // Озвучка количества товаров (если передано)
+      let itemCountAudio = null;
+      if (itemCount !== undefined && itemCount > 0) {
+        const countKey = `count_${itemCount}`;
+        itemCountAudio = currentFiles[countKey];
+      }
+
       // Собираем последовательность в зависимости от варианта
       if (variant === 'v1') {
-        // V1: ячейка + goods + payment_on_delivery
+        // V1: ячейка + goods + количество + payment_on_delivery
         if (cellAudio) audioSequence.push(cellAudio);
         if (goodsAudio) audioSequence.push(goodsAudio);
+        if (itemCountAudio) audioSequence.push(itemCountAudio);
         if (paymentAudio) audioSequence.push(paymentAudio);
       } else {
-        // V2: ячейка + checkWBWallet
+        // V2: ячейка + checkWBWallet + количество
         if (cellAudio) audioSequence.push(cellAudio);
         if (goodsAudio) audioSequence.push(goodsAudio);
+        if (itemCountAudio) audioSequence.push(itemCountAudio);
       }
 
       console.log('🎵 Составная озвучка:', {

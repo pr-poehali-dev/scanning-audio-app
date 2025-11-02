@@ -107,8 +107,8 @@ const DeliveryInterface = ({
           </div>
           
           <div>
-            <div className="text-sm text-gray-500">Ячейка</div>
-            <div className="text-4xl font-bold">{order.cellNumber}</div>
+            <div className="text-sm text-gray-500 mb-1">Ячейка</div>
+            <div className="text-5xl font-bold text-gray-900 leading-tight">{order.cellNumber}</div>
           </div>
           
           <div>

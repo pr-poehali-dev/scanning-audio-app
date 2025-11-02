@@ -21,6 +21,9 @@ interface LeftSidebarProps {
 const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient, onClientClick }: LeftSidebarProps) => {
   const totalClients = activeClients.length;
   
+  console.log('🔍 LeftSidebar - activeClients:', activeClients.length, activeClients);
+  console.log('🔍 LeftSidebar - номера ячеек:', activeClients.map(c => c.cellNumber));
+  
   return (
     <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] bg-white shadow-lg z-40 flex-col">
       {/* Шапка с логотипом */}

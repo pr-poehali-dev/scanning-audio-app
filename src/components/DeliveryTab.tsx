@@ -132,7 +132,7 @@ export const DeliveryTab = ({
           <div className="w-80 bg-gray-50 p-6 flex flex-col">
             <div className="text-center mb-8">
               <div className="text-sm text-gray-600 mb-1">Ячейка</div>
-              <div className="text-6xl font-bold text-gray-800 mb-6">{cellNumber}</div>
+              <div className="text-5xl font-bold text-gray-800 mb-6">{cellNumber}</div>
               
               <div className="text-sm text-gray-600 mb-2">Товаров</div>
               <div className="text-2xl font-bold text-gray-800 mb-4">{itemsCount} из {itemsCount}</div>
