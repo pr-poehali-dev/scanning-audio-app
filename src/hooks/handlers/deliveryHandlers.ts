@@ -126,9 +126,13 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
     if (client) {
       setCurrentClientId(clientId);
       setCurrentOrder(client);
-      setDeliveryStep('client-scanned');
-      setIsProductScanned(false);
-      setScannedData('');
+      // Если клиент уже отсканировал товар, возвращаемся к проверке под камерой
+      // Иначе начинаем с начала процесса выдачи
+      setDeliveryStep('product-scanned');
+      setIsProductScanned(true);
+      setScannedData(client.items.map((item: any) => item.barcode).join(','));
+      
+      console.log(`🔄 Переключение на клиента в ячейке ${client.cellNumber}`);
     }
   }, [activeClients, setCurrentClientId, setCurrentOrder, setDeliveryStep, setIsProductScanned, setScannedData]);
 
