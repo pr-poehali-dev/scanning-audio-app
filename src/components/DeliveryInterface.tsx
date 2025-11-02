@@ -87,13 +87,13 @@ const DeliveryInterface = ({
       <div className="lg:hidden bg-white border-b">
         <div className="px-4 py-3">
           {/* Большой номер ячейки и количество товаров */}
-          <div className="flex items-end gap-2 mb-2">
-            <div className="text-5xl font-bold text-gray-900">{order.cellNumber}</div>
-            <div className="text-2xl text-gray-400 font-medium pb-1">{order.items.length} шт</div>
+          <div className="flex items-end gap-3 mb-2">
+            <div className="text-6xl font-black text-gray-900 leading-none tracking-tight">{order.cellNumber}</div>
+            <div className="text-2xl text-gray-500 font-semibold pb-1">{order.items.length} шт</div>
           </div>
           
           {/* Телефон */}
-          <div className="text-base text-gray-600">+7 (***) ***-{order.phone}</div>
+          <div className="text-base text-gray-600 font-medium">+7 (***) ***-{order.phone}</div>
         </div>
       </div>
 
