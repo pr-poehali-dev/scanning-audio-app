@@ -17,7 +17,7 @@ interface LeftSidebarProps {
   onAddClient?: () => void;
 }
 
-const LeftSidebar = ({ pvzInfo, activeClients = [], onAddClient }: LeftSidebarProps) => {
+const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient }: LeftSidebarProps) => {
   const totalClients = activeClients.length;
   
   return (
@@ -36,7 +36,7 @@ const LeftSidebar = ({ pvzInfo, activeClients = [], onAddClient }: LeftSidebarPr
       </div>
 
       {/* Кнопка добавить клиента */}
-      <div className="p-3 flex-1 flex items-start">
+      <div className="p-3">
         <button 
           onClick={onAddClient}
           className="w-full aspect-square bg-purple-600 rounded-lg flex flex-col items-center justify-center text-white hover:bg-purple-700 transition-colors relative group"
@@ -52,6 +52,23 @@ const LeftSidebar = ({ pvzInfo, activeClients = [], onAddClient }: LeftSidebarPr
             Добавить клиента
           </div>
         </button>
+      </div>
+
+      {/* Список ячеек клиентов */}
+      <div className="flex-1 overflow-y-auto px-3 space-y-2 pb-3">
+        {activeClients.map((client) => (
+          <button 
+            key={client.id}
+            className={`w-full aspect-square rounded-lg flex flex-col items-center justify-center transition-all border-2 ${
+              currentClientId === client.id 
+                ? 'bg-purple-100 border-purple-600' 
+                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            <div className="text-2xl font-bold">{client.cellNumber}</div>
+            <div className="text-[9px] text-gray-500 mt-0.5">{client.itemsCount}</div>
+          </button>
+        ))}
       </div>
     </div>
   );
