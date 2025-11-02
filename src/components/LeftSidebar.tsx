@@ -14,9 +14,10 @@ interface LeftSidebarProps {
     totalAmount: number;
   }>;
   currentClientId?: string;
+  onAddClient?: () => void;
 }
 
-const LeftSidebar = ({ pvzInfo, activeClients = [] }: LeftSidebarProps) => {
+const LeftSidebar = ({ pvzInfo, activeClients = [], onAddClient }: LeftSidebarProps) => {
   const totalClients = activeClients.length;
   
   return (
@@ -34,13 +35,22 @@ const LeftSidebar = ({ pvzInfo, activeClients = [] }: LeftSidebarProps) => {
         </div>
       </div>
 
-      {/* Кнопка профиля с количеством клиентов */}
+      {/* Кнопка добавить клиента */}
       <div className="p-3 flex-1 flex items-start">
-        <button className="w-full aspect-square bg-purple-600 rounded-lg flex flex-col items-center justify-center text-white hover:bg-purple-700 transition-colors relative">
+        <button 
+          onClick={onAddClient}
+          className="w-full aspect-square bg-purple-600 rounded-lg flex flex-col items-center justify-center text-white hover:bg-purple-700 transition-colors relative group"
+          title="Добавить клиента для выдачи"
+        >
           <Icon name="User" size={24} />
           {totalClients > 0 && (
-            <span className="text-xs font-bold mt-1">{totalClients}</span>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {totalClients}
+            </span>
           )}
+          <div className="absolute left-full ml-2 top-0 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Добавить клиента
+          </div>
         </button>
       </div>
     </div>

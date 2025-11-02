@@ -84,6 +84,10 @@ const WBPVZApp = () => {
           totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
         }))}
         currentClientId={appState.currentClientId || undefined}
+        onAddClient={() => {
+          appState.setDeliveryStep('scan');
+          appState.setPhoneNumber('');
+        }}
       />
 
       {/* Хедер - всегда показываем */}
