@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h1>WB Icon Generator</h1>
+    <p>Загрузка и создание иконок...</p>
+    <canvas id="canvas192" width="192" height="192" style="border:1px solid black; margin: 10px;"></canvas>
+    <canvas id="canvas512" width="512" height="512" style="border:1px solid black; margin: 10px;"></canvas>
+    
+    <div id="downloads"></div>
+
+    <script>
+        const sourceUrl = 'https://cdn.poehali.dev/files/b7690af9-49dc-4508-9957-156ce4be1834.png';
+        
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        
+        img.onload = function() {
+            console.log('✅ Изображение загружено:', img.width, 'x', img.height);
+            
+            // Создаём 192x192
+            const canvas192 = document.getElementById('canvas192');
+            const ctx192 = canvas192.getContext('2d');
+            ctx192.imageSmoothingEnabled = true;
+            ctx192.imageSmoothingQuality = 'high';
+            ctx192.drawImage(img, 0, 0, 192, 192);
+            
+            // Создаём 512x512
+            const canvas512 = document.getElementById('canvas512');
+            const ctx512 = canvas512.getContext('2d');
+            ctx512.imageSmoothingEnabled = true;
+            ctx512.imageSmoothingQuality = 'high';
+            ctx512.drawImage(img, 0, 0, 512, 512);
+            
+            // Создаём ссылки для скачивания
+            const downloads = document.getElementById('downloads');
+            
+            canvas192.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'icon-192.png';
+                link.textContent = '⬇️ Скачать icon-192.png';
+                link.style.display = 'block';
+                link.style.margin = '10px';
+                link.style.fontSize = '18px';
+                downloads.appendChild(link);
+            }, 'image/png', 1.0);
+            
+            canvas512.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'icon-512.png';
+                link.textContent = '⬇️ Скачать icon-512.png';
+                link.style.display = 'block';
+                link.style.margin = '10px';
+                link.style.fontSize = '18px';
+                downloads.appendChild(link);
+            }, 'image/png', 1.0);
+            
+            console.log('✅ Иконки созданы! Нажми на ссылки для скачивания.');
+        };
+        
+        img.onerror = function() {
+            console.error('❌ Ошибка загрузки изображения');
+            document.body.innerHTML += '<p style="color: red;">Ошибка загрузки изображения. Проверь CORS.</p>';
+        };
+        
+        img.src = sourceUrl;
+    </script>
+</body>
+</html>
