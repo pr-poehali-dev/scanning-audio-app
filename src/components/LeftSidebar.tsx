@@ -10,11 +10,11 @@ interface LeftSidebarProps {
 
 const LeftSidebar = ({ pvzInfo }: LeftSidebarProps) => {
   return (
-    <div className="flex fixed left-0 top-0 h-full w-[140px] bg-white shadow-lg z-30 flex-col">
+    <div className="hidden lg:flex fixed left-0 top-0 h-full w-[140px] bg-white shadow-lg z-50 flex-col">
       <div className="flex flex-col items-center p-4 gap-3 border-b">
         <img 
-          src="https://cdn.poehali.dev/files/be8acfbd-86e8-4684-a4ea-c81b413adb99.png" 
-          alt="WB ПВЗ" 
+          src="https://cdn.poehali.dev/files/b7690af9-49dc-4508-9957-156ce4be1834.png" 
+          alt="Поехали!" 
           className="w-16 h-16 object-contain"
         />
         <div className="text-center">
