@@ -85,8 +85,9 @@ const WBPVZApp = () => {
         }))}
         currentClientId={appState.currentClientId || undefined}
         onAddClient={() => {
-          appState.setDeliveryStep('scan');
+          appState.setDeliveryStep('initial');
           appState.setPhoneNumber('');
+          appState.setCurrentClientId(null);
         }}
         onClientClick={appHandlers.handleClientSwitch}
       />

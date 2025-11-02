@@ -69,9 +69,10 @@ const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient
                 ? 'bg-purple-100 border-purple-600' 
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-purple-300'
             }`}
+            title={`Ячейка ${client.cellNumber} - ${client.itemsCount} товар(ов)`}
           >
-            <div className="text-2xl font-bold">{client.cellNumber}</div>
-            <div className="text-[9px] text-gray-500 mt-0.5">{client.itemsCount}</div>
+            <div className="text-3xl font-black text-gray-900 leading-none">{client.cellNumber}</div>
+            <div className="text-[10px] text-gray-500 mt-1 font-medium">{client.itemsCount} шт</div>
           </button>
         ))}
       </div>

@@ -36,6 +36,8 @@ export const createDeliveryHandlers = (props: DeliveryHandlersProps) => {
       
       // Добавляем клиента в список активных
       const updatedClients = [...activeClients, orderWithCell];
+      console.log(`👥 Добавляю клиента в список. Было: ${activeClients.length}, Стало: ${updatedClients.length}`);
+      console.log(`📋 Клиент:`, { id: orderWithCell.id, cellNumber: orderWithCell.cellNumber, items: orderWithCell.items.length });
       setActiveClients(updatedClients);
       setCurrentClientId(orderWithCell.id);
       setCurrentOrder(orderWithCell);
