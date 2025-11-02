@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
+import LeftSidebar from '@/components/LeftSidebar';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';
@@ -71,6 +72,9 @@ const WBPVZApp = () => {
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
+      {/* Левая панель - только на ПК */}
+      {!isMobile && <LeftSidebar pvzInfo={appState.pvzInfo} />}
+
       {/* Хедер - всегда показываем */}
       <Header
         onMenuOpen={() => appState.setShowSideMenu(true)}
@@ -82,7 +86,7 @@ const WBPVZApp = () => {
       />
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : 'pb-0'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[140px]'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
