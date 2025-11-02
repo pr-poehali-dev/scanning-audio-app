@@ -96,21 +96,6 @@ const WBPVZApp = () => {
         audioVariant={appState.audioSettings.variant}
       />
 
-      {/* Панель с ячейками клиентов - всегда видна на desktop */}
-      {!isMobile && appState.activeTab === 'delivery' && (
-        <CellsPanel 
-          activeClients={appState.activeClients.map(client => ({
-            id: client.id,
-            phone: client.phone.slice(-2),
-            cellNumber: client.cellNumber,
-            itemsCount: client.items.length,
-            totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
-          }))}
-          currentClientId={appState.currentClientId || undefined}
-          onClientClick={appHandlers.handleClientSwitch}
-        />
-      )}
-
       {/* Основной контент */}
       <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[104px]'}`}>
         <TabContent
