@@ -74,7 +74,17 @@ const WBPVZApp = () => {
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
       {/* Левая панель - только на ПК */}
-      <LeftSidebar pvzInfo={appState.pvzInfo} />
+      <LeftSidebar 
+        pvzInfo={appState.pvzInfo}
+        activeClients={appState.activeClients.map(client => ({
+          id: client.id,
+          phone: client.phone.slice(-4),
+          cellNumber: client.cellNumber,
+          itemsCount: client.items.length,
+          totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
+        }))}
+        currentClientId={appState.currentClientId || undefined}
+      />
 
       {/* Хедер - всегда показываем */}
       <Header
@@ -102,7 +112,7 @@ const WBPVZApp = () => {
       )}
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[140px]'} ${!isMobile && appState.activeTab === 'delivery' && appState.activeClients.length > 0 ? 'lg:pl-[236px]' : ''}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[360px]'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
