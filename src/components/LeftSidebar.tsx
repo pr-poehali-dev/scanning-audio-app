@@ -13,7 +13,7 @@ const LeftSidebar = ({ pvzInfo }: LeftSidebarProps) => {
     <div className="hidden lg:flex fixed left-0 top-0 h-full w-[140px] bg-white shadow-lg z-30 flex-col">
       <div className="flex flex-col items-center p-4 gap-3 border-b">
         <img 
-          src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" 
+          src="https://cdn.poehali.dev/files/be8acfbd-86e8-4684-a4ea-c81b413adb99.png" 
           alt="WB ПВЗ" 
           className="w-16 h-16 object-contain"
         />

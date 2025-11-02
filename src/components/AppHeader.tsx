@@ -13,7 +13,7 @@ export const AppHeader = ({ onOpenAudioSettings, onTestAudio }: AppHeaderProps) 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-              <img src="https://cdn.poehali.dev/files/efef9a74-93b2-4603-ab83-2969a53a16d9.png" alt="WB" className="w-8 h-8" />
+              <img src="https://cdn.poehali.dev/files/be8acfbd-86e8-4684-a4ea-c81b413adb99.png" alt="WB" className="w-8 h-8" />
             </div>
             <div className="text-sm text-gray-600">
               <div>ID 50006760</div>
