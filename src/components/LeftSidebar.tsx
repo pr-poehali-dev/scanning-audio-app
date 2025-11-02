@@ -23,9 +23,9 @@ const LeftSidebar = ({ pvzInfo }: LeftSidebarProps) => {
         </div>
       </div>
 
-      <div className="flex-1 bg-purple-600 flex items-start justify-center pt-6">
-        <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
-          <Icon name="User" size={24} className="text-purple-600" />
+      <div className="flex-1 bg-white flex items-start justify-center pt-6">
+        <button className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+          <Icon name="User" size={24} className="text-gray-600" />
         </button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import LeftSidebar from '@/components/LeftSidebar';
+import CellsPanel from '@/components/CellsPanel';
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';
@@ -85,8 +86,23 @@ const WBPVZApp = () => {
         audioVariant={appState.audioSettings.variant}
       />
 
+      {/* Панель с ячейками клиентов - всегда видна на desktop */}
+      {!isMobile && appState.activeTab === 'delivery' && (
+        <CellsPanel 
+          activeClients={appState.activeClients.map(client => ({
+            id: client.id,
+            phone: client.phone.slice(-2),
+            cellNumber: client.cellNumber,
+            itemsCount: client.items.length,
+            totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
+          }))}
+          currentClientId={appState.currentClientId || undefined}
+          onClientClick={appHandlers.handleClientSwitch}
+        />
+      )}
+
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[140px]'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[140px]'} ${!isMobile && appState.activeTab === 'delivery' && appState.activeClients.length > 0 ? 'lg:pl-[236px]' : ''}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
