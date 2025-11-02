@@ -88,6 +88,7 @@ const WBPVZApp = () => {
           appState.setDeliveryStep('scan');
           appState.setPhoneNumber('');
         }}
+        onClientClick={appHandlers.handleClientSwitch}
       />
 
       {/* Хедер - всегда показываем */}

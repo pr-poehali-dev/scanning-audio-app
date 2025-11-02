@@ -15,9 +15,10 @@ interface LeftSidebarProps {
   }>;
   currentClientId?: string;
   onAddClient?: () => void;
+  onClientClick?: (clientId: string) => void;
 }
 
-const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient }: LeftSidebarProps) => {
+const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient, onClientClick }: LeftSidebarProps) => {
   const totalClients = activeClients.length;
   
   return (
@@ -59,10 +60,11 @@ const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient
         {activeClients.map((client) => (
           <button 
             key={client.id}
+            onClick={() => onClientClick?.(client.id)}
             className={`w-full aspect-square rounded-lg flex flex-col items-center justify-center transition-all border-2 ${
               currentClientId === client.id 
                 ? 'bg-purple-100 border-purple-600' 
-                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-purple-300'
             }`}
           >
             <div className="text-2xl font-bold">{client.cellNumber}</div>
