@@ -182,17 +182,23 @@ export const DeliveryTab = ({
             <div className="grid grid-cols-3 gap-6">
               {mockProducts.map((product) => (
                 <div key={product.id} className="relative">
-                  <div className="absolute top-2 left-2 z-10">
+                  <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                     <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                       <Icon name="Check" className="w-4 h-4 text-white" />
                     </div>
-                  </div>
-                  <div className="absolute top-2 right-2 z-10">
-                    <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                      Оплачен
+                    <div className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded font-bold">
+                      {cellNumber}
                     </div>
                   </div>
-                  <div className="absolute top-8 right-2 z-10">
+                  <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 items-end">
+                    <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-medium">
+                      Оплачен
+                    </div>
+                    <div className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded font-medium">
+                      2 из 2
+                    </div>
+                  </div>
+                  <div className="absolute top-16 right-2 z-10">
                     <Icon name="RotateCcw" className="w-5 h-5 text-green-600" />
                   </div>
                   
