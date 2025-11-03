@@ -3,7 +3,7 @@ import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import LeftSidebar from '@/components/LeftSidebar';
-import CellsPanel from '@/components/CellsPanel';
+
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
 import { AudioSettings } from '@/components/AudioSettings';

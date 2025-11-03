@@ -82,6 +82,12 @@ const DeliveryInterface = ({
 
   return (
     <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden relative">
+      {/* Панель с клиентами */}
+      <CellsPanel
+        activeClients={clientsData}
+        currentClientId={currentClientId || undefined}
+        onClientClick={onClientSwitch}
+      />
 
       {/* Мобильная шапка с информацией */}
       <div className="lg:hidden bg-white border-b shadow-sm">
