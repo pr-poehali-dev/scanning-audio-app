@@ -217,24 +217,23 @@ const DeliveryInterface = ({
           </div>
         </div>
         
-        {/* Desktop кнопка "Снять все" */}
-        <div className="hidden lg:flex justify-between items-center mb-6 p-6 pb-0">
-          <h3 className="text-lg font-semibold">Товары</h3>
+        {/* Desktop заголовок с кнопкой "Снять все" */}
+        <div className="hidden lg:flex justify-end items-center mb-4 px-6 pt-6">
           <button
             onClick={() => {
               setSelectedProducts(order.items.map((_, index) => index));
               playAudio?.('check-product-under-camera');
             }}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 active:bg-purple-300 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors font-medium shadow-sm"
           >
-            <Icon name="Check" size={16} />
+            <Icon name="Check" size={18} />
             <span>Снять все</span>
           </button>
         </div>
 
         {/* Список товаров */}
-        <div className="p-4 lg:p-6 lg:pt-0">
-          <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4">
+        <div className="p-4 lg:px-6 lg:pb-6 lg:pt-0">
+          <div className="space-y-3 lg:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6">
             {order.items.map((item, index) => {
               const isSelected = selectedProducts.includes(index);
               const isPaid = Math.random() > 0.5;
@@ -292,64 +291,77 @@ const DeliveryInterface = ({
                   </div>
                   
                   {/* Desktop версия карточки */}
-                  <div className="hidden lg:block relative">
+                  <div className="hidden lg:block relative bg-gray-100 rounded-2xl overflow-hidden">
+                    {/* Кнопки сверху */}
                     <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
                       <button
                         onClick={() => handleProductSelect(index)}
-                        className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-purple-600' : 'bg-white/90 backdrop-blur'
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all shadow-md ${
+                          isSelected ? 'bg-purple-600 scale-110' : 'bg-white/95 backdrop-blur hover:bg-white'
                         }`}
                       >
-                        {isSelected && <Icon name="Check" size={20} className="text-white" />}
+                        {isSelected && <Icon name="Check" size={22} className="text-white stroke-[3]" />}
                       </button>
 
-                      <button className="w-8 h-8 bg-white/90 backdrop-blur rounded-md flex items-center justify-center hover:bg-white transition-colors">
-                        <Icon name="RotateCcw" size={18} className="text-gray-600" />
+                      <button className="w-10 h-10 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center shadow-md transition-all">
+                        <Icon name="RotateCcw" size={20} className="text-white" />
                       </button>
                     </div>
 
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
-                      <span className={`px-4 py-1.5 text-sm font-medium rounded-full ${
+                    {/* Бейдж оплаты */}
+                    <div className="absolute top-14 right-3 z-10">
+                      <span className={`px-3 py-1.5 text-xs font-bold rounded-md shadow-lg ${
                         isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                       }`}>
                         {isPaid ? 'Оплачен' : 'Не оплачен'}
                       </span>
                     </div>
 
-                    <div className="relative">
+                    {/* Изображение товара */}
+                    <div className="relative bg-gray-200">
                       <img
                         src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                         alt={item.name}
-                        className="w-full h-96 object-cover"
+                        className="w-full h-[420px] object-cover"
                       />
                       
-                      <button className="absolute bottom-4 right-4 w-12 h-12 bg-white/90 backdrop-blur rounded-full flex items-center justify-center hover:bg-white transition-colors shadow-lg">
-                        <Icon name="Search" size={22} className="text-gray-700" />
+                      {/* Кнопка поиска/увеличения */}
+                      <button className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
+                        <Icon name="ZoomIn" size={24} className="text-gray-700" />
                       </button>
                     </div>
 
-                    <div className="p-4 space-y-2 bg-white">
+                    {/* Информация о товаре */}
+                    <div className="p-4 bg-white space-y-2">
+                      {/* Баркод с кнопкой копирования */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="text-lg font-bold text-gray-900">{item.barcode}</div>
-                        <button className="text-gray-400 hover:text-gray-600">
-                          <Icon name="Copy" size={18} />
+                        <div className="font-bold text-xl text-gray-900">{item.barcode}</div>
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                          <Icon name="Copy" size={20} />
                         </button>
                       </div>
                       
-                      <div className="text-sm text-gray-600 line-clamp-1">{item.name}</div>
+                      {/* Название товара */}
+                      <div className="text-sm text-gray-700 line-clamp-2 font-medium">{item.name}</div>
                       
+                      {/* Цена */}
                       <div className="flex items-center gap-2 pt-1">
-                        <Icon name="Tag" size={18} className="text-purple-500" />
-                        <span className="text-xl font-bold text-purple-600">{item.price} ₽</span>
-                        <span className="text-sm text-gray-400 line-through">{(item.price * 1.3).toFixed(0)} ₽</span>
+                        <Icon name="Wallet" size={18} className="text-purple-500" />
+                        <span className="text-2xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                        {item.oldPrice && (
+                          <span className="text-sm text-gray-400 line-through">{item.oldPrice.toLocaleString()} ₽</span>
+                        )}
                       </div>
                       
-                      <div className="text-sm text-gray-500 pt-1">
-                        <span className="font-medium">Цвет:</span> {item.color || 'черный'} <span className="ml-3 font-medium">Размер:</span> {item.size || 'M'}
+                      {/* Цвет и размер */}
+                      <div className="text-sm text-gray-600 pt-1">
+                        <span className="font-semibold">Цвет:</span> <span className="font-medium">{item.color || 'черный'}</span>
+                        <span className="ml-4 font-semibold">Размер:</span> <span className="font-medium">{item.size || 'M'}</span>
                       </div>
                       
+                      {/* Баркод */}
                       <div className="text-sm text-gray-500">
-                        <span className="font-medium">Баркод:</span> {item.barcode}
+                        <span className="font-semibold">Баркод:</span> {item.barcode}
                       </div>
                     </div>
                   </div>
