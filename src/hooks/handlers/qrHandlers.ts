@@ -11,13 +11,18 @@ interface QRHandlersProps {
   setDeliveryStep: (step: any) => void;
   setScannedData: (data: string) => void;
   setIsProductScanned: (value: boolean) => void;
+  activeClients: any[];
+  setActiveClients: (clients: any[]) => void;
+  currentClientId: string | null;
+  setCurrentClientId: (id: string | null) => void;
 }
 
 export const createQRHandlers = (props: QRHandlersProps) => {
   const {
     activeTab, deliveryStep, playAudio,
     setIsScanning, setShowQRScanner, setCurrentOrder, setDeliveryStep,
-    setScannedData, setIsProductScanned
+    setScannedData, setIsProductScanned,
+    activeClients, setActiveClients, currentClientId, setCurrentClientId
   } = props;
 
   // Обработчик QR сканирования
@@ -88,6 +93,14 @@ export const createQRHandlers = (props: QRHandlersProps) => {
         setCurrentOrder(generatedOrder);
         setDeliveryStep('client-scanned');
         setScannedData(`qr-${generatedOrder.id}-${generatedOrder.phone}`);
+        
+        // Добавляем клиента в активных клиентов
+        const clientExists = activeClients.find(c => c.id === generatedOrder.id);
+        if (!clientExists) {
+          setActiveClients([...activeClients, generatedOrder]);
+          setCurrentClientId(generatedOrder.id);
+          console.log('✅ Клиент добавлен в activeClients:', generatedOrder.id);
+        }
         
         console.log('✅ Новый заказ создан:', generatedOrder.customerName, 'Ячейка:', generatedOrder.cellNumber, 'Товаров:', itemCount);
         
@@ -161,6 +174,14 @@ export const createQRHandlers = (props: QRHandlersProps) => {
           console.log('✅ Заказ найден:', order);
           setCurrentOrder(order);
           setDeliveryStep('client-scanned');
+          
+          // Добавляем клиента в активных клиентов
+          const clientExists = activeClients.find(c => c.id === order.id);
+          if (!clientExists) {
+            setActiveClients([...activeClients, order]);
+            setCurrentClientId(order.id);
+            console.log('✅ Клиент добавлен в activeClients:', order.id);
+          }
           
           console.log(`🏠 Ячейка: ${order.cellNumber}`);
           

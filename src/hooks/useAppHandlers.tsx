@@ -45,7 +45,11 @@ export const useAppHandlers = (props: UseAppHandlersProps) => {
     setCurrentOrder,
     setDeliveryStep,
     setScannedData,
-    setIsProductScanned
+    setIsProductScanned,
+    activeClients,
+    setActiveClients,
+    currentClientId,
+    setCurrentClientId
   });
 
   // Создаем обработчики доставки
