@@ -79,7 +79,7 @@ const DeliveryInterface = ({
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">
       {/* Левая боковая панель с информацией */}
-      <div className="hidden lg:flex flex-col w-[380px] bg-white border-r shadow-sm">
+      <div className="flex flex-col w-[380px] bg-white border-r shadow-sm">
         {/* Информация о клиенте */}
         <div className="p-6 space-y-6">
           {/* Телефон клиента */}
