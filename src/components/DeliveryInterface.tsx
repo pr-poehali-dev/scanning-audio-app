@@ -87,41 +87,41 @@ const DeliveryInterface = ({
         </div>
 
         {/* Информация о заказе */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="flex-1 overflow-y-auto">
           {/* Ячейка */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-4">
+          <div className="px-6 py-8 text-center bg-gray-50 mx-6 mt-6 rounded-2xl">
             <div className="text-sm text-gray-600 mb-2">Ячейка</div>
-            <div className="text-5xl font-bold text-gray-900 text-center">{order.cellNumber}</div>
+            <div className="text-7xl font-bold text-gray-900 leading-none">{order.cellNumber}</div>
           </div>
 
           {/* Товары */}
-          <div className="mb-4">
+          <div className="px-6 py-4">
             <div className="text-sm text-gray-600 mb-1">Товаров</div>
-            <div className="text-2xl font-bold text-gray-900">{order.items.length} из {order.items.length}</div>
+            <div className="text-3xl font-bold text-gray-900">{order.items.length} из {order.items.length}</div>
           </div>
 
           {/* Пакеты */}
-          <div className="mb-4">
+          <div className="px-6 py-4">
             <button 
               onClick={() => setShowPackageModal(true)}
-              className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-gray-400 transition-colors mb-2"
+              className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-gray-400 transition-colors mb-3"
             >
-              <Icon name="Plus" size={32} className="text-gray-400" />
+              <Icon name="Plus" size={28} className="text-gray-400" />
             </button>
             <div className="text-sm text-gray-600 mb-1">Пакетов</div>
-            <div className="text-2xl font-bold text-gray-900">{totalPackages}</div>
+            <div className="text-3xl font-bold text-gray-900">{totalPackages}</div>
           </div>
 
-          {/* Ко-платье */}
-          <div className="mb-6">
-            <div className="text-sm text-gray-600 mb-1">К оплате</div>
-            <div className="flex items-center gap-2">
-              <Icon name="Wallet" size={20} className="text-purple-600" />
-              <span className="text-xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
+          {/* К оплате */}
+          <div className="px-6 py-4">
+            <div className="text-sm text-gray-600 mb-2">К оплате</div>
+            <div className="flex items-center gap-2 mb-1">
+              <Icon name="Wallet" size={22} className="text-purple-600" />
+              <span className="text-2xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
             </div>
-            <button className="text-sm text-gray-500 mt-1 flex items-center gap-1 hover:text-gray-700">
+            <button className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-700">
               <span>Подробнее</span>
-              <Icon name="ChevronDown" size={16} />
+              <Icon name="ChevronDown" size={14} />
             </button>
           </div>
         </div>
