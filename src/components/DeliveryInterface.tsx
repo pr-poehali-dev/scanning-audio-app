@@ -101,7 +101,7 @@ const DeliveryInterface = ({
       </div>
 
       {/* Desktop панель - информация */}
-      <div className="hidden lg:block w-80 bg-white p-6 pt-20 space-y-6 overflow-y-auto border-r">
+      <div className="hidden lg:block w-80 bg-white p-6 space-y-6 overflow-y-auto border-r ml-20">
         {/* Информация о клиенте */}
         <div className="space-y-6">
           <div>
@@ -197,7 +197,7 @@ const DeliveryInterface = ({
       </div>
 
       {/* Правая панель - товары */}
-      <div className="flex-1 overflow-y-auto lg:ml-20">
+      <div className="flex-1 overflow-y-auto">
         {/* Мобильная кнопка проверки товаров */}
         <div className="lg:hidden sticky top-0 bg-white border-b px-4 py-3 z-10">
           <button
