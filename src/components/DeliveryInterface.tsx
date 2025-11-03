@@ -261,16 +261,15 @@ const DeliveryInterface = ({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Модальное окно пакетов */}
-      <PackageModal
-        isOpen={showPackageModal}
-        onClose={() => setShowPackageModal(false)}
-        onAddPackages={handleAddPackages}
-        currentPackages={packages}
-      />
-    </div>
+        {/* Модальное окно пакетов */}
+        <PackageModal
+          isOpen={showPackageModal}
+          onClose={() => setShowPackageModal(false)}
+          onAddPackages={handleAddPackages}
+          currentPackages={packages}
+        />
+      </div>
   );
 };
 
