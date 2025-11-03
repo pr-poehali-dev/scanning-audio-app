@@ -83,33 +83,46 @@ const DeliveryInterface = ({
         {/* Хедер панели */}
         <div className="px-6 py-4 border-b">
           <div className="text-sm text-gray-500 mb-1">Клиент</div>
-          <div className="text-xl font-bold text-gray-900">+7 (•••) ••• {order.phone}</div>
+          <div className="text-lg font-medium text-gray-900">+7 (•••) ••• {order.phone}</div>
         </div>
 
         {/* Информация о заказе */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-6">
           {/* Ячейка */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Ячейка</span>
-            <span className="text-xl font-bold text-gray-900">{order.cellNumber}</span>
+          <div className="bg-gray-50 rounded-xl p-4 mb-4">
+            <div className="text-sm text-gray-600 mb-2">Ячейка</div>
+            <div className="text-5xl font-bold text-gray-900 text-center">{order.cellNumber}</div>
           </div>
 
           {/* Товары */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Товары</span>
-            <span className="text-xl font-bold text-gray-900">{order.items.length} шт</span>
+          <div className="mb-4">
+            <div className="text-sm text-gray-600 mb-1">Товаров</div>
+            <div className="text-2xl font-bold text-gray-900">{order.items.length} из {order.items.length}</div>
           </div>
 
           {/* Пакеты */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Пакеты</span>
-            <span className="text-xl font-bold text-gray-900">{totalPackages} шт</span>
+          <div className="mb-4">
+            <button 
+              onClick={() => setShowPackageModal(true)}
+              className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-gray-400 transition-colors mb-2"
+            >
+              <Icon name="Plus" size={32} className="text-gray-400" />
+            </button>
+            <div className="text-sm text-gray-600 mb-1">Пакетов</div>
+            <div className="text-2xl font-bold text-gray-900">{totalPackages}</div>
           </div>
 
           {/* Ко-платье */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Ко-платье</span>
-            <span className="text-xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
+          <div className="mb-6">
+            <div className="text-sm text-gray-600 mb-1">К оплате</div>
+            <div className="flex items-center gap-2">
+              <Icon name="Wallet" size={20} className="text-purple-600" />
+              <span className="text-xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
+            </div>
+            <button className="text-sm text-gray-500 mt-1 flex items-center gap-1 hover:text-gray-700">
+              <span>Подробнее</span>
+              <Icon name="ChevronDown" size={16} />
+            </button>
           </div>
         </div>
 
@@ -117,7 +130,7 @@ const DeliveryInterface = ({
         <div className="p-6 border-t space-y-3">
           <button
             onClick={onDeliverProduct}
-            className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-lg transition-colors"
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors"
           >
             Выдать
           </button>
@@ -125,7 +138,7 @@ const DeliveryInterface = ({
             onClick={() => {
               // Логика снятия с примерки
             }}
-            className="w-full py-4 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 rounded-xl font-semibold text-lg transition-colors"
+            className="w-full py-3 bg-white hover:bg-gray-50 text-red-500 border-2 border-red-200 rounded-xl font-semibold transition-colors"
           >
             Снять с примерки
           </button>
