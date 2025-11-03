@@ -174,7 +174,7 @@ const DeliveryInterface = ({
 
           {/* Список товаров */}
           <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
           {order.items.map((item, index) => {
             const isSelected = selectedProducts.includes(index);
             const isPaid = Math.random() > 0.5;
@@ -258,6 +258,8 @@ const DeliveryInterface = ({
               </div>
             );
           })}
+            </div>
+          </div>
         </div>
       </div>
 
