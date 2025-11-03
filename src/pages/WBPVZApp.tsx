@@ -71,13 +71,13 @@ const WBPVZApp = () => {
     appHandlers.handleTabChange(tab);
   };
 
-  // Показываем левую панель только для вкладки "Выдача" в начальном состоянии
-  // Для остальных вкладок (Приемка, Возврат) панель не нужна
-  const showLeftSidebar = appState.activeTab === 'delivery' && appState.deliveryStep === 'initial';
+  // Показываем панель для выдачи (узкую или широкую)
+  const showLeftSidebar = appState.activeTab === 'delivery';
+  const showExtendedSidebar = appState.deliveryStep !== 'initial' && appState.currentOrder;
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
-      {/* Левая панель - только на ПК и только когда НЕ показываем интерфейс выдачи */}
+      {/* Левая панель - узкая или широкая в зависимости от состояния */}
       {showLeftSidebar && (
         <LeftSidebar 
           pvzInfo={appState.pvzInfo}
@@ -95,6 +95,11 @@ const WBPVZApp = () => {
             appState.setCurrentClientId(null);
           }}
           onClientClick={appHandlers.handleClientSwitch}
+          showExtended={showExtendedSidebar}
+          currentOrder={appState.currentOrder}
+          onDeliverProduct={appHandlers.handleDeliverProduct}
+          selectedProductsCount={0}
+          totalProductsCount={appState.currentOrder?.items.length || 0}
         />
       )}
 
@@ -109,7 +114,7 @@ const WBPVZApp = () => {
       />
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : showLeftSidebar ? 'pb-0 lg:pl-[92px]' : 'pb-0 pl-0'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : showExtendedSidebar ? 'pb-0 lg:pl-[365px]' : showLeftSidebar ? 'pb-0 lg:pl-[92px]' : 'pb-0 pl-0'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}

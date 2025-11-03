@@ -16,14 +16,124 @@ interface LeftSidebarProps {
   currentClientId?: string;
   onAddClient?: () => void;
   onClientClick?: (clientId: string) => void;
+  currentOrder?: any;
+  showExtended?: boolean;
+  onDeliverProduct?: () => void;
+  selectedProductsCount?: number;
+  totalProductsCount?: number;
 }
 
-const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient, onClientClick }: LeftSidebarProps) => {
+const LeftSidebar = ({ 
+  pvzInfo, 
+  activeClients = [], 
+  currentClientId, 
+  onAddClient, 
+  onClientClick,
+  currentOrder,
+  showExtended = false,
+  onDeliverProduct,
+  selectedProductsCount = 0,
+  totalProductsCount = 0
+}: LeftSidebarProps) => {
   const totalClients = activeClients.length;
   
   console.log('🔍 LeftSidebar - activeClients:', activeClients.length, activeClients);
   console.log('🔍 LeftSidebar - номера ячеек:', activeClients.map(c => c.cellNumber));
+  console.log('🔍 LeftSidebar - showExtended:', showExtended);
   
+  // Если показываем расширенную панель с заказом
+  if (showExtended && currentOrder) {
+    return (
+      <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[365px] bg-white shadow-lg z-40 flex-col">
+        {/* Шапка с логотипом */}
+        <div className="flex flex-col items-center p-4 border-b gap-2">
+          <img 
+            src="https://cdn.poehali.dev/files/b7690af9-49dc-4508-9957-156ce4be1834.png" 
+            alt="Поехали!" 
+            className="w-12 h-12 object-contain"
+          />
+          <div className="text-center">
+            <div className="text-[10px] text-gray-500">ID {pvzInfo.id || '50001234'}</div>
+            <div className="text-[9px] text-gray-400">V1.0.51</div>
+          </div>
+        </div>
+
+        {/* Информация о заказе */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Клиент */}
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Клиент</div>
+            <div className="text-base font-medium text-gray-700">
+              +7 (•••) ••• +7 (•••) •••-{currentOrder.phone}
+            </div>
+          </div>
+
+          {/* Ячейка */}
+          <div className="bg-gray-50 rounded-2xl p-5">
+            <div className="text-sm text-gray-500 mb-3 text-center">Ячейка</div>
+            <div className="text-[130px] font-black text-gray-900 text-center leading-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              {currentOrder.cellNumber}
+            </div>
+          </div>
+
+          {/* Товаров */}
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Товаров</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {selectedProductsCount} <span className="text-gray-500">из {totalProductsCount}</span>
+            </div>
+          </div>
+
+          {/* Пакетов */}
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Пакетов</div>
+            <div className="w-full flex items-center gap-3 p-3.5 border-2 border-dashed border-gray-300 rounded-xl">
+              <div className="w-14 h-14 rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center">
+                <Icon name="Plus" size={26} className="text-gray-400" />
+              </div>
+              <div className="text-base font-medium text-gray-700">Добавить</div>
+            </div>
+          </div>
+
+          {/* К оплате */}
+          <div>
+            <div className="text-sm text-gray-500 mb-2">К оплате</div>
+            <div className="flex items-center gap-3">
+              <Icon name="Wallet" size={22} className="text-purple-600" />
+              <div className="text-3xl font-bold text-purple-600">
+                {currentOrder.totalAmount?.toLocaleString('ru-RU') || '0'} ₽
+              </div>
+            </div>
+            <button className="text-sm text-gray-500 mt-2 hover:text-gray-700 flex items-center gap-1">
+              Подробнее
+              <Icon name="ChevronDown" size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Кнопки внизу */}
+        <div className="p-5 space-y-3 border-t bg-white">
+          <button
+            onClick={onDeliverProduct}
+            disabled={selectedProductsCount !== totalProductsCount}
+            className={`w-full py-4 text-lg font-semibold rounded-2xl transition-colors ${
+              selectedProductsCount === totalProductsCount
+                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            Выдать
+          </button>
+          
+          <button className="w-full py-4 text-lg font-medium border-2 border-red-500 text-red-600 rounded-2xl hover:bg-red-50 transition-colors">
+            Снять с примерки
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Обычная узкая панель
   return (
     <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] bg-white shadow-lg z-40 flex-col">
       {/* Шапка с логотипом */}
