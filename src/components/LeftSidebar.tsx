@@ -25,108 +25,55 @@ const LeftSidebar = ({ pvzInfo, activeClients = [], currentClientId, onAddClient
   console.log('🔍 LeftSidebar - номера ячеек:', activeClients.map(c => c.cellNumber));
   
   return (
-    <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[420px] bg-gray-50 shadow-lg z-40 flex-col">
+    <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] bg-white shadow-lg z-40 flex-col">
       {/* Шапка с логотипом */}
-      <div className="flex items-center gap-3 p-4 bg-white border-b">
+      <div className="flex flex-col items-center p-3 border-b gap-2">
         <img 
           src="https://cdn.poehali.dev/files/b7690af9-49dc-4508-9957-156ce4be1834.png" 
           alt="Поехали!" 
-          className="w-14 h-14 object-contain"
+          className="w-12 h-12 object-contain"
         />
-        <div>
-          <div className="text-sm text-gray-500">ID {pvzInfo.id || '50001234'}</div>
-          <div className="text-xs text-gray-400">V1.0.51</div>
+        <div className="text-center">
+          <div className="text-[10px] text-gray-500">ID {pvzInfo.id || '50001234'}</div>
+          <div className="text-[9px] text-gray-400">V.1.0.51</div>
         </div>
       </div>
 
       {/* Кнопка добавить клиента */}
-      <div className="p-4 bg-white">
+      <div className="p-3">
         <button 
           onClick={onAddClient}
-          className="w-full h-16 bg-purple-600 rounded-xl flex items-center justify-center text-white hover:bg-purple-700 transition-colors relative"
+          className="w-full aspect-square bg-purple-600 rounded-lg flex flex-col items-center justify-center text-white hover:bg-purple-700 transition-colors relative group"
+          title="Добавить клиента для выдачи"
         >
-          <Icon name="User" size={28} />
+          <Icon name="User" size={24} />
           {totalClients > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm font-bold rounded-full w-7 h-7 flex items-center justify-center shadow-lg">
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {totalClients}
             </span>
           )}
+          <div className="absolute left-full ml-2 top-0 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Добавить клиента
+          </div>
         </button>
       </div>
 
       {/* Список ячеек клиентов */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 space-y-2 pb-3">
         {activeClients.map((client) => (
-          <div 
+          <button 
             key={client.id}
             onClick={() => onClientClick?.(client.id)}
-            className={`bg-white rounded-2xl p-6 cursor-pointer transition-all border-2 ${
+            className={`w-full aspect-square rounded-lg flex flex-col items-center justify-center transition-all border-2 ${
               currentClientId === client.id 
-                ? 'border-purple-600 shadow-lg' 
-                : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
+                ? 'bg-purple-100 border-purple-600' 
+                : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-purple-300'
             }`}
+            title={`Ячейка ${client.cellNumber} - ${client.itemsCount} товар(ов)`}
           >
-            {/* Номер телефона клиента */}
-            <div className="mb-4">
-              <div className="text-sm text-gray-500 mb-1">Клиент</div>
-              <div className="text-base font-medium text-gray-700">
-                +7 (•••) ••• {client.phone}
-              </div>
-            </div>
-
-            {/* Номер ячейки - большой жирный шрифт */}
-            <div className="mb-4 bg-gray-50 rounded-xl p-4">
-              <div className="text-sm text-gray-500 mb-2 text-center">Ячейка</div>
-              <div className="text-8xl font-black text-gray-900 text-center leading-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-                {client.cellNumber}
-              </div>
-            </div>
-
-            {/* Товаров */}
-            <div className="mb-4">
-              <div className="text-sm text-gray-500 mb-1">Товаров</div>
-              <div className="text-3xl font-bold text-gray-900">
-                {client.itemsCount} из {client.itemsCount}
-              </div>
-            </div>
-
-            {/* Пакетов */}
-            <div className="mb-4 flex items-center gap-3">
-              <div className="w-12 h-12 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                <Icon name="Plus" size={24} className="text-gray-400" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Пакетов</div>
-                <div className="text-2xl font-bold text-gray-900">0</div>
-              </div>
-            </div>
-
-            {/* К оплате */}
-            <div className="mb-4">
-              <div className="text-sm text-gray-500 mb-1">К оплате</div>
-              <div className="flex items-center gap-2">
-                <Icon name="Wallet" size={20} className="text-purple-600" />
-                <div className="text-2xl font-bold text-purple-600">
-                  {client.totalAmount.toLocaleString('ru-RU')} ₽
-                </div>
-              </div>
-              <div className="text-xs text-gray-400 mt-1">Подробнее ↓</div>
-            </div>
-
-            {/* Кнопки действий */}
-            <div className="space-y-3">
-              <button 
-                className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg rounded-xl transition-colors"
-              >
-                Выдать
-              </button>
-              <button 
-                className="w-full py-3 bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 font-medium text-base rounded-xl transition-colors"
-              >
-                Снять с примерки
-              </button>
-            </div>
-          </div>
+            <div className="text-3xl font-black text-gray-900 leading-none">{client.cellNumber}</div>
+            <div className="text-[10px] text-gray-500 mt-1 font-medium">{client.itemsCount} шт</div>
+          </button>
         ))}
       </div>
     </div>

@@ -103,7 +103,7 @@ const WBPVZApp = () => {
       />
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[420px]'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[92px]'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
