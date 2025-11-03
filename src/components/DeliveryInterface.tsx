@@ -78,83 +78,89 @@ const DeliveryInterface = ({
 
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">
-      {/* Узкая левая панель */}
-      <div className="hidden lg:flex flex-col w-[115px] bg-white border-r shadow-sm">
-        <div className="flex flex-col h-full py-6 px-3">
-          {/* Клиент */}
-          <div className="mb-6">
-            <div className="text-[10px] text-gray-500 mb-1 text-center">Клиент</div>
-            <div className="text-xs font-medium text-gray-700 text-center">
-              +7 (•••) ••• +7 (•••) •••-{order.phone}
+      {/* Левая боковая панель с информацией */}
+      <div className="hidden lg:flex flex-col w-[380px] bg-white border-r shadow-sm">
+        {/* Информация о клиенте */}
+        <div className="p-6 space-y-6">
+          {/* Телефон клиента */}
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Клиент</div>
+            <div className="text-lg font-semibold text-gray-700">
+              +7 (•••) ••• {order.phone}
             </div>
           </div>
 
-          {/* Ячейка */}
-          <div className="mb-6">
-            <div className="text-[10px] text-gray-500 mb-2 text-center">Ячейка</div>
-            <div className="text-7xl font-black text-gray-900 text-center leading-none" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          {/* Ячейка - огромный номер */}
+          <div className="bg-gray-50 rounded-2xl p-6">
+            <div className="text-sm text-gray-500 mb-3 text-center">Ячейка</div>
+            <div className="text-[140px] font-black text-gray-900 text-center leading-none tracking-tighter" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
               {order.cellNumber}
             </div>
           </div>
 
           {/* Товаров */}
-          <div className="mb-6">
-            <div className="text-[10px] text-gray-500 mb-1 text-center">Товаров</div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-gray-900 leading-none">{selectedProducts.length}</div>
-              <div className="text-xs text-gray-500 mt-0.5">из {order.items.length}</div>
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Товаров</div>
+            <div className="text-4xl font-bold text-gray-900">
+              {selectedProducts.length} <span className="text-gray-500">из {order.items.length}</span>
             </div>
           </div>
 
           {/* Пакетов */}
-          <div className="mb-6">
-            <div className="text-[10px] text-gray-500 mb-2 text-center">Пакетов</div>
+          <div>
+            <div className="text-sm text-gray-500 mb-2">Пакетов</div>
             <button
               onClick={() => setShowPackageModal(true)}
-              className="w-full flex flex-col items-center justify-center p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+              className="w-full flex items-center gap-4 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-colors"
             >
-              <Icon name="Plus" size={20} className="text-gray-400" />
-              {totalPackages > 0 && (
-                <div className="text-lg font-bold text-gray-900 mt-1">{totalPackages}</div>
-              )}
+              <div className="w-14 h-14 rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center flex-shrink-0">
+                <Icon name="Plus" size={28} className="text-gray-400" />
+              </div>
+              <div className="text-left">
+                <div className="text-base font-medium text-gray-700">Добавить</div>
+                {totalPackages > 0 && (
+                  <div className="text-3xl font-bold text-gray-900 mt-1">{totalPackages}</div>
+                )}
+              </div>
             </button>
           </div>
 
           {/* К оплате */}
-          <div className="mb-8">
-            <div className="text-[10px] text-gray-500 mb-1 text-center">К оплате</div>
-            <div className="flex flex-col items-center">
-              <Icon name="Wallet" size={18} className="text-purple-600 mb-1" />
-              <div className="text-base font-bold text-purple-600 text-center leading-tight">
+          <div>
+            <div className="text-sm text-gray-500 mb-2">К оплате</div>
+            <div className="flex items-center gap-3">
+              <Icon name="Wallet" size={24} className="text-purple-600" />
+              <div className="text-3xl font-bold text-purple-600">
                 {totalAmount.toLocaleString('ru-RU')} ₽
               </div>
             </div>
-            <button className="text-[9px] text-gray-500 mt-1 hover:text-gray-700 text-center w-full">
+            <button className="text-sm text-gray-500 mt-2 hover:text-gray-700 flex items-center gap-1">
               Подробнее
+              <Icon name="ChevronDown" size={16} />
             </button>
           </div>
+        </div>
 
-          {/* Кнопки внизу */}
-          <div className="mt-auto space-y-2">
-            <button
-              onClick={() => {
-                playAudio?.('delivery-complete-sequence');
-                onDeliverProduct();
-              }}
-              disabled={!allProductsSelected}
-              className={`w-full py-3 text-xs font-semibold rounded-xl transition-colors ${
-                allProductsSelected
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Выдать
-            </button>
-            
-            <button className="w-full py-3 text-xs font-medium border-2 border-red-500 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
-              Снять с примерки
-            </button>
-          </div>
+        {/* Кнопки внизу */}
+        <div className="mt-auto p-6 space-y-3 border-t">
+          <button
+            onClick={() => {
+              playAudio?.('delivery-complete-sequence');
+              onDeliverProduct();
+            }}
+            disabled={!allProductsSelected}
+            className={`w-full py-4 text-lg font-semibold rounded-2xl transition-colors ${
+              allProductsSelected
+                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            Выдать
+          </button>
+          
+          <button className="w-full py-4 text-lg font-medium border-2 border-red-500 text-red-600 rounded-2xl hover:bg-red-50 transition-colors">
+            Снять с примерки
+          </button>
         </div>
       </div>
 
