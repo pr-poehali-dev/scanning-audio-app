@@ -87,45 +87,29 @@ const DeliveryInterface = ({
         </div>
 
         {/* Информация о заказе */}
-        <div className="flex-1 overflow-y-auto px-6 pt-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Ячейка */}
-          <div className="bg-gray-50 rounded-2xl p-6 text-center">
-            <div className="text-sm text-gray-600 mb-3">Ячейка</div>
-            <div className="text-8xl font-bold text-gray-900 leading-none">{order.cellNumber}</div>
+          <div className="flex items-center justify-between py-3 border-b">
+            <span className="text-gray-600">Ячейка</span>
+            <span className="text-xl font-bold text-gray-900">{order.cellNumber}</span>
           </div>
 
           {/* Товары */}
-          <div>
-            <div className="text-sm text-gray-600 mb-2">Товаров</div>
-            <div className="text-4xl font-bold text-gray-900">{selectedProducts.length} из {order.items.length}</div>
+          <div className="flex items-center justify-between py-3 border-b">
+            <span className="text-gray-600">Товары</span>
+            <span className="text-xl font-bold text-gray-900">{order.items.length} шт</span>
           </div>
 
           {/* Пакеты */}
-          <div>
-            <div className="text-sm text-gray-600 mb-3">Пакетов</div>
-            <div className="flex items-center gap-3 mb-3">
-              <button 
-                onClick={() => setShowPackageModal(true)}
-                className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-gray-400 transition-colors flex-shrink-0"
-              >
-                <Icon name="Plus" size={24} className="text-gray-400" />
-              </button>
-              <span className="text-sm font-medium text-gray-600">Добавить</span>
-            </div>
-            <div className="text-4xl font-bold text-gray-900">{totalPackages}</div>
+          <div className="flex items-center justify-between py-3 border-b">
+            <span className="text-gray-600">Пакеты</span>
+            <span className="text-xl font-bold text-gray-900">{totalPackages} шт</span>
           </div>
 
-          {/* К оплате */}
-          <div>
-            <div className="text-sm text-gray-600 mb-2">К оплате</div>
-            <div className="flex items-center gap-2 mb-2">
-              <Icon name="Wallet" size={22} className="text-purple-600" />
-              <span className="text-3xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
-            </div>
-            <button className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
-              <span>Подробнее</span>
-              <Icon name="ChevronDown" size={14} />
-            </button>
+          {/* Ко-платье */}
+          <div className="flex items-center justify-between py-3 border-b">
+            <span className="text-gray-600">Ко-платье</span>
+            <span className="text-xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
           </div>
         </div>
 
@@ -133,7 +117,7 @@ const DeliveryInterface = ({
         <div className="p-6 border-t space-y-3">
           <button
             onClick={onDeliverProduct}
-            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors"
+            className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-lg transition-colors"
           >
             Выдать
           </button>
@@ -141,7 +125,7 @@ const DeliveryInterface = ({
             onClick={() => {
               // Логика снятия с примерки
             }}
-            className="w-full py-3 bg-white hover:bg-gray-50 text-red-500 border-2 border-red-200 rounded-xl font-semibold transition-colors"
+            className="w-full py-4 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 rounded-xl font-semibold text-lg transition-colors"
           >
             Снять с примерки
           </button>
