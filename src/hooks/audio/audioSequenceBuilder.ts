@@ -17,7 +17,8 @@ export const buildDeliveryCellInfoSequence = (
 
   let itemCountAudio = null;
   if (itemCount !== undefined && itemCount > 0) {
-    const countKey = `count_${itemCount}`;
+    // Используем озвучку номера ячейки для количества товаров
+    const countKey = `cell_${variant}_${itemCount}`;
     itemCountAudio = currentFiles[countKey];
   }
 
