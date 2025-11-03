@@ -68,7 +68,6 @@ const DeliveryInterface = ({
 
   const allProductsSelected = selectedProducts.length === order.items.length;
 
-  // Преобразуем активных клиентов в формат для CellsPanel
   const clientsData: ActiveClient[] = activeClients.map(client => ({
     id: client.id,
     phone: client.phone.slice(-2),
@@ -76,327 +75,118 @@ const DeliveryInterface = ({
     itemsCount: client.items.length,
     totalAmount: client.totalAmount || client.items.reduce((sum, item) => sum + item.price, 0)
   }));
-  
-  console.log('🔍 DeliveryInterface - activeClients:', activeClients.length, activeClients);
-  console.log('🔍 DeliveryInterface - clientsData:', clientsData);
 
   return (
     <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden relative">
-      {/* Панель с клиентами */}
-      <CellsPanel
-        activeClients={clientsData}
-        currentClientId={currentClientId || undefined}
-        onClientClick={onClientSwitch}
-      />
-
-      {/* Мобильная шапка с информацией */}
-      <div className="lg:hidden bg-white border-b shadow-sm">
-        <div className="px-4 py-4">
-          {/* Большой номер ячейки и количество товаров */}
-          <div className="flex items-center gap-4 mb-3">
-            <div className="text-7xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
-            <div className="flex flex-col">
-              <div className="text-sm text-gray-500 font-medium">Товаров</div>
-              <div className="text-3xl font-black text-gray-900">{order.items.length}</div>
-            </div>
-          </div>
-          
-          {/* Телефон */}
-          <div className="text-lg text-gray-700 font-semibold">+7 (***) ***-{order.phone}</div>
-        </div>
-      </div>
-
-      {/* Desktop панель - информация */}
-      <div className="hidden lg:block w-80 bg-white p-6 space-y-6 overflow-y-auto border-r ml-20">
-        {/* Информация о клиенте */}
-        <div className="space-y-6">
-          <div>
-            <div className="text-sm text-gray-500 mb-1">Клиент</div>
-            <div className="text-lg font-semibold text-gray-900">+7 (***) ***-{order.phone}</div>
-          </div>
-          
-          <div>
-            <div className="text-sm text-gray-500 mb-2">Ячейка</div>
-            <div className="text-7xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
-          </div>
-          
-          <div>
-            <div className="text-sm text-gray-500 mb-1">Товаров</div>
-            <div className="text-3xl font-black text-gray-900">{order.items.length} <span className="text-2xl text-gray-500 font-semibold">из {order.items.length}</span></div>
-          </div>
-
-          {/* Пакетов */}
-          <div className="lg:mt-3">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">Пакеты</div>
-            <button
-              onClick={() => setShowPackageModal(true)}
-              className="w-full p-3 sm:p-4 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center">
-                    <Icon name="Plus" size={20} className="text-purple-600" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-medium text-gray-700">
-                      {totalPackages > 0 ? `${totalPackages} шт` : 'Добавить'}
-                    </div>
-                    {packagesCost > 0 && (
-                      <div className="text-xs text-gray-500">{packagesCost} ₽</div>
-                    )}
-                  </div>
-                </div>
-                {totalPackages > 0 && (
-                  <div className="text-2xl font-bold text-purple-600">{totalPackages}</div>
-                )}
-              </div>
-              
-              {packages.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-left space-y-1">
-                  {packages.map((pkg, idx) => (
-                    <div key={idx} className="flex justify-between text-gray-600">
-                      <span>{pkg.type} × {pkg.quantity}</span>
-                      <span>{pkg.price * pkg.quantity} ₽</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </button>
-          </div>
-
-          {/* К оплате */}
-          <div className="space-y-1 sm:space-y-2 lg:mt-3">
-            <div className="text-xs sm:text-sm text-gray-500">К оплате</div>
-            <div className="flex items-center gap-2">
-              <Icon name="CreditCard" size={16} className="sm:w-[18px] sm:h-[18px] lg:w-5 lg:h-5 text-purple-500" />
-              <span className="text-base sm:text-lg lg:text-xl font-semibold text-purple-600">{totalAmount} ₽</span>
-            </div>
-            {packagesCost > 0 && (
-              <div className="text-xs text-gray-500">
-                Товары: {order.totalAmount} ₽ + Пакеты: {packagesCost} ₽
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Кнопки действий */}
-        <div className="flex lg:flex-col gap-2 sm:gap-3">
-          <button
-            onClick={() => {
-              playAudio?.('delivery-complete-sequence');
-              onDeliverProduct();
-            }}
-            disabled={!allProductsSelected}
-            className={`flex-1 lg:w-full py-2.5 sm:py-3 px-4 text-sm sm:text-base rounded-lg font-medium transition-colors ${
-              allProductsSelected
-                ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            Выдать
-          </button>
-          
-          <button className="flex-1 lg:w-full py-2.5 sm:py-3 px-4 text-sm sm:text-base border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 active:bg-red-100 transition-colors">
-            Снять с примерки
-          </button>
-        </div>
-      </div>
-
-      {/* Правая панель - товары */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Мобильная кнопка проверки товаров */}
-        <div className="lg:hidden sticky top-0 bg-white border-b px-4 py-3 z-10">
-          <button
-            onClick={() => {
-              setSelectedProducts(order.items.map((_, index) => index));
-              playAudio?.('check-product-under-camera');
-            }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors font-medium"
-          >
-            <Icon name="ScanBarcode" size={20} />
-            <span>Проверить товары</span>
-          </button>
-          
-          <div className="flex items-center justify-between mt-3 text-sm">
-            <button className="text-purple-600 font-medium">Выбрать все</button>
-            <span className="text-gray-600">{selectedProducts.length} из {order.items.length} выбрано</span>
-          </div>
-        </div>
-        
-        {/* Desktop заголовок с кнопкой "Снять все" */}
-        <div className="hidden lg:flex justify-end items-center mb-4 px-6 pt-6">
-          <button
-            onClick={() => {
-              setSelectedProducts(order.items.map((_, index) => index));
-              playAudio?.('check-product-under-camera');
-            }}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors font-medium shadow-sm"
-          >
-            <Icon name="Check" size={18} />
-            <span>Снять все</span>
-          </button>
-        </div>
-
-        {/* Список товаров */}
-        <div className="p-4 lg:px-6 lg:pb-6 lg:pt-0">
-          <div className="space-y-3 lg:space-y-6 lg:grid lg:grid-cols-2 lg:gap-6">
-            {order.items.map((item, index) => {
-              const isSelected = selectedProducts.includes(index);
-              const isPaid = Math.random() > 0.5;
-              
-              return (
-                <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 lg:shadow-none lg:border-0 lg:bg-gray-200">
-                  {/* Мобильная версия карточки */}
-                  <div className="lg:hidden">
-                    <div className="flex gap-3 p-3">
-                      {/* Чекбокс */}
-                      <button
-                        onClick={() => handleProductSelect(index)}
-                        className={`flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-purple-600' : 'border-2 border-gray-300'
-                        }`}
-                      >
-                        {isSelected && <Icon name="Check" size={16} className="text-white" />}
-                      </button>
-                      
-                      {/* Изображение */}
-                      <div className="flex-shrink-0 w-32 h-32 bg-gray-100 rounded-xl overflow-hidden">
-                        <img
-                          src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      
-                      {/* Информация */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="text-lg font-bold text-gray-900">{item.barcode.slice(-4)}</div>
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${
-                            isPaid ? 'bg-green-100 text-green-700' : 'bg-pink-100 text-pink-700'
-                          }`}>
-                            {isPaid ? 'ОПЛАЧЕН' : 'НЕ ОПЛАЧЕН'}
-                          </span>
-                        </div>
-                        
-                        {item.statusBadge && (
-                          <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
-                            item.statusBadge === 'НЕВОЗВРАТНЫЙ' ? 'bg-green-100 text-green-700' : ''
-                          }`}>
-                            {item.statusBadge}
-                          </span>
-                        )}
-                        
-                        <div className="text-sm text-gray-700 line-clamp-2">{item.name}</div>
-                        
-                        <div className="text-xs text-gray-500">{item.brand || 'Pepe Jeans'}</div>
-                        
-                        <div className="text-lg font-bold text-gray-900">{item.price.toLocaleString()} ₽</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Desktop версия карточки */}
-                  <div className="hidden lg:block relative bg-gray-100 rounded-2xl overflow-hidden">
-                    {/* Кнопки сверху */}
-                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
-                      <button
-                        onClick={() => handleProductSelect(index)}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all shadow-md ${
-                          isSelected ? 'bg-purple-600 scale-110' : 'bg-white/95 backdrop-blur hover:bg-white'
-                        }`}
-                      >
-                        {isSelected && <Icon name="Check" size={22} className="text-white stroke-[3]" />}
-                      </button>
-
-                      <button className="w-10 h-10 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center shadow-md transition-all">
-                        <Icon name="RotateCcw" size={20} className="text-white" />
-                      </button>
-                    </div>
-
-                    {/* Бейдж оплаты */}
-                    <div className="absolute top-14 right-3 z-10">
-                      <span className={`px-3 py-1.5 text-xs font-bold rounded-md shadow-lg ${
-                        isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                      }`}>
-                        {isPaid ? 'Оплачен' : 'Не оплачен'}
-                      </span>
-                    </div>
-
-                    {/* Изображение товара */}
-                    <div className="relative bg-gray-200">
-                      <img
-                        src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
-                        alt={item.name}
-                        className="w-full h-[420px] object-cover"
-                      />
-                      
-                      {/* Кнопка поиска/увеличения */}
-                      <button className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
-                        <Icon name="ZoomIn" size={24} className="text-gray-700" />
-                      </button>
-                    </div>
-
-                    {/* Информация о товаре */}
-                    <div className="p-4 bg-white space-y-2">
-                      {/* Баркод с кнопкой копирования */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="font-bold text-xl text-gray-900">{item.barcode}</div>
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                          <Icon name="Copy" size={20} />
-                        </button>
-                      </div>
-                      
-                      {/* Название товара */}
-                      <div className="text-sm text-gray-700 line-clamp-2 font-medium">{item.name}</div>
-                      
-                      {/* Цена */}
-                      <div className="flex items-center gap-2 pt-1">
-                        <Icon name="Wallet" size={18} className="text-purple-500" />
-                        <span className="text-2xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
-                        {item.oldPrice && (
-                          <span className="text-sm text-gray-400 line-through">{item.oldPrice.toLocaleString()} ₽</span>
-                        )}
-                      </div>
-                      
-                      {/* Цвет и размер */}
-                      <div className="text-sm text-gray-600 pt-1">
-                        <span className="font-semibold">Цвет:</span> <span className="font-medium">{item.color || 'черный'}</span>
-                        <span className="ml-4 font-semibold">Размер:</span> <span className="font-medium">{item.size || 'M'}</span>
-                      </div>
-                      
-                      {/* Баркод */}
-                      <div className="text-sm text-gray-500">
-                        <span className="font-semibold">Баркод:</span> {item.barcode}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Нижняя фиксированная кнопка для мобильной версии */}
-      <div className="lg:hidden fixed bottom-16 left-0 right-0 bg-white border-t p-4 shadow-lg z-30">
+      {/* Desktop заголовок с кнопкой "Снять все" */}
+      <div className="hidden lg:flex justify-end items-center mb-2 px-6 pt-6">
         <button
-          onClick={onDeliverProduct}
-          disabled={!allProductsSelected}
-          className={`w-full py-4 rounded-xl font-semibold text-base transition-all ${
-            allProductsSelected
-              ? 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white shadow-lg'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
+          onClick={() => {
+            if (allProductsSelected) {
+              setSelectedProducts([]);
+            } else {
+              setSelectedProducts(order.items.map((_, index) => index));
+              playAudio?.('check-product-under-camera');
+            }
+          }}
+          className="flex items-center gap-2 px-6 py-3 text-base bg-purple-600 text-white rounded-xl hover:bg-purple-700 active:bg-purple-800 transition-colors font-semibold shadow-sm"
         >
-          {allProductsSelected ? `Выдать ${order.items.length} товара на ${totalAmount} ₽` : `Проверьте товары (${selectedProducts.length}/${order.items.length})`}
+          <Icon name="Check" size={20} />
+          <span>{allProductsSelected ? 'Снять все' : 'Снять все'}</span>
         </button>
       </div>
 
+      {/* Список товаров */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          {order.items.map((item, index) => {
+            const isSelected = selectedProducts.includes(index);
+            const isPaid = Math.random() > 0.5;
+            
+            return (
+              <div key={index} className="bg-gray-200 rounded-2xl overflow-hidden relative">
+                {/* Кнопки сверху */}
+                <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+                  <button
+                    onClick={() => handleProductSelect(index)}
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all shadow-lg ${
+                      isSelected ? 'bg-purple-600 scale-110' : 'bg-white/95 backdrop-blur hover:bg-white'
+                    }`}
+                  >
+                    {isSelected && <Icon name="Check" size={24} className="text-white stroke-[3]" />}
+                  </button>
+
+                  <button className="w-11 h-11 bg-green-500 hover:bg-green-600 rounded-xl flex items-center justify-center shadow-lg transition-all">
+                    <Icon name="RotateCcw" size={22} className="text-white" />
+                  </button>
+                </div>
+
+                {/* Бейдж оплаты */}
+                <div className="absolute top-16 right-3 z-10">
+                  <span className={`px-4 py-2 text-sm font-bold rounded-lg shadow-lg ${
+                    isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                  }`}>
+                    {isPaid ? 'Оплачен' : 'Не оплачен'}
+                  </span>
+                </div>
+
+                {/* Изображение товара */}
+                <div className="relative bg-gray-200">
+                  <img
+                    src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
+                    alt={item.name}
+                    className="w-full h-[340px] object-cover"
+                  />
+                  
+                  {/* Кнопка поиска/увеличения */}
+                  <button className="absolute bottom-4 right-4 w-14 h-14 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
+                    <Icon name="ZoomIn" size={28} className="text-gray-700" />
+                  </button>
+                </div>
+
+                {/* Информация о товаре */}
+                <div className="p-4 bg-white space-y-2">
+                  {/* Баркод с кнопкой копирования */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="font-bold text-2xl text-gray-900">{item.barcode.slice(0, 7)} <span className="font-black">{item.barcode.slice(7)}</span></div>
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <Icon name="Copy" size={22} />
+                    </button>
+                  </div>
+                  
+                  {/* Название товара */}
+                  <div className="text-sm text-gray-600 line-clamp-1">{item.brand || 'H&M'} / {item.name}</div>
+                  
+                  {/* Цена */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <Icon name="Wallet" size={20} className="text-purple-600" />
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                      {item.originalPrice && item.originalPrice > item.price && (
+                        <span className="text-base text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Цвет, Размер, Баркод */}
+                  <div className="pt-2 space-y-1 text-sm">
+                    <div className="text-gray-600">Цвет: <span className="font-semibold text-gray-900">{item.color || 'Черный'}</span></div>
+                    <div className="text-gray-600">Размер: <span className="font-semibold text-gray-900">{item.size || 'M'}</span></div>
+                    <div className="text-gray-600">Баркод: <span className="font-semibold text-gray-900">{item.barcode}</span></div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Модальное окно пакетов */}
       <PackageModal
         isOpen={showPackageModal}
         onClose={() => setShowPackageModal(false)}
-        onAdd={handleAddPackages}
+        onAddPackages={handleAddPackages}
+        currentPackages={packages}
       />
     </div>
   );
