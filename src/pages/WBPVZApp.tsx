@@ -71,7 +71,7 @@ const WBPVZApp = () => {
     appHandlers.handleTabChange(tab);
   };
 
-  const showLeftSidebar = appState.deliveryStep === 'initial';
+  const showLeftSidebar = appState.activeTab === 'delivery' && appState.deliveryStep === 'initial';
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
