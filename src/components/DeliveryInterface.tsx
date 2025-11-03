@@ -183,7 +183,6 @@ const DeliveryInterface = ({
             );
           })}
         </div>
-        </div>
       </div>
 
       {/* Модальное окно пакетов */}
