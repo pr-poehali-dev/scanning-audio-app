@@ -71,6 +71,8 @@ const WBPVZApp = () => {
     appHandlers.handleTabChange(tab);
   };
 
+  // Показываем левую панель только для вкладки "Выдача" в начальном состоянии
+  // Для остальных вкладок (Приемка, Возврат) панель не нужна
   const showLeftSidebar = appState.activeTab === 'delivery' && appState.deliveryStep === 'initial';
 
   return (
