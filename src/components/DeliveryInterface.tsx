@@ -101,22 +101,22 @@ const DeliveryInterface = ({
       </div>
 
       {/* Desktop панель - информация */}
-      <div className="hidden lg:block w-96 bg-white p-8 space-y-6 overflow-y-auto border-r">
+      <div className="hidden lg:block w-80 bg-white p-6 pt-20 space-y-6 overflow-y-auto border-r">
         {/* Информация о клиенте */}
         <div className="space-y-6">
           <div>
-            <div className="text-sm text-gray-500 mb-2">Клиент</div>
-            <div className="text-2xl font-bold text-gray-900">**+7 (***) ***-{order.phone}</div>
+            <div className="text-sm text-gray-500 mb-1">Клиент</div>
+            <div className="text-lg font-semibold text-gray-900">+7 (***) ***-{order.phone}</div>
           </div>
           
           <div>
-            <div className="text-sm text-gray-500 mb-3">Ячейка</div>
-            <div className="text-8xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
+            <div className="text-sm text-gray-500 mb-2">Ячейка</div>
+            <div className="text-7xl font-black text-gray-900 leading-none tracking-tighter">{order.cellNumber}</div>
           </div>
           
           <div>
-            <div className="text-sm text-gray-500 mb-2">Товаров</div>
-            <div className="text-4xl font-black text-gray-900">{order.items.length} <span className="text-2xl text-gray-500 font-semibold">из {order.items.length}</span></div>
+            <div className="text-sm text-gray-500 mb-1">Товаров</div>
+            <div className="text-3xl font-black text-gray-900">{order.items.length} <span className="text-2xl text-gray-500 font-semibold">из {order.items.length}</span></div>
           </div>
 
           {/* Пакетов */}
