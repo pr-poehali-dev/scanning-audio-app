@@ -77,63 +77,7 @@ const DeliveryInterface = ({
   }));
 
   return (
-    <div className="h-full flex bg-gray-50 overflow-hidden">
-      {/* Левая панель с информацией о клиенте */}
-      <div className="w-[365px] bg-white border-r flex flex-col">
-        {/* Хедер панели */}
-        <div className="px-6 py-4 border-b">
-          <div className="text-sm text-gray-500 mb-1">Клиент</div>
-          <div className="text-lg font-medium text-gray-900">+7 (•••) ••• {order.phone}</div>
-        </div>
-
-        {/* Информация о заказе */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {/* Ячейка */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Ячейка</span>
-            <span className="text-xl font-bold text-gray-900">{order.cellNumber}</span>
-          </div>
-
-          {/* Товары */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Товары</span>
-            <span className="text-xl font-bold text-gray-900">{order.items.length} шт</span>
-          </div>
-
-          {/* Пакеты */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Пакеты</span>
-            <span className="text-xl font-bold text-gray-900">{totalPackages} шт</span>
-          </div>
-
-          {/* Ко-платье */}
-          <div className="flex items-center justify-between py-3 border-b">
-            <span className="text-gray-600">Ко-платье</span>
-            <span className="text-xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
-          </div>
-        </div>
-
-        {/* Кнопки */}
-        <div className="p-6 border-t space-y-3">
-          <button
-            onClick={onDeliverProduct}
-            className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-lg transition-colors"
-          >
-            Выдать
-          </button>
-          <button
-            onClick={() => {
-              // Логика снятия с примерки
-            }}
-            className="w-full py-4 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 rounded-xl font-semibold text-lg transition-colors"
-          >
-            Снять с примерки
-          </button>
-        </div>
-      </div>
-
-      {/* Правая часть с товарами */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
         {/* Кнопка "Снять все" */}
         <div className="px-6 py-4 bg-white border-b flex justify-end">
           <button
