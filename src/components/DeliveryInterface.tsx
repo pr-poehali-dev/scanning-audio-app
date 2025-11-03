@@ -77,23 +77,97 @@ const DeliveryInterface = ({
   }));
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
-        {/* Кнопка "Снять все" */}
-        <div className="px-6 py-4 bg-white border-b flex justify-end">
-          <button
-            onClick={() => {
-              if (allProductsSelected) {
-                setSelectedProducts([]);
-              } else {
-                setSelectedProducts(order.items.map((_, index) => index));
-                playAudio?.('check-product-under-camera');
-              }
-            }}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
-          >
-            <Icon name="Check" size={20} />
-            <span>Снять все</span>
-          </button>
+    <div className="h-full flex flex-col bg-white overflow-hidden">
+        {/* Шапка с информацией о заказе */}
+        <div className="px-6 py-5 bg-white border-b">
+          <div className="flex items-start justify-between mb-6">
+            <div className="space-y-4 flex-1">
+              {/* Клиент */}
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Клиент</div>
+                <div className="text-lg font-medium text-gray-900">
+                  +7 (•••) ••• +7 (•••) •••-{order.phone.slice(-4)}
+                </div>
+              </div>
+
+              {/* Ячейка и товары в одной строке */}
+              <div className="flex items-center gap-8">
+                {/* Ячейка */}
+                <div className="bg-gray-100 rounded-xl px-6 py-4">
+                  <div className="text-xs text-gray-500 mb-1">Ячейка</div>
+                  <div className="text-5xl font-black text-gray-900">{order.cellNumber}</div>
+                </div>
+
+                {/* Товаров */}
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">Товаров</div>
+                  <div className="text-3xl font-bold text-gray-900">
+                    {selectedProducts.length} <span className="text-gray-400">из {order.items.length}</span>
+                  </div>
+                </div>
+
+                {/* Пакетов */}
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">Пакетов</div>
+                  <button
+                    onClick={() => setShowPackageModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+                  >
+                    <Icon name="Plus" size={20} className="text-gray-400" />
+                    <span className="text-lg font-medium text-gray-700">{totalPackages || 'Добавить'}</span>
+                  </button>
+                </div>
+
+                {/* К оплате */}
+                <div className="ml-auto">
+                  <div className="text-xs text-gray-500 mb-1">К оплате</div>
+                  <div className="flex items-center gap-2">
+                    <Icon name="Wallet" size={20} className="text-purple-600" />
+                    <div className="text-2xl font-bold text-purple-600">
+                      {totalAmount.toLocaleString('ru-RU')} ₽
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Кнопки действий справа */}
+            <div className="flex gap-3 ml-6">
+              <button
+                onClick={onDeliverProduct}
+                disabled={selectedProducts.length !== order.items.length}
+                className={`px-8 py-3 text-base font-semibold rounded-xl transition-colors ${
+                  selectedProducts.length === order.items.length
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Выдать
+              </button>
+              
+              <button className="px-8 py-3 text-base font-medium border-2 border-red-500 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+                Снять с примерки
+              </button>
+            </div>
+          </div>
+
+          {/* Кнопка "Снять все" */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                if (allProductsSelected) {
+                  setSelectedProducts([]);
+                } else {
+                  setSelectedProducts(order.items.map((_, index) => index));
+                  playAudio?.('check-product-under-camera');
+                }
+              }}
+              className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              <Icon name="Check" size={18} />
+              <span>Снять все</span>
+            </button>
+          </div>
         </div>
 
         {/* Список товаров */}
