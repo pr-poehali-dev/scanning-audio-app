@@ -78,29 +78,29 @@ const DeliveryInterface = ({
 
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">
-      {/* Левая боковая панель с информацией */}
-      <div className="flex flex-col w-[380px] bg-white border-r shadow-sm overflow-y-auto">
-        {/* Информация о клиенте */}
-        <div className="p-6 space-y-4">
+      {/* Левая боковая панель с информацией - как на скриншоне */}
+      <div className="flex flex-col w-[365px] bg-white border-r shadow-sm">
+        {/* Верхняя часть с прокруткой */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Телефон клиента */}
           <div>
-            <div className="text-sm text-gray-500 mb-1">Клиент</div>
-            <div className="text-base font-semibold text-gray-700">
-              +7 (•••) ••• {order.phone}
+            <div className="text-sm text-gray-500 mb-2">Клиент</div>
+            <div className="text-base font-medium text-gray-700">
+              +7 (•••) ••• +7 (•••) •••-{order.phone}
             </div>
           </div>
 
           {/* Ячейка - огромный номер */}
-          <div className="bg-gray-50 rounded-xl p-4">
-            <div className="text-xs text-gray-500 mb-2 text-center">Ячейка</div>
-            <div className="text-[120px] font-black text-gray-900 text-center leading-none tracking-tighter" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          <div className="bg-gray-50 rounded-2xl p-5">
+            <div className="text-sm text-gray-500 mb-3 text-center">Ячейка</div>
+            <div className="text-[130px] font-black text-gray-900 text-center leading-none tracking-tight" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
               {order.cellNumber}
             </div>
           </div>
 
           {/* Товаров */}
           <div>
-            <div className="text-sm text-gray-500 mb-1">Товаров</div>
+            <div className="text-sm text-gray-500 mb-2">Товаров</div>
             <div className="text-3xl font-bold text-gray-900">
               {selectedProducts.length} <span className="text-gray-500">из {order.items.length}</span>
             </div>
@@ -108,18 +108,18 @@ const DeliveryInterface = ({
 
           {/* Пакетов */}
           <div>
-            <div className="text-sm text-gray-500 mb-1">Пакетов</div>
+            <div className="text-sm text-gray-500 mb-2">Пакетов</div>
             <button
               onClick={() => setShowPackageModal(true)}
-              className="w-full flex items-center gap-3 p-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-colors"
+              className="w-full flex items-center gap-3 p-3.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-colors"
             >
-              <div className="w-12 h-12 rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center flex-shrink-0">
-                <Icon name="Plus" size={24} className="text-gray-400" />
+              <div className="w-14 h-14 rounded-xl border-2 border-dashed border-gray-400 flex items-center justify-center flex-shrink-0">
+                <Icon name="Plus" size={26} className="text-gray-400" />
               </div>
-              <div className="text-left">
-                <div className="text-sm font-medium text-gray-700">Добавить</div>
+              <div className="text-left flex-1">
+                <div className="text-base font-medium text-gray-700">Добавить</div>
                 {totalPackages > 0 && (
-                  <div className="text-2xl font-bold text-gray-900 mt-0.5">{totalPackages}</div>
+                  <div className="text-3xl font-bold text-gray-900 mt-1">{totalPackages}</div>
                 )}
               </div>
             </button>
@@ -127,38 +127,38 @@ const DeliveryInterface = ({
 
           {/* К оплате */}
           <div>
-            <div className="text-sm text-gray-500 mb-1">К оплате</div>
-            <div className="flex items-center gap-2">
-              <Icon name="Wallet" size={20} className="text-purple-600" />
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="text-sm text-gray-500 mb-2">К оплате</div>
+            <div className="flex items-center gap-3 mb-2">
+              <Icon name="Wallet" size={22} className="text-purple-600" />
+              <div className="text-3xl font-bold text-purple-600">
                 {totalAmount.toLocaleString('ru-RU')} ₽
               </div>
             </div>
-            <button className="text-xs text-gray-500 mt-1 hover:text-gray-700 flex items-center gap-1">
+            <button className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1.5">
               Подробнее
-              <Icon name="ChevronDown" size={14} />
+              <Icon name="ChevronDown" size={16} />
             </button>
           </div>
         </div>
 
-        {/* Кнопки внизу */}
-        <div className="mt-auto p-6 space-y-3 border-t bg-white sticky bottom-0">
+        {/* Кнопки внизу - зафиксированы */}
+        <div className="p-5 space-y-3 border-t bg-white">
           <button
             onClick={() => {
               playAudio?.('delivery-complete-sequence');
               onDeliverProduct();
             }}
             disabled={!allProductsSelected}
-            className={`w-full py-3.5 text-base font-semibold rounded-xl transition-colors ${
+            className={`w-full py-4 text-lg font-semibold rounded-2xl transition-colors ${
               allProductsSelected
-                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
             Выдать
           </button>
           
-          <button className="w-full py-3.5 text-base font-medium border-2 border-red-500 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+          <button className="w-full py-4 text-lg font-medium border-2 border-red-500 text-red-600 rounded-2xl hover:bg-red-50 transition-colors">
             Снять с примерки
           </button>
         </div>
