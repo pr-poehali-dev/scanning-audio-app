@@ -77,32 +77,6 @@ const WBPVZApp = () => {
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
-      {/* Левая панель - узкая или широкая в зависимости от состояния */}
-      {showLeftSidebar && (
-        <LeftSidebar 
-          pvzInfo={appState.pvzInfo}
-          activeClients={appState.activeClients.map(client => ({
-            id: client.id,
-            phone: client.phone.slice(-4),
-            cellNumber: client.cellNumber,
-            itemsCount: client.items.length,
-            totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
-          }))}
-          currentClientId={appState.currentClientId || undefined}
-          onAddClient={() => {
-            appState.setDeliveryStep('initial');
-            appState.setPhoneNumber('');
-            appState.setCurrentClientId(null);
-          }}
-          onClientClick={appHandlers.handleClientSwitch}
-          showExtended={showExtendedSidebar}
-          currentOrder={appState.currentOrder}
-          onDeliverProduct={appHandlers.handleDeliverProduct}
-          selectedProductsCount={0}
-          totalProductsCount={appState.currentOrder?.items.length || 0}
-        />
-      )}
-
       {/* Хедер - всегда показываем */}
       <Header
         onMenuOpen={() => appState.setShowSideMenu(true)}
@@ -114,7 +88,7 @@ const WBPVZApp = () => {
       />
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : showExtendedSidebar ? 'pb-0 lg:pl-[365px]' : showLeftSidebar ? 'pb-0 lg:pl-[92px]' : 'pb-0 pl-0'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : 'pb-0'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
