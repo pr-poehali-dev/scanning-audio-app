@@ -71,26 +71,30 @@ const WBPVZApp = () => {
     appHandlers.handleTabChange(tab);
   };
 
+  const showLeftSidebar = appState.deliveryStep === 'initial';
+
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
-      {/* Левая панель - только на ПК */}
-      <LeftSidebar 
-        pvzInfo={appState.pvzInfo}
-        activeClients={appState.activeClients.map(client => ({
-          id: client.id,
-          phone: client.phone.slice(-4),
-          cellNumber: client.cellNumber,
-          itemsCount: client.items.length,
-          totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
-        }))}
-        currentClientId={appState.currentClientId || undefined}
-        onAddClient={() => {
-          appState.setDeliveryStep('initial');
-          appState.setPhoneNumber('');
-          appState.setCurrentClientId(null);
-        }}
-        onClientClick={appHandlers.handleClientSwitch}
-      />
+      {/* Левая панель - только на ПК и только когда НЕ показываем интерфейс выдачи */}
+      {showLeftSidebar && (
+        <LeftSidebar 
+          pvzInfo={appState.pvzInfo}
+          activeClients={appState.activeClients.map(client => ({
+            id: client.id,
+            phone: client.phone.slice(-4),
+            cellNumber: client.cellNumber,
+            itemsCount: client.items.length,
+            totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
+          }))}
+          currentClientId={appState.currentClientId || undefined}
+          onAddClient={() => {
+            appState.setDeliveryStep('initial');
+            appState.setPhoneNumber('');
+            appState.setCurrentClientId(null);
+          }}
+          onClientClick={appHandlers.handleClientSwitch}
+        />
+      )}
 
       {/* Хедер - всегда показываем */}
       <Header
@@ -103,7 +107,7 @@ const WBPVZApp = () => {
       />
 
       {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : 'pb-0 lg:pl-[92px]'}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : showLeftSidebar ? 'pb-0 lg:pl-[92px]' : 'pb-0 pl-0'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
