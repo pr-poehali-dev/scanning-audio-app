@@ -87,38 +87,40 @@ const DeliveryInterface = ({
         </div>
 
         {/* Информация о заказе */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-6 pt-6 space-y-6">
           {/* Ячейка */}
-          <div className="px-6 pt-8 pb-6 bg-gray-50 mx-6 mt-6 rounded-2xl">
-            <div className="text-sm text-gray-600 mb-2">Ячейка</div>
-            <div className="text-7xl font-bold text-gray-900 leading-none">{order.cellNumber}</div>
+          <div className="bg-gray-50 rounded-2xl p-6 text-center">
+            <div className="text-sm text-gray-600 mb-3">Ячейка</div>
+            <div className="text-8xl font-bold text-gray-900 leading-none">{order.cellNumber}</div>
           </div>
 
           {/* Товары */}
-          <div className="px-6 py-5">
+          <div>
             <div className="text-sm text-gray-600 mb-2">Товаров</div>
-            <div className="text-3xl font-bold text-gray-900">{order.items.length} из {order.items.length}</div>
+            <div className="text-4xl font-bold text-gray-900">{selectedProducts.length} из {order.items.length}</div>
           </div>
 
           {/* Пакеты */}
-          <div className="px-6 py-5">
+          <div>
             <div className="text-sm text-gray-600 mb-3">Пакетов</div>
-            <button 
-              onClick={() => setShowPackageModal(true)}
-              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center gap-2 hover:border-gray-400 transition-colors mb-2 text-gray-600"
-            >
-              <Icon name="Plus" size={20} className="text-gray-400" />
-              <span className="text-sm font-medium">Добавить</span>
-            </button>
-            <div className="text-3xl font-bold text-gray-900">{totalPackages}</div>
+            <div className="flex items-center gap-3 mb-3">
+              <button 
+                onClick={() => setShowPackageModal(true)}
+                className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center hover:border-gray-400 transition-colors flex-shrink-0"
+              >
+                <Icon name="Plus" size={24} className="text-gray-400" />
+              </button>
+              <span className="text-sm font-medium text-gray-600">Добавить</span>
+            </div>
+            <div className="text-4xl font-bold text-gray-900">{totalPackages}</div>
           </div>
 
           {/* К оплате */}
-          <div className="px-6 py-5">
+          <div>
             <div className="text-sm text-gray-600 mb-2">К оплате</div>
-            <div className="flex items-center gap-2 mb-1">
-              <Icon name="Wallet" size={20} className="text-purple-600" />
-              <span className="text-2xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="Wallet" size={22} className="text-purple-600" />
+              <span className="text-3xl font-bold text-purple-600">{totalAmount.toLocaleString()} ₽</span>
             </div>
             <button className="text-sm text-gray-500 flex items-center gap-1 hover:text-gray-700 transition-colors">
               <span>Подробнее</span>
