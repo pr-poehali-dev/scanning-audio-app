@@ -30,7 +30,6 @@ export const buildDeliveryCellInfoSequence = (
   } else {
     if (cellAudio) audioSequence.push(cellAudio);
     if (goodsAudio) audioSequence.push(goodsAudio);
-    if (itemCountAudio) audioSequence.push(itemCountAudio);
   }
 
   console.log('🎵 Составная озвучка:', {
