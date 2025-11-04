@@ -211,45 +211,45 @@ const DeliveryInterface = ({
                   <img
                     src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                     alt={item.name}
-                    className="w-full h-[380px] object-cover"
+                    className="w-full h-[280px] object-cover"
                   />
                   
                   {/* Кнопка поиска/увеличения */}
-                  <button className="absolute bottom-4 right-4 w-14 h-14 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
-                    <Icon name="ZoomIn" size={28} className="text-gray-700" />
+                  <button className="absolute bottom-3 right-3 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
+                    <Icon name="ZoomIn" size={20} className="text-gray-700" />
                   </button>
                 </div>
 
                 {/* Информация о товаре */}
-                <div className="p-5 bg-white space-y-2">
+                <div className="p-4 bg-white space-y-1.5">
                   {/* Баркод с кнопкой копирования */}
                   <div className="flex items-center justify-between gap-2">
-                    <div className="font-bold text-2xl text-gray-900">
+                    <div className="font-bold text-lg text-gray-900">
                       {item.barcode.slice(0, 7)} <span className="font-black">{item.barcode.slice(7)}</span>
                     </div>
                     <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                      <Icon name="Copy" size={22} />
+                      <Icon name="Copy" size={18} />
                     </button>
                   </div>
                   
                   {/* Название товара */}
-                  <div className="text-sm text-gray-600 line-clamp-1">
+                  <div className="text-xs text-gray-600 line-clamp-1">
                     {item.brand || 'GENESIS'} / {item.name}
                   </div>
                   
                   {/* Цена */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <Icon name="Wallet" size={20} className="text-purple-600" />
+                  <div className="flex items-center gap-2 pt-1">
+                    <Icon name="Wallet" size={16} className="text-purple-600" />
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                      <span className="text-lg font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
                       {item.originalPrice && item.originalPrice > item.price && (
-                        <span className="text-base text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
+                        <span className="text-sm text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
                       )}
                     </div>
                   </div>
                   
                   {/* Цвет, Размер, Баркод */}
-                  <div className="pt-2 space-y-1 text-sm text-gray-600">
+                  <div className="pt-1 space-y-0.5 text-xs text-gray-600">
                     <div>Цвет: <span className="font-medium text-gray-900">{item.color || 'черный'}</span></div>
                     <div>Размер: <span className="font-medium text-gray-900">{item.size || 'M'}</span></div>
                     <div>Баркод: <span className="font-medium text-gray-900">{item.barcode}</span></div>
