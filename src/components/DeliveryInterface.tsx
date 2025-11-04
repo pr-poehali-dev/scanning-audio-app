@@ -78,8 +78,8 @@ const DeliveryInterface = ({
 
   return (
     <div className="h-full flex bg-gray-50 overflow-hidden">
-        {/* Левая информационная панель */}
-        <div className="flex flex-col w-[320px] bg-white border-r">
+        {/* Левая информационная панель - скрыта, используем LeftSidebar из WBPVZApp */}
+        <div className="hidden flex-col w-[320px] bg-white border-r">
           {/* Информация о заказе */}
           <div className="flex-1 overflow-y-auto p-5 space-y-5">
             {/* Клиент */}
