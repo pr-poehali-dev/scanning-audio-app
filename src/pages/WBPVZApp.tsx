@@ -116,7 +116,7 @@ const WBPVZApp = () => {
       )}
 
       {/* Обёртка для хедера и контента */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? (appState.currentClientId ? 'lg:ml-[342px]' : 'lg:ml-[92px]') : ''}`}>
         {/* Хедер - всегда показываем */}
         <Header
           onMenuOpen={() => appState.setShowSideMenu(true)}
