@@ -77,7 +77,7 @@ const DeliveryInterface = ({
   }));
 
   return (
-    <div className="h-full flex bg-gray-50 overflow-hidden">
+    <div className="h-full bg-gray-50 overflow-hidden">
         {/* Левая информационная панель - скрыта, используем LeftSidebar из WBPVZApp */}
         <div className="hidden flex-col w-[320px] bg-white border-r">
           {/* Информация о заказе */}
@@ -153,7 +153,7 @@ const DeliveryInterface = ({
         </div>
 
         {/* Правая часть с товарами */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="h-full flex flex-col overflow-hidden">
           {/* Кнопка "Снять все" */}
           <div className="px-6 py-4 bg-white border-b flex justify-end">
             <button
