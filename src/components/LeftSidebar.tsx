@@ -28,7 +28,7 @@ const LeftSidebar = ({
   const totalClients = activeClients.length;
 
   return (
-    <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] bg-white shadow-lg z-40 flex-col">
+    <div className="hidden lg:flex fixed left-0 top-0 h-screen w-[92px] bg-white shadow-lg z-20 flex-col">
       {/* Шапка с логотипом */}
       <div className="flex flex-col items-center p-3 border-b gap-2">
         <img 

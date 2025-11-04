@@ -213,18 +213,18 @@ const DeliveryInterface = ({
                     <img
                       src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                       alt={item.name}
-                      className="w-full h-[500px] object-cover"
+                      className="w-full h-[350px] object-cover"
                     />
                     
                     {/* Кнопка поиска/увеличения */}
-                    <button className="absolute bottom-5 right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
-                      <Icon name="ZoomIn" size={24} className="text-gray-700" />
+                    <button className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shadow-lg">
+                      <Icon name="ZoomIn" size={20} className="text-gray-700" />
                     </button>
                   </div>
                 </div>
 
                 {/* Информация о товаре - отдельно снизу */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {/* Баркод с кнопкой копирования */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="font-bold text-2xl text-gray-900">
