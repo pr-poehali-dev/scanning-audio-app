@@ -38,7 +38,7 @@ const ClientInfoPanel = ({
 
   return (
     <>
-      <div className="hidden lg:flex fixed left-[92px] top-0 h-screen w-[250px] bg-white border-r z-20 flex-col">
+      <div className="hidden lg:flex fixed left-[92px] top-0 h-screen w-[250px] bg-white border-r flex-col">
         {/* Информация о текущем клиенте */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Клиент */}
