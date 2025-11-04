@@ -76,7 +76,7 @@ const WBPVZApp = () => {
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
-      {/* Левая панель - узкая с ячейками */}
+      {/* Левая панель - широкая с информацией */}
       {showLeftSidebar && (
         <LeftSidebar 
           pvzInfo={appState.pvzInfo}
@@ -94,11 +94,13 @@ const WBPVZApp = () => {
             appState.setCurrentClientId(null);
           }}
           onClientClick={appHandlers.handleClientSwitch}
+          onDeliverProduct={appHandlers.handleDeliverProduct}
+          selectedProductsCount={0}
         />
       )}
 
       {/* Обёртка для хедера и контента */}
-      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? 'pl-[92px]' : 'pl-0'}`}>
+      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? 'pl-[380px]' : 'pl-0'}`}>
         {/* Хедер - всегда показываем */}
         <Header
           onMenuOpen={() => appState.setShowSideMenu(true)}
