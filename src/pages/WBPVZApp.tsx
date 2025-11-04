@@ -97,18 +97,20 @@ const WBPVZApp = () => {
         />
       )}
 
-      {/* Хедер - всегда показываем */}
-      <Header
-        onMenuOpen={() => appState.setShowSideMenu(true)}
-        onSettingsOpen={() => appState.setShowSettings(true)}
-        onAudioSettingsOpen={() => setShowAudioSettings(true)}
-        activeTab={appState.activeTab}
-        setActiveTab={handleTabChange}
-        audioVariant={appState.audioSettings.variant}
-      />
+      {/* Обёртка для хедера и контента */}
+      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? 'pl-[92px]' : 'pl-0'}`}>
+        {/* Хедер - всегда показываем */}
+        <Header
+          onMenuOpen={() => appState.setShowSideMenu(true)}
+          onSettingsOpen={() => appState.setShowSettings(true)}
+          onAudioSettingsOpen={() => setShowAudioSettings(true)}
+          activeTab={appState.activeTab}
+          setActiveTab={handleTabChange}
+          audioVariant={appState.audioSettings.variant}
+        />
 
-      {/* Основной контент */}
-      <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16 pl-0' : showLeftSidebar ? 'pb-0 pl-[92px]' : 'pb-0 pl-0'}`}>
+        {/* Основной контент */}
+        <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : 'pb-0'}`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}
@@ -128,6 +130,7 @@ const WBPVZApp = () => {
           currentClientId={appState.currentClientId}
           onClientSwitch={appHandlers.handleClientSwitch}
         />
+        </div>
       </div>
 
       {/* Футер - только на ПК */}
