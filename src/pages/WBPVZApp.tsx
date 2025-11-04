@@ -3,6 +3,7 @@ import QRScanner from '@/components/QRScanner';
 import Header from '@/components/Header';
 import SideMenu from '@/components/SideMenu';
 import LeftSidebar from '@/components/LeftSidebar';
+import ClientInfoPanel from '@/components/ClientInfoPanel';
 
 import TabContent from '@/components/TabContent';
 import SettingsModal from '@/components/SettingsModal';
@@ -76,7 +77,7 @@ const WBPVZApp = () => {
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
-      {/* Левая панель - широкая с информацией */}
+      {/* Левая панель - узкая с ячейками */}
       {showLeftSidebar && (
         <LeftSidebar 
           pvzInfo={appState.pvzInfo}
@@ -94,13 +95,28 @@ const WBPVZApp = () => {
             appState.setCurrentClientId(null);
           }}
           onClientClick={appHandlers.handleClientSwitch}
-          onDeliverProduct={appHandlers.handleDeliverProduct}
+        />
+      )}
+
+      {/* Панель информации о клиенте - широкая справа от LeftSidebar */}
+      {showLeftSidebar && appState.currentClientId && (
+        <ClientInfoPanel
+          client={appState.activeClients
+            .map(client => ({
+              id: client.id,
+              phone: client.phone.slice(-4),
+              cellNumber: client.cellNumber,
+              itemsCount: client.items.length,
+              totalAmount: client.totalAmount || client.items.reduce((sum: number, item: any) => sum + item.price, 0)
+            }))
+            .find(c => c.id === appState.currentClientId) || null}
           selectedProductsCount={0}
+          onDeliverProduct={appHandlers.handleDeliverProduct}
         />
       )}
 
       {/* Обёртка для хедера и контента */}
-      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? 'pl-[380px]' : 'pl-0'}`}>
+      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? (appState.currentClientId ? 'pl-[380px]' : 'pl-[92px]') : 'pl-0'}`}>
         {/* Хедер - всегда показываем */}
         <Header
           onMenuOpen={() => appState.setShowSideMenu(true)}
