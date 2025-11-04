@@ -18,7 +18,7 @@ const Header = ({ onMenuOpen, onSettingsOpen, onAudioSettingsOpen, activeTab, se
   };
 
   return (
-    <div className="bg-white border-b border-gray-200">
+    <div className="bg-white border-b border-gray-200 relative z-50">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between px-4 h-16">
           {/* Left side - Menu, Cart, Search */}
