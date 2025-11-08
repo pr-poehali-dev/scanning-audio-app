@@ -116,7 +116,7 @@ const WBPVZApp = () => {
       )}
 
       {/* Обёртка для хедера и контента */}
-      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? (appState.currentClientId ? 'lg:ml-[342px]' : 'lg:ml-[92px]') : ''}`}>
+      <div className={`flex-1 flex flex-col ${!isMobile && showLeftSidebar ? (appState.currentClientId ? 'lg:ml-[342px]' : 'lg:ml-[92px]') : ''}`} style={{ minHeight: 0 }}>
         {/* Хедер - всегда показываем */}
         <Header
           onMenuOpen={() => appState.setShowSideMenu(true)}
@@ -128,7 +128,7 @@ const WBPVZApp = () => {
         />
 
         {/* Основной контент */}
-        <div className={`flex-1 overflow-auto ${isMobile ? 'pb-16' : 'pb-0'}`}>
+        <div className={`flex-1 ${isMobile ? 'pb-16' : 'pb-0'} overflow-hidden`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}

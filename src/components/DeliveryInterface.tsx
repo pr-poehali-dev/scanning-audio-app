@@ -77,7 +77,7 @@ const DeliveryInterface = ({
   }));
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-white">
+    <div className="h-full flex flex-col bg-white">
           {/* Кнопка "Снять все" */}
           <div className="px-6 py-4 bg-white border-b flex justify-end">
             <button
