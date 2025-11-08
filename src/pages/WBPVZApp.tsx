@@ -72,8 +72,8 @@ const WBPVZApp = () => {
     appHandlers.handleTabChange(tab);
   };
 
-  // Показываем панель для выдачи (всегда узкую)
-  const showLeftSidebar = appState.activeTab === 'delivery';
+  // Не показываем боковые панели, так как они встроены в DeliveryInterface
+  const showLeftSidebar = false;
 
   return (
     <div className={`min-h-screen bg-gray-100 flex flex-col ${isMobile ? 'mobile-layout' : 'desktop-layout'}`}>
@@ -128,7 +128,7 @@ const WBPVZApp = () => {
         />
 
         {/* Основной контент */}
-        <div className={`flex-1 ${isMobile ? 'pb-16' : 'pb-0'} overflow-hidden`}>
+        <div className={`flex-1 ${isMobile ? 'pb-16' : 'pb-0'} overflow-auto`}>
         <TabContent
           activeTab={appState.activeTab}
           phoneNumber={appState.phoneNumber}

@@ -77,27 +77,103 @@ const DeliveryInterface = ({
   }));
 
   return (
-    <div className="h-full flex flex-col bg-white">
-          {/* Кнопка "Снять все" */}
-          <div className="px-6 py-4 bg-white border-b flex justify-end">
+    <div className="h-full bg-gray-50 flex overflow-hidden">
+      {/* Левая информационная панель */}
+      <div className="flex flex-col w-[320px] bg-white border-r">
+        {/* Информация о заказе */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Клиент */}
+          <div>
+            <div className="text-xs text-gray-500 mb-2">Клиент</div>
+            <div className="text-base font-medium text-gray-900">
+              +7 (•••) •••-{order.phone.slice(-4)}
+            </div>
+          </div>
+
+          {/* Ячейка */}
+          <div className="bg-gray-50 rounded-2xl p-5">
+            <div className="text-xs text-gray-500 mb-3 text-center">Ячейка</div>
+            <div className="text-[110px] font-black text-gray-900 text-center leading-none">
+              {order.cellNumber}
+            </div>
+          </div>
+
+          {/* Товаров */}
+          <div>
+            <div className="text-xs text-gray-500 mb-2">Товаров</div>
+            <div className="text-4xl font-bold text-gray-900">
+              {selectedProducts.length} <span className="text-gray-400">из {order.items.length}</span>
+            </div>
+          </div>
+
+          {/* Пакетов */}
+          <div>
+            <div className="text-xs text-gray-500 mb-2">Пакетов</div>
             <button
-              onClick={() => {
-                if (allProductsSelected) {
-                  setSelectedProducts([]);
-                } else {
-                  setSelectedProducts(order.items.map((_, index) => index));
-                  playAudio?.('check-product-under-camera');
-                }
-              }}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
+              onClick={() => setShowPackageModal(true)}
+              className="w-full flex items-center gap-3 p-3.5 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 transition-colors"
             >
-              <Icon name="Check" size={20} />
-              <span>Снять все</span>
+              <div className="w-12 h-12 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center">
+                <Icon name="Plus" size={22} className="text-gray-400" />
+              </div>
+              <div className="text-base font-medium text-gray-700">{totalPackages || 'Добавить'}</div>
             </button>
           </div>
 
-          {/* Список товаров */}
-          <div className="flex-1 overflow-y-auto p-6 bg-white">
+          {/* К оплате */}
+          <div>
+            <div className="text-xs text-gray-500 mb-2">К оплате</div>
+            <div className="flex items-center gap-3">
+              <Icon name="Wallet" size={22} className="text-purple-600" />
+              <div className="text-3xl font-bold text-purple-600">
+                {totalAmount.toLocaleString('ru-RU')} ₽
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Кнопки внизу */}
+        <div className="p-5 space-y-3 border-t">
+          <button
+            onClick={onDeliverProduct}
+            disabled={selectedProducts.length !== order.items.length}
+            className={`w-full py-4 text-base font-semibold rounded-xl transition-colors ${
+              selectedProducts.length === order.items.length
+                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            Выдать
+          </button>
+          
+          <button className="w-full py-4 text-base font-medium border-2 border-red-500 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
+            Снять с примерки
+          </button>
+        </div>
+      </div>
+
+      {/* Правая часть с товарами */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Кнопка "Снять все" */}
+        <div className="px-6 py-4 bg-white border-b flex justify-end">
+          <button
+            onClick={() => {
+              if (allProductsSelected) {
+                setSelectedProducts([]);
+              } else {
+                setSelectedProducts(order.items.map((_, index) => index));
+                playAudio?.('check-product-under-camera');
+              }
+            }}
+            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-semibold"
+          >
+            <Icon name="Check" size={20} />
+            <span>Снять все</span>
+          </button>
+        </div>
+
+        {/* Список товаров */}
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {order.items.map((item, index) => {
             const isSelected = selectedProducts.includes(index);
@@ -187,15 +263,16 @@ const DeliveryInterface = ({
           })}
             </div>
           </div>
-
-        {/* Модальное окно пакетов */}
-        <PackageModal
-          isOpen={showPackageModal}
-          onClose={() => setShowPackageModal(false)}
-          onAddPackages={handleAddPackages}
-          currentPackages={packages}
-        />
+        </div>
       </div>
+
+      {/* Модальное окно пакетов */}
+      <PackageModal
+        isOpen={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        onAddPackages={handleAddPackages}
+        currentPackages={packages}
+      />
   );
 };
 
