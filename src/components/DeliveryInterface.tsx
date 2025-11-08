@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Order } from '@/data/mockOrders';
-import CellsPanel, { ActiveClient } from './CellsPanel';
 import PackageModal from './PackageModal';
 
 interface Package {
@@ -19,9 +18,6 @@ interface DeliveryInterfaceProps {
   scannedData: string;
   deliveryStep?: string;
   playAudio?: (key: string) => void;
-  activeClients?: Order[];
-  currentClientId?: string | null;
-  onClientSwitch?: (clientId: string) => void;
 }
 
 const DeliveryInterface = ({
@@ -32,10 +28,7 @@ const DeliveryInterface = ({
   isProductScanned,
   scannedData,
   deliveryStep = 'client-scanned',
-  playAudio,
-  activeClients = [],
-  currentClientId,
-  onClientSwitch
+  playAudio
 }: DeliveryInterfaceProps) => {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
@@ -67,14 +60,6 @@ const DeliveryInterface = ({
   const totalAmount = (order.totalAmount || 0) + packagesCost;
 
   const allProductsSelected = selectedProducts.length === order.items.length;
-
-  const clientsData: ActiveClient[] = activeClients.map(client => ({
-    id: client.id,
-    phone: client.phone.slice(-2),
-    cellNumber: client.cellNumber,
-    itemsCount: client.items.length,
-    totalAmount: client.totalAmount || client.items.reduce((sum, item) => sum + item.price, 0)
-  }));
 
   return (
     <div className="h-full bg-gray-50 flex overflow-hidden">
