@@ -60,6 +60,23 @@ export const AudioManager = ({
 }: AudioManagerProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [showUserId, setShowUserId] = useState(false);
+  const [userId] = useState(() => localStorage.getItem('audio-user-id') || '');
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleCopyUserId = () => {
+    navigator.clipboard.writeText(userId);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const handleSetUserId = () => {
+    const newId = prompt('Введите User ID с другого устройства:', '');
+    if (newId && newId.trim()) {
+      localStorage.setItem('audio-user-id', newId.trim());
+      window.location.reload();
+    }
+  };
   
   useEffect(() => {
     const loadFiles = async () => {
@@ -264,13 +281,61 @@ export const AudioManager = ({
           </div>
           
           <div className="space-y-3">
-            <div className="bg-green-50 border border-green-200 rounded p-3 mb-3">
+            <div className="bg-green-50 border border-green-200 rounded p-3 mb-3 space-y-2">
               <div className="flex items-start gap-2 text-sm text-green-800">
                 <Icon name="Cloud" className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <div>
                   <strong>☁️ Облачное хранилище активно!</strong>
                   <p className="text-xs mt-1">Все файлы автоматически сохраняются в облако и синхронизируются между всеми вашими устройствами</p>
                 </div>
+              </div>
+              
+              <div className="border-t border-green-200 pt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowUserId(!showUserId)}
+                    className="text-xs"
+                  >
+                    <Icon name="Key" className="w-3 h-3 mr-1" />
+                    {showUserId ? 'Скрыть ID' : 'Показать User ID'}
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSetUserId}
+                    className="text-xs"
+                  >
+                    <Icon name="Download" className="w-3 h-3 mr-1" />
+                    Вставить ID
+                  </Button>
+                </div>
+                
+                {showUserId && (
+                  <div className="bg-white rounded p-2 space-y-1">
+                    <div className="text-xs text-gray-600">
+                      Ваш User ID (скопируйте его на другое устройство):
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-xs bg-gray-100 px-2 py-1 rounded break-all">
+                        {userId}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleCopyUserId}
+                        className="flex-shrink-0"
+                      >
+                        <Icon name={copySuccess ? "Check" : "Copy"} className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      💡 Откройте сайт на другом устройстве и нажмите "Вставить ID", чтобы использовать те же аудиофайлы
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             

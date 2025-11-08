@@ -62,9 +62,9 @@ const DeliveryInterface = ({
   const allProductsSelected = selectedProducts.length === order.items.length;
 
   return (
-    <div className="h-full bg-white flex overflow-hidden">
+    <div className="h-full bg-white flex flex-col lg:flex-row overflow-hidden">
       {/* Левая боковая панель */}
-      <div className="w-[280px] bg-white border-r flex flex-col">
+      <div className="w-full lg:w-[280px] bg-white border-b lg:border-b-0 lg:border-r flex flex-col">
         {/* Информация о клиенте и заказе */}
         <div className="p-4 border-b">
           <div className="text-xs text-gray-500 mb-1">Клиент</div>
@@ -74,15 +74,15 @@ const DeliveryInterface = ({
         </div>
 
         {/* Ячейка */}
-        <div className="p-6 border-b">
+        <div className="p-4 lg:p-6 border-b">
           <div className="text-xs text-gray-500 mb-2 text-center">Ячейка</div>
-          <div className="text-[80px] font-black text-center leading-none">
+          <div className="text-[60px] lg:text-[80px] font-black text-center leading-none">
             {order.cellNumber}
           </div>
         </div>
 
         {/* Товаров */}
-        <div className="p-4 border-b">
+        <div className="p-4 border-b hidden lg:block">
           <div className="text-xs text-gray-500 mb-1">Товаров</div>
           <div className="text-3xl font-bold">
             {selectedProducts.length} <span className="text-2xl text-gray-400">из {order.items.length}</span>
@@ -90,7 +90,7 @@ const DeliveryInterface = ({
         </div>
 
         {/* Пакетов */}
-        <div className="p-4 border-b">
+        <div className="p-4 border-b hidden lg:block">
           <div className="text-xs text-gray-500 mb-2">Пакетов</div>
           <button
             onClick={() => setShowPackageModal(true)}
@@ -104,7 +104,7 @@ const DeliveryInterface = ({
         </div>
 
         {/* К оплате */}
-        <div className="p-4 border-b">
+        <div className="p-4 border-b hidden lg:block">
           <div className="text-xs text-gray-500 mb-1">К оплате</div>
           <div className="flex items-center gap-2">
             <Icon name="Wallet" size={18} className="text-purple-600" />
@@ -114,10 +114,10 @@ const DeliveryInterface = ({
           </div>
         </div>
 
-        {/* Кнопки действий - spacer для прижатия вниз */}
-        <div className="flex-1"></div>
+        {/* Кнопки действий - spacer для прижатия вниз на десктопе */}
+        <div className="flex-1 hidden lg:block"></div>
         
-        <div className="p-4 space-y-2 border-t">
+        <div className="p-4 space-y-2 border-t hidden lg:block">
           <button
             onClick={onDeliverProduct}
             disabled={selectedProducts.length !== order.items.length}
@@ -158,8 +158,8 @@ const DeliveryInterface = ({
         </div>
 
         {/* Список товаров - большие вертикальные карточки */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
-          <div className="grid grid-cols-2 gap-6">
+        <div className="flex-1 overflow-y-auto p-3 lg:p-6 pb-32 lg:pb-6 bg-white">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {order.items.map((item, index) => {
               const isSelected = selectedProducts.includes(index);
               const isPaid = Math.random() > 0.5;
@@ -174,7 +174,7 @@ const DeliveryInterface = ({
                     <img
                       src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                       alt={item.name}
-                      className="w-full h-[500px] object-cover"
+                      className="w-full h-[400px] lg:h-[500px] object-cover"
                     />
                     
                     {/* Кнопки слева сверху */}
@@ -246,6 +246,30 @@ const DeliveryInterface = ({
             })}
           </div>
         </div>
+      </div>
+
+      {/* Фиксированная панель с кнопками на мобильном */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2 z-10">
+        <div className="flex items-center justify-between mb-2 text-sm">
+          <span className="text-gray-600">Товаров: {selectedProducts.length} из {order.items.length}</span>
+          <span className="font-bold text-purple-600">{totalAmount.toLocaleString('ru-RU')} ₽</span>
+        </div>
+        
+        <button
+          onClick={onDeliverProduct}
+          disabled={selectedProducts.length !== order.items.length}
+          className={`w-full py-3 text-base font-semibold rounded-lg transition-colors ${
+            selectedProducts.length === order.items.length
+              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Выдать
+        </button>
+        
+        <button className="w-full py-3 text-base font-medium border-2 border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+          Снять с примерки
+        </button>
       </div>
 
       {/* Модальное окно пакетов */}
