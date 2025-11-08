@@ -273,6 +273,7 @@ const DeliveryInterface = ({
         onAddPackages={handleAddPackages}
         currentPackages={packages}
       />
+    </div>
   );
 };
 
