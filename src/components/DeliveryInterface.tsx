@@ -157,9 +157,9 @@ const DeliveryInterface = ({
           </button>
         </div>
 
-        {/* Список товаров - компактные карточки */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        {/* Список товаров - большие вертикальные карточки */}
+        <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <div className="grid grid-cols-2 gap-6">
             {order.items.map((item, index) => {
               const isSelected = selectedProducts.includes(index);
               const isPaid = Math.random() > 0.5;
@@ -167,68 +167,78 @@ const DeliveryInterface = ({
               return (
                 <div 
                   key={index} 
-                  className="bg-white rounded-lg overflow-hidden shadow-sm border hover:shadow-md transition-shadow"
+                  className="bg-gray-100 rounded-2xl overflow-hidden"
                 >
                   {/* Изображение товара */}
-                  <div className="relative bg-gray-100">
+                  <div className="relative bg-gray-200">
                     <img
                       src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                       alt={item.name}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-[500px] object-cover"
                     />
                     
-                    {/* Кнопка выбора */}
-                    <button
-                      onClick={() => handleProductSelect(index)}
-                      className={`absolute top-2 left-2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                        isSelected ? 'bg-purple-600' : 'bg-white/90 backdrop-blur'
-                      }`}
-                    >
-                      {isSelected && <Icon name="Check" size={18} className="text-white stroke-[3]" />}
-                    </button>
+                    {/* Кнопки слева сверху */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                      <button
+                        onClick={() => handleProductSelect(index)}
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                          isSelected ? 'bg-purple-600' : 'bg-white/90 backdrop-blur'
+                        }`}
+                      >
+                        {isSelected && <Icon name="Check" size={22} className="text-white stroke-[3]" />}
+                      </button>
+                      
+                      <button className="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-xl flex items-center justify-center transition-all">
+                        <Icon name="RotateCcw" size={20} className="text-white stroke-[2.5]" />
+                      </button>
+                    </div>
 
-                    {/* Бейдж оплаты */}
-                    <div className="absolute top-2 right-2">
-                      <span className={`px-2 py-1 text-xs font-bold rounded ${
+                    {/* Бейдж оплаты справа сверху */}
+                    <div className="absolute top-3 right-3">
+                      <span className={`px-4 py-2 text-sm font-bold rounded-xl ${
                         isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                       }`}>
                         {isPaid ? 'Оплачен' : 'Не оплачен'}
                       </span>
                     </div>
 
-                    {/* Кнопка возврата */}
-                    <button className="absolute bottom-2 right-2 w-8 h-8 bg-green-500 hover:bg-green-600 rounded-lg flex items-center justify-center transition-all">
-                      <Icon name="RotateCcw" size={16} className="text-white stroke-[2.5]" />
+                    {/* Кнопка увеличения справа снизу */}
+                    <button className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
+                      <Icon name="ZoomIn" size={20} className="text-gray-700" />
                     </button>
                   </div>
 
-                  {/* Информация о товаре */}
-                  <div className="p-3 space-y-1">
+                  {/* Информация о товаре под изображением */}
+                  <div className="p-4 bg-white space-y-2">
                     {/* Баркод */}
                     <div className="flex items-center justify-between">
-                      <div className="font-bold text-sm">
+                      <div className="font-bold text-lg">
                         {item.barcode.slice(0, 7)} <span className="font-black">{item.barcode.slice(7)}</span>
                       </div>
                       <button className="text-gray-400 hover:text-gray-600">
-                        <Icon name="Copy" size={14} />
+                        <Icon name="Copy" size={18} />
                       </button>
                     </div>
                     
                     {/* Название */}
-                    <div className="text-xs text-gray-600 line-clamp-2 h-8">
+                    <div className="text-sm text-gray-600 line-clamp-1">
                       {item.brand || 'GENESIS'} / {item.name}
                     </div>
                     
                     {/* Цена */}
-                    <div className="flex items-center gap-1">
-                      <Icon name="Wallet" size={14} className="text-purple-600" />
-                      <span className="text-base font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                    <div className="flex items-center gap-2">
+                      <Icon name="Wallet" size={18} className="text-purple-600" />
+                      <span className="text-xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                      {item.originalPrice && item.originalPrice > item.price && (
+                        <span className="text-sm text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
+                      )}
                     </div>
                     
                     {/* Характеристики */}
-                    <div className="text-xs text-gray-500 space-y-0.5">
-                      <div>Цвет: <span className="text-gray-700 font-medium">{item.color || 'черный'}</span></div>
-                      <div>Размер: <span className="text-gray-700 font-medium">{item.size || 'M'}</span></div>
+                    <div className="text-sm text-gray-500 space-y-1">
+                      <div>Цвет: <span className="text-gray-900 font-medium">{item.color || 'черный'}</span></div>
+                      <div>Размер: <span className="text-gray-900 font-medium">{item.size || 'M'}</span></div>
+                      <div>Баркод: <span className="text-gray-900 font-medium">{item.barcode}</span></div>
                     </div>
                   </div>
                 </div>
