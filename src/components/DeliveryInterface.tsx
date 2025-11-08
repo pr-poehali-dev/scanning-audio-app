@@ -261,7 +261,6 @@ const DeliveryInterface = ({
               </div>
             );
           })}
-            </div>
           </div>
         </div>
       </div>
