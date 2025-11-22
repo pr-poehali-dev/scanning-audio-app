@@ -62,75 +62,80 @@ const DeliveryInterface = ({
   const allProductsSelected = selectedProducts.length === order.items.length;
 
   return (
-    <div className="h-full bg-white flex flex-col lg:flex-row overflow-hidden">
+    <div className="h-full bg-gray-50 flex overflow-hidden">
       {/* Левая боковая панель */}
-      <div className="w-full lg:w-[280px] bg-white border-b lg:border-b-0 lg:border-r flex flex-col">
-        {/* Информация о клиенте и заказе */}
-        <div className="p-4 border-b">
-          <div className="text-xs text-gray-500 mb-1">Клиент</div>
-          <div className="text-lg font-semibold">
+      <div className="w-[380px] bg-white border-r flex flex-col">
+        {/* Информация о клиенте */}
+        <div className="px-6 py-4 border-b bg-gray-50">
+          <div className="text-sm text-gray-600 mb-1">Клиент</div>
+          <div className="text-xl font-bold">
             +7 (•••) •••-{order.phone.slice(-4)}
           </div>
         </div>
 
         {/* Ячейка */}
-        <div className="p-4 lg:p-6 border-b">
-          <div className="text-xs text-gray-500 mb-2 text-center">Ячейка</div>
-          <div className="text-[60px] lg:text-[80px] font-black text-center leading-none">
+        <div className="px-6 py-8 border-b bg-white">
+          <div className="text-sm text-gray-600 mb-3 text-center">Ячейка</div>
+          <div className="text-[120px] font-black text-center leading-none text-gray-900">
             {order.cellNumber}
           </div>
         </div>
 
         {/* Товаров */}
-        <div className="p-4 border-b hidden lg:block">
-          <div className="text-xs text-gray-500 mb-1">Товаров</div>
-          <div className="text-3xl font-bold">
-            {selectedProducts.length} <span className="text-2xl text-gray-400">из {order.items.length}</span>
+        <div className="px-6 py-5 border-b">
+          <div className="text-sm text-gray-600 mb-2">Товаров</div>
+          <div className="text-4xl font-black">
+            {selectedProducts.length} <span className="text-3xl text-gray-400">из {order.items.length}</span>
           </div>
         </div>
 
         {/* Пакетов */}
-        <div className="p-4 border-b hidden lg:block">
-          <div className="text-xs text-gray-500 mb-2">Пакетов</div>
+        <div className="px-6 py-5 border-b">
+          <div className="text-sm text-gray-600 mb-3">Пакетов</div>
           <button
             onClick={() => setShowPackageModal(true)}
-            className="w-full flex items-center gap-2 p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-400 transition-colors"
+            className="w-full flex items-center gap-3 p-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all"
           >
-            <div className="w-10 h-10 rounded border-2 border-dashed border-gray-400 flex items-center justify-center">
-              <Icon name="Plus" size={18} className="text-gray-400" />
+            <div className="w-12 h-12 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center">
+              <Icon name="Plus" size={22} className="text-gray-400" />
             </div>
-            <div className="text-sm font-medium">{totalPackages || 'Добавить'}</div>
+            <div className="text-base font-semibold text-gray-700">{totalPackages || 'Добавить'}</div>
           </button>
         </div>
 
         {/* К оплате */}
-        <div className="p-4 border-b hidden lg:block">
-          <div className="text-xs text-gray-500 mb-1">К оплате</div>
+        <div className="px-6 py-5 border-b">
+          <div className="text-sm text-gray-600 mb-2">К оплате</div>
           <div className="flex items-center gap-2">
-            <Icon name="Wallet" size={18} className="text-purple-600" />
-            <div className="text-2xl font-bold text-purple-600">
-              {totalAmount.toLocaleString('ru-RU')} ₽
+            <Icon name="Wallet" size={22} className="text-purple-600" />
+            <div className="text-3xl font-black text-purple-600">
+              {totalAmount.toLocaleString('ru-RU')} <span className="text-2xl">₽</span>
             </div>
           </div>
+          <button className="mt-3 text-sm text-purple-600 font-medium flex items-center gap-1 hover:text-purple-700">
+            Подробнее
+            <Icon name="ChevronDown" size={16} />
+          </button>
         </div>
 
-        {/* Кнопки действий - spacer для прижатия вниз на десктопе */}
-        <div className="flex-1 hidden lg:block"></div>
+        {/* Spacer */}
+        <div className="flex-1"></div>
         
-        <div className="p-4 space-y-2 border-t hidden lg:block">
+        {/* Кнопки действий */}
+        <div className="px-6 py-6 space-y-3 border-t bg-white">
           <button
             onClick={onDeliverProduct}
             disabled={selectedProducts.length !== order.items.length}
-            className={`w-full py-3 text-sm font-semibold rounded-lg transition-colors ${
+            className={`w-full py-4 text-base font-bold rounded-xl transition-all ${
               selectedProducts.length === order.items.length
-                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-600/30'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
             Выдать
           </button>
           
-          <button className="w-full py-3 text-sm font-medium border-2 border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+          <button className="w-full py-4 text-base font-bold border-2 border-red-500 text-red-600 rounded-xl hover:bg-red-50 transition-all">
             Снять с примерки
           </button>
         </div>
@@ -139,8 +144,8 @@ const DeliveryInterface = ({
       {/* Правая часть с товарами */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Хедер с кнопкой */}
-        <div className="px-4 py-3 bg-white border-b flex justify-between items-center">
-          <div className="text-sm text-gray-600">Товары в заказе</div>
+        <div className="px-6 py-4 bg-white border-b flex justify-between items-center">
+          <div className="text-base text-gray-700 font-medium">Товары в заказе</div>
           <button
             onClick={() => {
               if (allProductsSelected) {
@@ -150,16 +155,16 @@ const DeliveryInterface = ({
                 playAudio?.('check-product-under-camera');
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all text-base font-semibold shadow-lg shadow-purple-600/30"
           >
-            <Icon name="Check" size={16} />
+            <Icon name="Check" size={18} />
             <span>Снять все</span>
           </button>
         </div>
 
         {/* Список товаров - большие вертикальные карточки */}
-        <div className="flex-1 overflow-y-auto p-3 lg:p-6 pb-32 lg:pb-6 bg-white">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <div className="grid grid-cols-2 gap-6">
             {order.items.map((item, index) => {
               const isSelected = selectedProducts.includes(index);
               const isPaid = Math.random() > 0.5;
@@ -167,35 +172,35 @@ const DeliveryInterface = ({
               return (
                 <div 
                   key={index} 
-                  className="bg-gray-100 rounded-2xl overflow-hidden"
+                  className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
                   {/* Изображение товара */}
-                  <div className="relative bg-gray-200">
+                  <div className="relative bg-gray-100">
                     <img
                       src={item.image || "https://cdn.poehali.dev/files/b858b4bf-933e-42d2-85ef-ac50de2c51dd.png"}
                       alt={item.name}
-                      className="w-full h-[400px] lg:h-[500px] object-cover"
+                      className="w-full h-[450px] object-cover"
                     />
                     
                     {/* Кнопки слева сверху */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
                       <button
                         onClick={() => handleProductSelect(index)}
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
-                          isSelected ? 'bg-purple-600' : 'bg-white/90 backdrop-blur'
+                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg ${
+                          isSelected ? 'bg-purple-600 scale-105' : 'bg-white/95 backdrop-blur-sm'
                         }`}
                       >
-                        {isSelected && <Icon name="Check" size={22} className="text-white stroke-[3]" />}
+                        {isSelected && <Icon name="Check" size={26} className="text-white stroke-[3]" />}
                       </button>
                       
-                      <button className="w-12 h-12 bg-green-500 hover:bg-green-600 rounded-xl flex items-center justify-center transition-all">
-                        <Icon name="RotateCcw" size={20} className="text-white stroke-[2.5]" />
+                      <button className="w-14 h-14 bg-green-500 hover:bg-green-600 rounded-2xl flex items-center justify-center transition-all shadow-lg">
+                        <Icon name="RotateCcw" size={22} className="text-white stroke-[2.5]" />
                       </button>
                     </div>
 
                     {/* Бейдж оплаты справа сверху */}
-                    <div className="absolute top-3 right-3">
-                      <span className={`px-4 py-2 text-sm font-bold rounded-xl ${
+                    <div className="absolute top-4 right-4">
+                      <span className={`px-5 py-2.5 text-sm font-bold rounded-xl shadow-lg ${
                         isPaid ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                       }`}>
                         {isPaid ? 'Оплачен' : 'Не оплачен'}
@@ -203,74 +208,52 @@ const DeliveryInterface = ({
                     </div>
 
                     {/* Кнопка увеличения справа снизу */}
-                    <button className="absolute bottom-3 right-3 w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
-                      <Icon name="ZoomIn" size={20} className="text-gray-700" />
+                    <button className="absolute bottom-4 right-4 w-14 h-14 bg-white rounded-full flex items-center justify-center hover:bg-gray-50 transition-all shadow-lg">
+                      <Icon name="ZoomIn" size={22} className="text-gray-700" />
                     </button>
                   </div>
 
                   {/* Информация о товаре под изображением */}
-                  <div className="p-4 bg-white space-y-2">
+                  <div className="p-5 bg-white space-y-3">
                     {/* Баркод */}
                     <div className="flex items-center justify-between">
-                      <div className="font-bold text-lg">
+                      <div className="font-bold text-xl">
                         {item.barcode.slice(0, 7)} <span className="font-black">{item.barcode.slice(7)}</span>
                       </div>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Icon name="Copy" size={18} />
+                      <button className="text-gray-400 hover:text-gray-600 p-2">
+                        <Icon name="Copy" size={20} />
                       </button>
                     </div>
                     
                     {/* Название */}
-                    <div className="text-sm text-gray-600 line-clamp-1">
+                    <div className="text-base text-gray-600 line-clamp-2">
                       {item.brand || 'GENESIS'} / {item.name}
                     </div>
                     
                     {/* Цена */}
                     <div className="flex items-center gap-2">
-                      <Icon name="Wallet" size={18} className="text-purple-600" />
-                      <span className="text-xl font-bold text-purple-600">{item.price.toLocaleString()} ₽</span>
+                      <Icon name="Wallet" size={20} className="text-purple-600" />
+                      <span className="text-2xl font-black text-purple-600">{item.price.toLocaleString()} <span className="text-xl">₽</span></span>
                       {item.originalPrice && item.originalPrice > item.price && (
-                        <span className="text-sm text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
+                        <span className="text-base text-gray-400 line-through">{item.originalPrice.toLocaleString()} ₽</span>
                       )}
                     </div>
                     
                     {/* Характеристики */}
-                    <div className="text-sm text-gray-500 space-y-1">
-                      <div>Цвет: <span className="text-gray-900 font-medium">{item.color || 'черный'}</span></div>
-                      <div>Размер: <span className="text-gray-900 font-medium">{item.size || 'M'}</span></div>
-                      <div>Баркод: <span className="text-gray-900 font-medium">{item.barcode}</span></div>
+                    <div className="text-sm text-gray-500 space-y-1.5 pt-2 border-t">
+                      <div>Цвет: <span className="text-gray-900 font-semibold">{item.color || 'черный'}</span></div>
+                      <div>Размер: <span className="text-gray-900 font-semibold">{item.size || 'M'}</span></div>
+                      <div>Баркод: <span className="text-gray-900 font-semibold">{item.barcode}</span></div>
                     </div>
                   </div>
                 </div>
               );
-            })}
+            })}  
           </div>
         </div>
       </div>
 
-      {/* Фиксированная панель с кнопками на мобильном */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t p-4 space-y-2 z-10">
-        <div className="flex items-center justify-between mb-2 text-sm">
-          <span className="text-gray-600">Товаров: {selectedProducts.length} из {order.items.length}</span>
-          <span className="font-bold text-purple-600">{totalAmount.toLocaleString('ru-RU')} ₽</span>
-        </div>
-        
-        <button
-          onClick={onDeliverProduct}
-          disabled={selectedProducts.length !== order.items.length}
-          className={`w-full py-3 text-base font-semibold rounded-lg transition-colors ${
-            selectedProducts.length === order.items.length
-              ? 'bg-purple-600 hover:bg-purple-700 text-white'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          Выдать
-        </button>
-        
-        <button className="w-full py-3 text-base font-medium border-2 border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
-          Снять с примерки
-        </button>
-      </div>
+
 
       {/* Модальное окно пакетов */}
       <PackageModal
